@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Catalog extends StatefulWidget {
+  const Catalog({ Key key }): super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
 }
@@ -8,22 +9,22 @@ class Catalog extends StatefulWidget {
 class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   TabController _tabController;
 
-  final List<Tab> tabs = [
+  static const List<Widget> tabs = <Widget>[
     Tab(
       child: Text(
-        "Items",
+        'Items',
         style: TextStyle(color: Colors.black),
       ),
     ),
     Tab(
       child: Text(
-        "Locations",
+        'Locations',
         style: TextStyle(color: Colors.black),
       ),
     ),
     Tab(
       child: Text(
-        "Console",
+        'Console',
         style: TextStyle(color: Colors.black),
       ),
     ),
@@ -44,21 +45,24 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: <Widget>[
         TabBar(
           tabs: tabs,
           controller: _tabController,
         ),
         Expanded(
-          child: TabBarView(children: [
-            Container(
-              color: Colors.red,
-            ),
-            Container(
-              color: Colors.red,
-            ),
-            Container(),
-          ], controller: _tabController),
+          child: TabBarView(
+            controller: _tabController,
+            children: <Widget>[
+              Container(
+                color: Colors.red,
+              ),
+              Container(
+                color: Colors.red,
+              ),
+              Container(),
+            ],
+          ),
         ),
       ],
     );

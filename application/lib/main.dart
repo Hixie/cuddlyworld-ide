@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'catalog.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const CuddlyWorldIDE());
 }
 
-class MyApp extends StatelessWidget {
+class CuddlyWorldIDE extends StatelessWidget {
+  const CuddlyWorldIDE({ Key key }): super(key: key);
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,34 +15,31 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MainScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
+class MainScreen extends StatefulWidget {
+  const MainScreen({ Key key }) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MainScreenState createState() => _MainScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
       body: Center(
         child: Row(
-          children: [
+          children: <Widget>[
             Container(
               color: Colors.red,
             ),
-            Expanded(child: Catalog()),
+            const Expanded(
+              child: Catalog(),
+            ),
           ],
         ),
       ),

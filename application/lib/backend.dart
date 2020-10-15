@@ -65,9 +65,9 @@ class CuddlyWorld extends ChangeNotifier {
           socket.add(message.message);
           _pendingResponses.add(message.completer);
           success = true;
-        } on SocketException (error) {
+        } on SocketException catch (error) {
           _status = CuddlyWorldStatus.connecting;
-          socket?.close();
+          await socket?.close();
           socket = null;
           while (_pendingResponses.isNotEmpty)
             _pendingResponses.removeFirst().completeError(error);
@@ -75,7 +75,7 @@ class CuddlyWorld extends ChangeNotifier {
         }
       } while (!success);
     }
-    socket?.close();
+    await socket?.close();
   }
 
   Future<String> sendMessage(String message) {

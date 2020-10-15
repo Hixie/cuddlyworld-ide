@@ -60,7 +60,7 @@ linter:
     - constant_identifier_names
     - control_flow_in_finally
     # - curly_braces_in_flow_control_structures
-    - diagnostic_describe_all_properties
+    # - diagnostic_describe_all_properties
     - directives_ordering
     - empty_catches
     - empty_constructor_bodies
@@ -106,7 +106,7 @@ linter:
     - prefer_contains
     # - prefer_double_quotes
     - prefer_equal_for_default_values
-    - prefer_expression_function_bodies
+    # - prefer_expression_function_bodies
     - prefer_final_fields
     - prefer_final_in_for_each
     - prefer_final_locals
