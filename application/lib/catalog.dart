@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'disposition.dart';
 
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
 
@@ -53,7 +54,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
             children: <Widget>[
               const Placeholder(color: Colors.blue),
               const Placeholder(color: Colors.teal),
-              Container(),
+              const ConsoleTab(),
             ],
           ),
         ),
@@ -103,6 +104,13 @@ class _ConsoleTabState extends State<ConsoleTab> {
             hintText: 'Password',
           ),
         ),
+        FlatButton(
+          onPressed: () {
+            ServerDisposition.of(context).loginData =
+                LoginData(_username.text, _password.text);
+          },
+          child: const Text('Login'),
+        )
       ],
     );
   }
