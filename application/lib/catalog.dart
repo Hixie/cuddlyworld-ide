@@ -4,8 +4,10 @@ class Catalog extends StatefulWidget {
   const Catalog({Key key, this.onTabSwitch}) : super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
-  final void Function(int) onTabSwitch;
+  final void Function(TabState) onTabSwitch;
 }
+
+enum TabState { items, locations, console }
 
 class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   TabController _tabController;
@@ -36,7 +38,10 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     super.initState();
     _tabController = TabController(vsync: this, length: tabs.length)
       ..addListener(() {
-        widget.onTabSwitch(_tabController.index);
+        if (widget.onTabSwitch == null) {
+          return;
+        }
+        widget.onTabSwitch(TabState.values[_tabController.index]);
       });
   }
 
