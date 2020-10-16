@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class Catalog extends StatefulWidget {
-  const Catalog({ Key key }): super(key: key);
+  const Catalog({Key key, this.tabSwitchHandler}) : super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
+  final void Function(int) tabSwitchHandler;
 }
 
 class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
@@ -49,6 +50,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         TabBar(
           tabs: tabs,
           controller: _tabController,
+          onTap: widget.tabSwitchHandler,
         ),
         Expanded(
           child: TabBarView(
