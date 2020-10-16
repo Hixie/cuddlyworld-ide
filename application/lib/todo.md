@@ -5,9 +5,6 @@
 dropdowns, text fields, drag and drop even
 ### location editing screen
 dropdowns, text fields, drag and drop even
-### visual map of world
-dropdown for which location to display in the center
-rectangles with names connected with lines
 ## items tab in catalog
 ### list
 catalog of items
