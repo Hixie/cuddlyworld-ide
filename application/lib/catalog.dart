@@ -80,3 +80,49 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     );
   }
 }
+
+class ConsoleTab extends StatefulWidget {
+  const ConsoleTab({Key key}) : super(key: key);
+  @override
+  _ConsoleTabState createState() => _ConsoleTabState();
+}
+
+class _ConsoleTabState extends State<ConsoleTab> {
+  TextEditingController _username;
+  TextEditingController _password;
+
+  @override
+  void initState() {
+    super.initState();
+    _username = TextEditingController();
+    _password = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _username.dispose();
+    _password.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: <Widget>[
+        TextField(
+          controller: _username,
+          decoration: const InputDecoration(
+            hintText: 'Username',
+          ),
+        ),
+        TextField(
+          controller: _password,
+          decoration: const InputDecoration(
+            hintText: 'Password',
+          ),
+        ),
+      ],
+    );
+  }
+}
