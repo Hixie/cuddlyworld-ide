@@ -3,9 +3,16 @@ import 'package:flutter/material.dart';
 import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';
+import 'disposition.dart';
 
 void main() {
-  runApp(const CuddlyWorldIDE());
+  final ServerDisposition serverDisposition = ServerDisposition();
+  runApp(
+    Dispositions(
+      serverDisposition: serverDisposition,
+      child: const CuddlyWorldIDE(),
+    ),
+  );
 }
 
 class CuddlyWorldIDE extends StatelessWidget {
@@ -33,8 +40,33 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  CuddlyWorld _game;
   CatalogTab _mode = CatalogTab.console;
+
+  ServerDisposition _server;
+  CuddlyWorld _game;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _server = ServerDisposition.of(context);
+    if (_game == null ||
+        _server.server != _game.url ||
+        _server.username != _game.username ||
+        _server.password != _game.password) {
+      _game?.dispose();
+      _game = CuddlyWorld(
+        url: _server.server,
+        username: _server.username,
+        password: _server.password,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _game?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

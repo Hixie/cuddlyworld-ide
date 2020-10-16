@@ -16,7 +16,7 @@ class CuddlyWorld extends ChangeNotifier {
   CuddlyWorld({
     @required this.username,
     @required this.password,
-    this.url = 'ws://damowmow.com:10000',
+    @required this.url,
   }) {
     _loop();
   }
