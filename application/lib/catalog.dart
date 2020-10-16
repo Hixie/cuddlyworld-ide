@@ -16,24 +16,9 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   TabController _tabController;
 
   static const List<Widget> tabs = <Widget>[
-    Tab(
-      child: Text(
-        'Items',
-        style: TextStyle(color: Colors.black),
-      ),
-    ),
-    Tab(
-      child: Text(
-        'Locations',
-        style: TextStyle(color: Colors.black),
-      ),
-    ),
-    Tab(
-      child: Text(
-        'Console',
-        style: TextStyle(color: Colors.black),
-      ),
-    ),
+    Tab(text: 'Items'),
+    Tab(text: 'Locations'),
+    Tab(text: 'Console'),
   ];
 
   @override
@@ -66,12 +51,8 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
           child: TabBarView(
             controller: _tabController,
             children: <Widget>[
-              Container(
-                color: Colors.red,
-              ),
-              Container(
-                color: Colors.red,
-              ),
+              const Placeholder(color: Colors.blue),
+              const Placeholder(color: Colors.teal),
               Container(),
             ],
           ),

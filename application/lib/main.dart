@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
+import 'backend.dart';
 import 'catalog.dart';
+import 'console.dart';
 
 void main() {
   runApp(const CuddlyWorldIDE());
@@ -11,9 +14,11 @@ class CuddlyWorldIDE extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      title: 'Cuddly World IDE',
+      theme: ThemeData.light().copyWith(
+        tabBarTheme: const TabBarTheme(
+          labelColor: Colors.black,
+        ),
       ),
       home: const MainScreen(),
     );
@@ -28,17 +33,44 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  CuddlyWorld _game;
+  CatalogTab _mode = CatalogTab.console;
+
   @override
   Widget build(BuildContext context) {
+    Widget body;
+    switch (_mode) {
+      case CatalogTab.items:
+        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.blue);
+        break;
+      case CatalogTab.locations:
+        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.teal);
+        break;
+      case CatalogTab.console:
+        body = Console(game: _game);
+        break;
+    }
     return Scaffold(
       body: Center(
         child: Row(
           children: <Widget>[
-            Container(
-              color: Colors.red,
+            SizedBox(
+              width: 350.0,
+              child: Catalog(
+                initialTab: _mode,
+                onTabSwitch: (CatalogTab tab) {
+                  setState(() { _mode = tab; });
+                },
+              ),
             ),
-            const Expanded(
-              child: Catalog(),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: body,
+                ),
+              ),
             ),
           ],
         ),
