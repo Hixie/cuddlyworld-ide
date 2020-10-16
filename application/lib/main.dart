@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'backend.dart';
 import 'catalog.dart';
+import 'console.dart';
 
 void main() {
   runApp(const CuddlyWorldIDE());
@@ -12,9 +13,14 @@ class CuddlyWorldIDE extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Cuddly World IDE',
-      home: MainScreen(),
+      theme: ThemeData.light().copyWith(
+        tabBarTheme: const TabBarTheme(
+          labelColor: Colors.black,
+        ),
+      ),
+      home: const MainScreen(),
     );
   }
 }
@@ -35,20 +41,20 @@ class _MainScreenState extends State<MainScreen> {
     Widget body;
     switch (_mode) {
       case CatalogTab.items:
-        body = Placeholder(key: ValueKey(_mode));
+        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.blue);
         break;
       case CatalogTab.locations:
-        body = Placeholder(key: ValueKey(_mode));
+        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.teal);
         break;
       case CatalogTab.console:
-        body = Placeholder(key: ValueKey(_mode));
+        body = Console(game: _game);
         break;
     }
     return Scaffold(
       body: Center(
         child: Row(
-          children: const <Widget>[
-            const SizedBox(
+          children: <Widget>[
+            SizedBox(
               width: 350.0,
               child: Catalog(
                 initialTab: _mode,
@@ -58,8 +64,12 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
             Expanded(
-              child: AnimatedSwitcher(
-                child: body,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 150),
+                  child: body,
+                ),
               ),
             ),
           ],
