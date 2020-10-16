@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
 
 class Catalog extends StatefulWidget {
-  const Catalog({Key key, this.onTabSwitch}) : super(key: key);
+  const Catalog({Key key, this.onTabSwitch, this.initialTab}) : super(key: key);
   final TabSwitchHandler onTabSwitch;
+  final CatalogTab initialTab;
   @override
   _CatalogState createState() => _CatalogState();
 }
@@ -38,7 +39,8 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: tabs.length)
+    _tabController = TabController(
+        vsync: this, length: tabs.length, initialIndex: widget.initialTab.index)
       ..addListener(() {
         if (widget.onTabSwitch != null) {
           widget.onTabSwitch(CatalogTab.values[_tabController.index]);
