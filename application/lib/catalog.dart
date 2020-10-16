@@ -5,8 +5,8 @@ typedef TabSwitchHandler = void Function(TabState);
 class Catalog extends StatefulWidget {
   const Catalog({Key key, this.onTabSwitch}) : super(key: key);
   @override
-  _CatalogState createState() => _CatalogState();
   final TabSwitchHandler onTabSwitch;
+  _CatalogState createState() => _CatalogState();
 }
 
 enum TabState { items, locations, console }
