@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+typedef TabSwitchHandler = void Function(TabState);
+
 class Catalog extends StatefulWidget {
   const Catalog({Key key, this.onTabSwitch}) : super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
-  final void Function(TabState) onTabSwitch;
+  final TabSwitchHandler onTabSwitch;
 }
 
 enum TabState { items, locations, console }
