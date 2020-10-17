@@ -3,7 +3,7 @@ analyzer:
     implicit-casts: false
     implicit-dynamic: false
   errors:
-    todo: info
+    todo: ignore
 
 linter:
   rules:
