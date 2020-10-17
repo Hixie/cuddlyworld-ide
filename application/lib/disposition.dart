@@ -90,4 +90,7 @@ class LoginData {
       other.username == username &&
       other.password == password;
   // TODO(tree): implement hashCode
+
+  @override
+  int hashCode => hashValues(username, password);
 }
