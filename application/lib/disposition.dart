@@ -45,8 +45,7 @@ class ServerDisposition extends ChangeNotifier {
     notifyListeners();
   }
 
-  static ServerDisposition of(BuildContext context) =>
-      _of<ServerDisposition>(context);
+  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
 T _of<T extends Listenable>(BuildContext context) {
@@ -54,8 +53,7 @@ T _of<T extends Listenable>(BuildContext context) {
 }
 
 class _Disposition<T extends Listenable> extends InheritedNotifier<T> {
-  const _Disposition({Key key, T disposition, Widget child})
-      : super(key: key, notifier: disposition, child: child);
+  const _Disposition({Key key, T disposition, Widget child}): super(key: key, notifier: disposition, child: child);
 }
 
 class Dispositions extends StatelessWidget {
@@ -89,10 +87,10 @@ class LoginData {
     if (other.runtimeType != runtimeType)
       return false;
     return other is LoginData
-        && other.username == username
-        && other.password == password;
-  // TODO(tree): implement hashCode
+      && other.username == username
+      && other.password == password;
+  }
 
   @override
-  int hashCode => hashValues(username, password);
+  int get hashCode => hashValues(username, password);
 }
