@@ -85,10 +85,12 @@ class LoginData {
   final String password;
 
   @override
-  bool operator ==(Object other) =>
-      other is LoginData &&
-      other.username == username &&
-      other.password == password;
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType)
+      return false;
+    return other is LoginData
+        && other.username == username
+        && other.password == password;
   // TODO(tree): implement hashCode
 
   @override
