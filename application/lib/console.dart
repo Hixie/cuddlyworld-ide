@@ -67,7 +67,7 @@ class _ConsoleState extends State<Console> {
           controller: _input,
           decoration: const InputDecoration(
             prefixText: '> ',
-            hintText: 'look',
+            hintText: 'help',
           ),
           onSubmitted: (String message) {
             widget.game.sendMessage(message);
