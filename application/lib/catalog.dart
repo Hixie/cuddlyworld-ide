@@ -51,10 +51,10 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: <Widget>[
-              const Placeholder(color: Colors.blue),
-              const Placeholder(color: Colors.teal),
-              const ConsoleTab(),
+            children: const <Widget>[
+              Placeholder(color: Colors.blue),
+              Placeholder(color: Colors.teal),
+              ConsoleTab(),
             ],
           ),
         ),
@@ -74,10 +74,10 @@ class _ConsoleTabState extends State<ConsoleTab> {
   TextEditingController _password;
 
   @override
-  void initState() {
-    super.initState();
-    _username = TextEditingController();
-    _password = TextEditingController();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _username = TextEditingController(text: ServerDisposition.of(context).username);
+    _password = TextEditingController(text: ServerDisposition.of(context).password);
   }
 
   @override
