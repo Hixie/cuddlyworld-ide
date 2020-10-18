@@ -33,6 +33,9 @@ class CuddlyWorld extends ChangeNotifier {
   String get currentMessage => _currentMessage;
   String _currentMessage;
 
+  Stream<String> get output => _outputController.stream;
+  final StreamController<String> _outputController = StreamController<String>.broadcast();
+
   final StreamController<_PendingMessage> _controller = StreamController<_PendingMessage>();
   final Queue<Completer<String>> _pendingResponses = Queue<Completer<String>>();
 
@@ -47,6 +50,7 @@ class CuddlyWorld extends ChangeNotifier {
             ..add('$username $password')
             ..listen((Object response) {
               if (response is String) {
+                _outputController.add(response);
                 if (response.startsWith('\x01> ')) {
                   assert(currentResponse == null);
                   assert(_pendingResponses.isNotEmpty);
@@ -87,6 +91,7 @@ class CuddlyWorld extends ChangeNotifier {
   @override
   void dispose() {
     _controller.close();
+    _outputController.close();
     super.dispose();
   }
 }
