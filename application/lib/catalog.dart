@@ -103,6 +103,9 @@ class _ConsoleTabState extends State<ConsoleTab> {
           decoration: const InputDecoration(
             hintText: 'Password',
           ),
+          enableSuggestions: false,
+          autocorrect: false, 
+          obscureText: true,
         ),
         FlatButton(
           onPressed: () {
