@@ -10,24 +10,24 @@ class _PendingMessage {
   final Completer<String> completer;
 }
 
-enum CuddlyWorldStatus { connecting, connected, active, idle }
+typedef LogCallback = void Function(String message);
 
 class CuddlyWorld extends ChangeNotifier {
   CuddlyWorld({
     @required this.username,
     @required this.password,
     @required this.url,
+    this.onLog,
   }) {
+    _log('connecting to $url...');
+    _controller.add(null);
     _loop();
   }
 
   final String url;
   final String username;
   final String password;
-
-  /// What the CuddlyWorld object is currently doing
-  CuddlyWorldStatus get status => _status;
-  CuddlyWorldStatus _status = CuddlyWorldStatus.idle;
+  final LogCallback onLog;
 
   /// The message currently being sent to the server, if any
   String get currentMessage => _currentMessage;
@@ -43,12 +43,10 @@ class CuddlyWorld extends ChangeNotifier {
     WebSocket socket;
     StringBuffer currentResponse;
     await for (final _PendingMessage message in _controller.stream) {
-      bool success = false;
-      do {
-        try {
-          socket ??= await WebSocket.connect(url)
-            ..add('$username $password')
-            ..listen((Object response) {
+      socket ??= await WebSocket.connect(url)
+        ..add('$username $password')
+        ..listen(
+            (Object response) {
               if (response is String) {
                 _outputController.add(response);
                 if (response.startsWith('\x01> ')) {
@@ -65,19 +63,24 @@ class CuddlyWorld extends ChangeNotifier {
                   }
                 }
               }
-            });
-          socket.add(message.message);
-          _pendingResponses.add(message.completer);
-          success = true;
-        } on SocketException catch (error) {
-          _status = CuddlyWorldStatus.connecting;
-          await socket?.close();
-          socket = null;
-          while (_pendingResponses.isNotEmpty)
-            _pendingResponses.removeFirst().completeError(error);
-          currentResponse = null;
-        }
-      } while (!success);
+            },
+            onDone: () {
+              _log('Disconnected.');
+              socket = null;
+            },
+            onError: (Object error) async {
+              _log('error: $error');
+              await socket?.close();
+              socket = null;
+              while (_pendingResponses.isNotEmpty)
+                _pendingResponses.removeFirst().completeError(error);
+              currentResponse = null;
+            }
+          );
+      if (message != null) {
+        socket.add(message.message);
+        _pendingResponses.add(message.completer);
+      }
     }
     await socket?.close();
   }
@@ -86,6 +89,11 @@ class CuddlyWorld extends ChangeNotifier {
     final _PendingMessage pendingMessage = _PendingMessage(message, Completer<String>());
     _controller.add(pendingMessage);
     return pendingMessage.completer.future;
+  }
+
+  void _log(String message) {
+    if (onLog != null)
+      onLog(message);
   }
 
   @override
