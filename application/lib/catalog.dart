@@ -90,22 +90,28 @@ class _ConsoleTabState extends State<ConsoleTab> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        TextField(
-          controller: _username,
-          decoration: const InputDecoration(
-            hintText: 'Username',
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _username,
+            decoration: const InputDecoration(
+              hintText: 'Username',
+            ),
           ),
         ),
-        TextField(
-          controller: _password,
-          decoration: const InputDecoration(
-            hintText: 'Password',
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _password,
+            decoration: const InputDecoration(
+              hintText: 'Password',
+            ),
+            enableSuggestions: false,
+            autocorrect: false, 
+            obscureText: true,
           ),
-          enableSuggestions: false,
-          autocorrect: false, 
-          obscureText: true,
         ),
         FlatButton(
           onPressed: () {
