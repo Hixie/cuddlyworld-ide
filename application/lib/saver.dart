@@ -1,22 +1,3 @@
-// JSON
-
-/* Whole: {
-    "username", String,
-    "password": String,
-    "selected": int (index in things+locations),
-    "things": List<thing>,
-    "locations": List<location>
-  }
-
-  thing: {
-    "name": String
-  }
-
-  location: {
-    "name": String
-  }
-*/
-
 import 'dart:convert';
 import 'dart:io';
 
