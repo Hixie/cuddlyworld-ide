@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'data_model.dart';
+
 @immutable
 class LoginData {
   const LoginData(this.username, this.password);
@@ -67,20 +69,51 @@ class ServerDisposition extends ChangeNotifier {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-class ThingsDisposition extends ChangeNotifier {
+abstract class _AtomDisposition<T extends Atom> extends ChangeNotifier {
+  _AtomDisposition();
+
+  final Set<T> _atoms = <T>{};
+
+  void add(T atom) {
+    assert(!_atoms.contains(atom));
+    _atoms.add(atom);
+    notifyListeners();
+  }
+
+  void remove(T atom) {
+    assert(_atoms.contains(atom));
+    _atoms.remove(atom);
+    notifyListeners();
+  }
+}
+
+class ThingsDisposition extends _AtomDisposition<Thing> {
   ThingsDisposition();
+
+  Set<Thing> get things => _atoms.toSet();
 
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
 }
 
-class LocationsDisposition extends ChangeNotifier {
+class LocationsDisposition extends _AtomDisposition<Location> {
   LocationsDisposition();
+
+  Set<Location> get locations => _atoms.toSet();
 
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
 }
 
 class EditorDisposition extends ChangeNotifier {
   EditorDisposition();
+
+  Atom get current => _current;
+  Atom _current;
+  set current(Atom value) {
+    if (value == _current)
+      return;
+    _current = value;
+    notifyListeners();
+  }
 
   static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);
 }
