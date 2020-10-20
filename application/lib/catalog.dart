@@ -52,10 +52,10 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: <Widget>[
+            children: const <Widget>[
               ItemsTab(),
               LocationsTab(),
-              const ConsoleTab(),
+              ConsoleTab(),
             ],
           ),
         ),
@@ -65,6 +65,8 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
 }
 
 abstract class AtomTab<T extends Atom> extends StatefulWidget {
+  const AtomTab({Key key}): super(key: key);
+
   @override
   _AtomTabState<T> createState() => _AtomTabState<T>();
 
@@ -73,6 +75,8 @@ abstract class AtomTab<T extends Atom> extends StatefulWidget {
 }
 
 class ItemsTab extends AtomTab<Thing> {
+  const ItemsTab({Key key}): super(key: key);
+
   @override
   AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
   @override
@@ -80,6 +84,8 @@ class ItemsTab extends AtomTab<Thing> {
 }
 
 class LocationsTab extends AtomTab<Location> {
+  const LocationsTab({Key key}): super(key: key);
+
   @override
   AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
   @override
@@ -116,7 +122,7 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(e)).toList()),
+      body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList()),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           widget.disposition(context).add(widget.atom);
@@ -190,7 +196,7 @@ class _ConsoleTabState extends State<ConsoleTab> {
 }
 
 class DraggableText extends StatefulWidget {
-  const DraggableText(this.atom);
+  const DraggableText({this.atom, Key key}): super(key: key);
 
   final Atom atom;
 
