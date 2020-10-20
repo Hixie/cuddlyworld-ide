@@ -71,7 +71,7 @@ abstract class AtomTab<T extends Atom> extends StatefulWidget {
   _AtomTabState<T> createState() => _AtomTabState<T>();
 
   AtomDisposition<T> disposition(BuildContext context);
-  T get atom;
+  T newAtom();
 }
 
 class ItemsTab extends AtomTab<Thing> {
@@ -80,7 +80,7 @@ class ItemsTab extends AtomTab<Thing> {
   @override
   AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
   @override
-  Thing get atom => Thing();
+  Thing newAtom() => Thing();
 }
 
 class LocationsTab extends AtomTab<Location> {
@@ -89,7 +89,7 @@ class LocationsTab extends AtomTab<Location> {
   @override
   AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
   @override
-  Location get atom => Location();
+  Location newAtom() => Location();
 }
 
 class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
@@ -125,7 +125,7 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
       body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList()),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          widget.disposition(context).add(widget.atom);
+          widget.disposition(context).add(widget.newAtom());
         },
         child: const Icon(Icons.add),
       ),
