@@ -54,7 +54,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
             controller: _tabController,
             children: <Widget>[
               ItemsTab(),
-              const Placeholder(color: Colors.teal),
+              LocationsTab(),
               const ConsoleTab(),
             ],
           ),
@@ -64,35 +64,61 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
 }
 
-class ItemsTab extends StatefulWidget {
+abstract class AtomTab extends StatefulWidget {
   @override
-  _ItemsTabState createState() => _ItemsTabState();
+  _AtomTabState createState() => _AtomTabState();
+
+  dynamic disposition(BuildContext context);
+  Atom get atom;
 }
 
-class _ItemsTabState extends State<ItemsTab> {
-  void func() {
-    setState((){});
+class ItemsTab extends AtomTab {
+  @override
+  dynamic disposition(BuildContext context) => ThingsDisposition.of(context);
+  @override
+  Atom get atom => Thing();
+}
+
+class LocationsTab extends AtomTab {
+  @override
+  dynamic disposition(BuildContext context) => LocationsDisposition.of(context);
+  @override
+  Atom get atom => Location();
+}
+
+class _AtomTabState extends State<AtomTab> {
+  void _handleListUpdate() {
+    setState((){
+      atoms.sort((Atom a, Atom b) => a.name.value.compareTo(b.name.value));
+    });
   }
-  List<Thing> things = <Thing>[];
+  List<Atom> atoms = <Atom>[];
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    for(final Thing element in things) {
-      element.name.removeListener(func);
+    for(final Atom element in atoms) {
+      element.name.removeListener(_handleListUpdate);
     }
-    things = ThingsDisposition.of(context).things.toList();
-    for(final Thing element in things) {
-      element.name.addListener(func);
+    atoms = widget.disposition(context).atoms.toList() as List<Atom>;
+    for(final Atom element in atoms) {
+      element.name.addListener(_handleListUpdate);
+    }
+  }
+
+  @override
+  void dispose() {
+    for(final Atom element in atoms) {
+      element.name.removeListener(_handleListUpdate);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView(children: ThingsDisposition.of(context).things.map((Thing e) => Text(e.name.value)).toList()),
+      body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(e)).toList()),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ThingsDisposition.of(context).add(Thing());
+          widget.disposition(context).add(widget.atom);
         },
         child: const Icon(Icons.add),
       ),
@@ -158,6 +184,32 @@ class _ConsoleTabState extends State<ConsoleTab> {
           child: const Text('Login'),
         )
       ],
+    );
+  }
+}
+
+class DraggableText extends StatefulWidget {
+  const DraggableText(this.atom);
+
+  final Atom atom;
+
+  @override
+  _DraggableTextState createState() => _DraggableTextState();
+}
+
+class _DraggableTextState extends State<DraggableText> {
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      onPressed: () {
+        setState(() {
+          EditorDisposition.of(context).current = widget.atom;
+        });
+      },
+      child: Container(
+        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
+        child: Text(widget.atom.name.value ?? 'UNNAMED')
+      )
     );
   }
 }
