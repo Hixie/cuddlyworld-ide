@@ -40,6 +40,28 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     _tabController.dispose();
     super.dispose();
   }
+  
+  Widget get _currentFloatingActionButton {
+    switch(CatalogTab.values[_tabController.index]) {
+      case CatalogTab.console:
+        return null;
+      case CatalogTab.locations:
+        return FloatingActionButton(
+          onPressed: () {
+            LocationsDisposition.of(context).add(Location());
+          },
+          child: const Icon(Icons.add),
+        );
+      case CatalogTab.items:
+        return FloatingActionButton(
+          onPressed: () {
+            ThingsDisposition.of(context).add(Thing());
+          },
+          child: const Icon(Icons.add),
+        );
+    }
+    throw Exception();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,13 +72,16 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
           controller: _tabController,
         ),
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: const <Widget>[
-              ItemsTab(),
-              LocationsTab(),
-              ConsoleTab(),
-            ],
+          child: Scaffold(
+            body: TabBarView(
+              controller: _tabController,
+              children: const <Widget>[
+                ItemsTab(),
+                LocationsTab(),
+                ConsoleTab(),
+              ],
+            ),
+            floatingActionButton: _currentFloatingActionButton,
           ),
         ),
       ],
@@ -71,7 +96,6 @@ abstract class AtomTab<T extends Atom> extends StatefulWidget {
   _AtomTabState<T> createState() => _AtomTabState<T>();
 
   AtomDisposition<T> disposition(BuildContext context);
-  T newAtom();
 }
 
 class ItemsTab extends AtomTab<Thing> {
@@ -79,8 +103,6 @@ class ItemsTab extends AtomTab<Thing> {
 
   @override
   AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
-  @override
-  Thing newAtom() => Thing();
 }
 
 class LocationsTab extends AtomTab<Location> {
@@ -88,8 +110,6 @@ class LocationsTab extends AtomTab<Location> {
 
   @override
   AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
-  @override
-  Location newAtom() => Location();
 }
 
 class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
@@ -121,15 +141,7 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          widget.disposition(context).add(widget.newAtom());
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
+    return ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList());
   }
 }
 
