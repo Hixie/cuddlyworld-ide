@@ -1,15 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:xterm/xterm.dart';
 
 import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';
 import 'disposition.dart';
+import 'editor.dart';
 
 void main() {
   final ServerDisposition serverDisposition = ServerDisposition();
+  final ThingsDisposition thingsDisposition = ThingsDisposition();
+  final LocationsDisposition locationsDisposition = LocationsDisposition();
+  final EditorDisposition editorDisposition = EditorDisposition();
   runApp(
     Dispositions(
       serverDisposition: serverDisposition,
+      thingsDisposition: thingsDisposition,
+      locationsDisposition: locationsDisposition,
+      editorDisposition: editorDisposition,
       child: const CuddlyWorldIDE(),
     ),
   );
@@ -42,29 +52,58 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   CatalogTab _mode = CatalogTab.console;
 
-  ServerDisposition _server;
   CuddlyWorld _game;
+  Terminal _terminal;
+  StreamSubscription<String> _gameStream;
+
+  @override
+  void initState() {
+    _terminal = Terminal();
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _server = ServerDisposition.of(context);
+    final ServerDisposition server = ServerDisposition.of(context);
     if (_game == null ||
-        _server.server != _game.url ||
-        _server.username != _game.username ||
-        _server.password != _game.password) {
+        server.server != _game.url ||
+        server.username != _game.username ||
+        server.password != _game.password) {
       _game?.dispose();
       _game = CuddlyWorld(
-        url: _server.server,
-        username: _server.username,
-        password: _server.password,
+        url: server.server,
+        username: server.username,
+        password: server.password,
+        onLog: _handleLog,
       );
+      _gameStream?.cancel();
+      _gameStream = _game.output.listen(_handleOutput);
     }
+  }
+
+  void _handleOutput(String output) {
+    if (output == '\x02') {
+      _terminal.write('\r\n');
+      return;
+    }
+    _terminal
+      ..write(output.replaceAll('\n', '\r\n').replaceAll('\x01', ''))
+      ..write('\r\n');
+  }
+
+  void _handleLog(String output) {
+    _terminal
+      ..write('\x1B[31m')
+      ..write(output.replaceAll('\n', '\r\n'))
+      ..write('\x1B[0m\r\n');
   }
 
   @override
   void dispose() {
-    _game?.dispose();
+    _gameStream.cancel();
+    _game.dispose();
+    _terminal.close();
     super.dispose();
   }
 
@@ -73,13 +112,11 @@ class _MainScreenState extends State<MainScreen> {
     Widget body;
     switch (_mode) {
       case CatalogTab.items:
-        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.blue);
-        break;
       case CatalogTab.locations:
-        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.teal);
+        body = Editor(game: _game);
         break;
       case CatalogTab.console:
-        body = Console(game: _game);
+        body = Console(game: _game, terminal: _terminal);
         break;
     }
     return Scaffold(

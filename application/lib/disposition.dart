@@ -1,6 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+@immutable
+class LoginData {
+  const LoginData(this.username, this.password);
+  final String username;
+  final String password;
+
+  @override
+  bool operator ==(Object other) {
+    if (other.runtimeType != runtimeType)
+      return false;
+    return other is LoginData
+      && other.username == username
+      && other.password == password;
+  }
+
+  @override
+  int get hashCode => hashValues(username, password);
+}
+
 class ServerDisposition extends ChangeNotifier {
   ServerDisposition();
 
@@ -48,6 +67,25 @@ class ServerDisposition extends ChangeNotifier {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
+class ThingsDisposition extends ChangeNotifier {
+  ThingsDisposition();
+
+  static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
+}
+
+class LocationsDisposition extends ChangeNotifier {
+  LocationsDisposition();
+
+  static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
+}
+
+class EditorDisposition extends ChangeNotifier {
+  EditorDisposition();
+
+  static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);
+}
+
+
 T _of<T extends Listenable>(BuildContext context) {
   return context.dependOnInheritedWidgetOfExactType<_Disposition<T>>().notifier;
 }
@@ -60,10 +98,16 @@ class Dispositions extends StatelessWidget {
   const Dispositions({
     Key key,
     @required this.serverDisposition,
+    @required this.thingsDisposition,
+    @required this.locationsDisposition,
+    @required this.editorDisposition,
     @required this.child,
   }) : super(key: key);
 
   final ServerDisposition serverDisposition;
+  final ThingsDisposition thingsDisposition;
+  final LocationsDisposition locationsDisposition;
+  final EditorDisposition editorDisposition;
 
   final Widget child;
 
@@ -71,26 +115,16 @@ class Dispositions extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Disposition<ServerDisposition>(
       disposition: serverDisposition,
-      child: child,
+      child: _Disposition<ThingsDisposition>(
+        disposition: thingsDisposition,
+        child: _Disposition<LocationsDisposition>(
+          disposition: locationsDisposition,
+          child: _Disposition<EditorDisposition>(
+            disposition: editorDisposition,
+            child: child,
+          ),
+        ),
+      ),
     );
   }
-}
-
-@immutable
-class LoginData {
-  const LoginData(this.username, this.password);
-  final String username;
-  final String password;
-
-  @override
-  bool operator ==(Object other) {
-    if (other.runtimeType != runtimeType)
-      return false;
-    return other is LoginData
-      && other.username == username
-      && other.password == password;
-  }
-
-  @override
-  int get hashCode => hashValues(username, password);
 }
