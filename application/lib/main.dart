@@ -6,6 +6,7 @@ import 'package:xterm/xterm.dart';
 import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';
+import 'data_model.dart';
 import 'disposition.dart';
 import 'editor.dart';
 
@@ -113,7 +114,12 @@ class _MainScreenState extends State<MainScreen> {
     switch (_mode) {
       case CatalogTab.items:
       case CatalogTab.locations:
-        body = Editor(game: _game);
+        final Atom currentAtom = EditorDisposition.of(context).current;
+        if (currentAtom != null) {
+          body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
+        } else {
+          body = const Center(child: Text('Nothing selected.'));
+        }
         break;
       case CatalogTab.console:
         body = Console(game: _game, terminal: _terminal);
