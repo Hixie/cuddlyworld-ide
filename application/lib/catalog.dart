@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data_model.dart';
 import 'disposition.dart';
 
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
@@ -51,14 +52,48 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         Expanded(
           child: TabBarView(
             controller: _tabController,
-            children: const <Widget>[
-              Placeholder(color: Colors.blue),
-              Placeholder(color: Colors.teal),
-              ConsoleTab(),
+            children: <Widget>[
+              ItemsTab(),
+              const Placeholder(color: Colors.teal),
+              const ConsoleTab(),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+class ItemsTab extends StatefulWidget {
+  @override
+  _ItemsTabState createState() => _ItemsTabState();
+}
+
+class _ItemsTabState extends State<ItemsTab> {
+  void func() {
+    setState((){});
+  }
+  List<Thing> things = <Thing>[];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for(final Thing element in things) {
+      element.name.removeListener(func);
+    }
+    things = ThingsDisposition.of(context).things.toList();
+    for(final Thing element in things) {
+      element.name.addListener(func);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView(children: ThingsDisposition.of(context).things.map((Thing e) => Text(e.name.value)).toList()),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
