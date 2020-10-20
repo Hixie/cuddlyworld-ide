@@ -208,15 +208,16 @@ class _DraggableTextState extends State<DraggableText> {
   @override
   Widget build(BuildContext context) {
     return FlatButton(
+      color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
       onPressed: () {
         setState(() {
           EditorDisposition.of(context).current = widget.atom;
         });
       },
-      child: Container(
-        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
-        child: Text(widget.atom.name.value ?? 'UNNAMED')
-      )
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(widget.atom.name.value ?? 'UNNAMED'),
+      ),
     );
   }
 }
