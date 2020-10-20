@@ -7,12 +7,19 @@ import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';
 import 'disposition.dart';
+import 'editor.dart';
 
 void main() {
   final ServerDisposition serverDisposition = ServerDisposition();
+  final ThingsDisposition thingsDisposition = ThingsDisposition();
+  final LocationsDisposition locationsDisposition = LocationsDisposition();
+  final EditorDisposition editorDisposition = EditorDisposition();
   runApp(
     Dispositions(
       serverDisposition: serverDisposition,
+      thingsDisposition: thingsDisposition,
+      locationsDisposition: locationsDisposition,
+      editorDisposition: editorDisposition,
       child: const CuddlyWorldIDE(),
     ),
   );
@@ -105,10 +112,8 @@ class _MainScreenState extends State<MainScreen> {
     Widget body;
     switch (_mode) {
       case CatalogTab.items:
-        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.blue);
-        break;
       case CatalogTab.locations:
-        body = Placeholder(key: ValueKey<CatalogTab>(_mode), color: Colors.teal);
+        body = Editor(game: _game);
         break;
       case CatalogTab.console:
         body = Console(game: _game, terminal: _terminal);
