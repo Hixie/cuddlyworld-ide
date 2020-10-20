@@ -96,6 +96,7 @@ abstract class AtomTab<T extends Atom> extends StatefulWidget {
   _AtomTabState<T> createState() => _AtomTabState<T>();
 
   AtomDisposition<T> disposition(BuildContext context);
+
 }
 
 class ItemsTab extends AtomTab<Thing> {
@@ -103,6 +104,7 @@ class ItemsTab extends AtomTab<Thing> {
 
   @override
   AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
+
 }
 
 class LocationsTab extends AtomTab<Location> {
@@ -110,6 +112,7 @@ class LocationsTab extends AtomTab<Location> {
 
   @override
   AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
+
 }
 
 class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {

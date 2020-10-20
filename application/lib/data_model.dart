@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 abstract class Atom extends ChangeNotifier {
+  String get kindDescription;
+
   final ValueNotifier<String> name = ValueNotifier<String>(null);
 
   @override
@@ -11,7 +13,11 @@ abstract class Atom extends ChangeNotifier {
 }
 
 class Thing extends Atom {
+  @override
+  String get kindDescription => 'Thing';
 }
 
 class Location extends Atom {
+  @override
+  String get kindDescription => 'Location';
 }
