@@ -91,7 +91,9 @@ class _ItemsTabState extends State<ItemsTab> {
     return Scaffold(
       body: ListView(children: ThingsDisposition.of(context).things.map((Thing e) => Text(e.name.value)).toList()),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          ThingsDisposition.of(context).add(Thing());
+        },
         child: const Icon(Icons.add),
       ),
     );
