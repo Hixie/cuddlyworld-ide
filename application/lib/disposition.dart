@@ -90,13 +90,11 @@ abstract class AtomDisposition<T extends Atom> extends ChangeNotifier {
 
 class ThingsDisposition extends AtomDisposition<Thing> {
   ThingsDisposition();
-
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
 }
 
 class LocationsDisposition extends AtomDisposition<Location> {
   LocationsDisposition();
-
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
 }
 

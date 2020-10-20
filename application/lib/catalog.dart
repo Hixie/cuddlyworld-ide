@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data_model.dart';
 import 'disposition.dart';
 
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
@@ -52,13 +53,82 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
           child: TabBarView(
             controller: _tabController,
             children: const <Widget>[
-              Placeholder(color: Colors.blue),
-              Placeholder(color: Colors.teal),
+              ItemsTab(),
+              LocationsTab(),
               ConsoleTab(),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+abstract class AtomTab<T extends Atom> extends StatefulWidget {
+  const AtomTab({Key key}): super(key: key);
+
+  @override
+  _AtomTabState<T> createState() => _AtomTabState<T>();
+
+  AtomDisposition<T> disposition(BuildContext context);
+  T newAtom();
+}
+
+class ItemsTab extends AtomTab<Thing> {
+  const ItemsTab({Key key}): super(key: key);
+
+  @override
+  AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
+  @override
+  Thing newAtom() => Thing();
+}
+
+class LocationsTab extends AtomTab<Location> {
+  const LocationsTab({Key key}): super(key: key);
+
+  @override
+  AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
+  @override
+  Location newAtom() => Location();
+}
+
+class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
+  void _handleListUpdate() {
+    setState((){
+      atoms.sort((Atom a, Atom b) => a.name.value.compareTo(b.name.value));
+    });
+  }
+  List<Atom> atoms = <Atom>[];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    for(final Atom element in atoms) {
+      element.name.removeListener(_handleListUpdate);
+    }
+    atoms = widget.disposition(context).atoms.toList();
+    for(final Atom element in atoms) {
+      element.name.addListener(_handleListUpdate);
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for(final Atom element in atoms) {
+      element.name.removeListener(_handleListUpdate);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList()),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          widget.disposition(context).add(widget.newAtom());
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -121,6 +191,32 @@ class _ConsoleTabState extends State<ConsoleTab> {
           child: const Text('Login'),
         )
       ],
+    );
+  }
+}
+
+class DraggableText extends StatefulWidget {
+  const DraggableText({this.atom, Key key}): super(key: key);
+
+  final Atom atom;
+
+  @override
+  _DraggableTextState createState() => _DraggableTextState();
+}
+
+class _DraggableTextState extends State<DraggableText> {
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      onPressed: () {
+        setState(() {
+          EditorDisposition.of(context).current = widget.atom;
+        });
+      },
+      child: Container(
+        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
+        child: Text(widget.atom.name.value ?? 'UNNAMED')
+      )
     );
   }
 }
