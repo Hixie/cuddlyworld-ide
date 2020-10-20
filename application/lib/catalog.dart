@@ -64,29 +64,29 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
 }
 
-abstract class AtomTab extends StatefulWidget {
+abstract class AtomTab<T extends Atom> extends StatefulWidget {
   @override
-  _AtomTabState createState() => _AtomTabState();
+  _AtomTabState<T> createState() => _AtomTabState<T>();
 
-  dynamic disposition(BuildContext context);
-  Atom get atom;
+  AtomDisposition<T> disposition(BuildContext context);
+  T get atom;
 }
 
-class ItemsTab extends AtomTab {
+class ItemsTab extends AtomTab<Thing> {
   @override
-  dynamic disposition(BuildContext context) => ThingsDisposition.of(context);
+  AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
   @override
-  Atom get atom => Thing();
+  Thing get atom => Thing();
 }
 
-class LocationsTab extends AtomTab {
+class LocationsTab extends AtomTab<Location> {
   @override
-  dynamic disposition(BuildContext context) => LocationsDisposition.of(context);
+  AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
   @override
-  Atom get atom => Location();
+  Location get atom => Location();
 }
 
-class _AtomTabState extends State<AtomTab> {
+class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
   void _handleListUpdate() {
     setState((){
       atoms.sort((Atom a, Atom b) => a.name.value.compareTo(b.name.value));
@@ -99,7 +99,7 @@ class _AtomTabState extends State<AtomTab> {
     for(final Atom element in atoms) {
       element.name.removeListener(_handleListUpdate);
     }
-    atoms = widget.disposition(context).atoms.toList() as List<Atom>;
+    atoms = widget.disposition(context).atoms.toList();
     for(final Atom element in atoms) {
       element.name.addListener(_handleListUpdate);
     }
@@ -107,6 +107,7 @@ class _AtomTabState extends State<AtomTab> {
 
   @override
   void dispose() {
+    super.dispose();
     for(final Atom element in atoms) {
       element.name.removeListener(_handleListUpdate);
     }

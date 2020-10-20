@@ -69,9 +69,10 @@ class ServerDisposition extends ChangeNotifier {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-abstract class _AtomDisposition<T extends Atom> extends ChangeNotifier {
-  _AtomDisposition();
+abstract class AtomDisposition<T extends Atom> extends ChangeNotifier {
+  AtomDisposition();
 
+  Set<T> get atoms => _atoms.toSet();
   final Set<T> _atoms = <T>{};
 
   void add(T atom) {
@@ -87,19 +88,13 @@ abstract class _AtomDisposition<T extends Atom> extends ChangeNotifier {
   }
 }
 
-class ThingsDisposition extends _AtomDisposition<Thing> {
+class ThingsDisposition extends AtomDisposition<Thing> {
   ThingsDisposition();
-
-  Set<Thing> get atoms => _atoms.toSet();
-
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
 }
 
-class LocationsDisposition extends _AtomDisposition<Location> {
+class LocationsDisposition extends AtomDisposition<Location> {
   LocationsDisposition();
-
-  Set<Location> get atoms => _atoms.toSet();
-
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
 }
 
