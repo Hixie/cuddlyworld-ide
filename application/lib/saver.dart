@@ -7,9 +7,11 @@ abstract class JsonEncodable {
 }
 
 Future<void> save(String file, JsonEncodable encoder) async {
-  await File(file).writeAsString(json.encode(encoder.encode()));
+  await (await File(file).create()).writeAsString(json.encode(encoder.encode()));
 }
 
 Future<void> load(String file, JsonEncodable decoder) async {
+  if(!await File(file).exists())
+    await save(file, decoder);
   decoder.decode(json.decode(await File(file).readAsString()));
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'backend.dart';
 import 'data_model.dart';
+import 'disposition.dart';
+import 'saver.dart';
 
 class Editor extends StatefulWidget {
   const Editor({ Key key, this.game, this.atom }): super(key: key);
@@ -25,7 +27,7 @@ class _EditorState extends State<Editor> {
             StringField(
               label: 'Name',
               value: widget.atom.name.value,
-              onChanged: (String value) { widget.atom.name.value = value; },
+              onChanged: (String value) { widget.atom.name.value = value; save('state.json', RootDisposition.last); },
             ),
           ],
         ),

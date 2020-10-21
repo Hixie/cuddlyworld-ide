@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'data_model.dart';
 import 'disposition.dart';
+import 'saver.dart';
 
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
 
@@ -49,6 +50,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         return FloatingActionButton(
           onPressed: () {
             LocationsDisposition.of(context).add(Location());
+            save('state.json', RootDisposition.last);
           },
           child: const Icon(Icons.add),
         );
@@ -56,6 +58,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         return FloatingActionButton(
           onPressed: () {
             ThingsDisposition.of(context).add(Thing());
+            save('state.json', RootDisposition.last);
           },
           child: const Icon(Icons.add),
         );
@@ -119,6 +122,7 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
   void _handleListUpdate() {
     setState((){
       atoms.sort((Atom a, Atom b) => a.name.value.compareTo(b.name.value));
+      save('state.json', RootDisposition.last);
     });
   }
   List<Atom> atoms = <Atom>[];
@@ -129,9 +133,11 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
       element.name.removeListener(_handleListUpdate);
     }
     atoms = widget.disposition(context).atoms.toList();
+    _handleListUpdate();
     for(final Atom element in atoms) {
       element.name.addListener(_handleListUpdate);
     }
+    save('state.json', RootDisposition.last);
   }
 
   @override
@@ -161,6 +167,7 @@ class _ConsoleTabState extends State<ConsoleTab> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    save('state.json', RootDisposition.last);
     _username = TextEditingController(text: ServerDisposition.of(context).username);
     _password = TextEditingController(text: ServerDisposition.of(context).password);
   }
@@ -201,6 +208,7 @@ class _ConsoleTabState extends State<ConsoleTab> {
         FlatButton(
           onPressed: () {
             ServerDisposition.of(context).setLoginData(_username.text, _password.text);
+            save('state.json', RootDisposition.last);
           },
           child: const Text('Login'),
         )

@@ -14,8 +14,8 @@ abstract class Atom extends ChangeNotifier implements JsonEncodable{
   @override
   void decode(Object obj) {
     assert(obj is Map<String, Object>);
-    assert((obj as Map<String, Object>)[name] is String);
-    name.value = (obj as Map<String, Object>)[name] as String;
+    assert((obj as Map<String, Object>)['name'] is String);
+    name.value = (obj as Map<String, Object>)['name'] as String;
   }
 
   @override

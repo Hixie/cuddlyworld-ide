@@ -2,12 +2,38 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'data_model.dart';
+import 'saver.dart' as saver;
 
-class RootDisposition {
+class RootDisposition extends saver.JsonEncodable {
   RootDisposition();
+  
+  static RootDisposition last;
 
   static Future<RootDisposition> load(String filename) async {
-    return RootDisposition();
+    final RootDisposition d = RootDisposition();
+    last = d;
+    await saver.load(filename, d);
+    return d;
+  }
+
+  @override
+
+  Map<String, Object> encode() {
+    return <String, Object>{
+      'server': serverDisposition.encode(),
+      'things': thingsDisposition.encode(), 
+      'locations': locationsDisposition.encode(),
+    };
+  }
+
+  @override
+
+  void decode(Object object) {
+    assert(object is Map<String, Object>);
+    final Map<String, Object> map = object as Map<String, Object>;
+    serverDisposition.decode(map['server']);
+    thingsDisposition.decode(map['things']);
+    locationsDisposition.decode(map['locations']);
   }
 
   final ServerDisposition serverDisposition = ServerDisposition();
@@ -16,7 +42,7 @@ class RootDisposition {
   final EditorDisposition editorDisposition = EditorDisposition();
 }
 
-class ServerDisposition extends ChangeNotifier {
+class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
   ServerDisposition();
 
   String get server => _server;
@@ -27,6 +53,23 @@ class ServerDisposition extends ChangeNotifier {
     }
     _server = value;
     notifyListeners();
+  }
+
+  @override
+  Map<String, String> encode() {
+    return <String, String>{'server': server, 'username': username, 'password': password};
+  }
+  
+  @override
+
+  void decode(Object object) {
+    assert(object is Map<String, Object>);
+    final Map<String, Object> map = object as Map<String, Object>;
+    assert(map['server'] is String);
+    assert(map['username'] is String);
+    assert(map['password'] is String);
+    server = map['server'] as String;
+    setLoginData(map['username'] as String, map['password'] as String);
   }
 
   String get username => _username;
@@ -60,11 +103,25 @@ class ServerDisposition extends ChangeNotifier {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-abstract class AtomDisposition<T extends Atom> extends ChangeNotifier {
+abstract class AtomDisposition<T extends Atom> extends ChangeNotifier implements saver.JsonEncodable {
   AtomDisposition();
 
   Set<T> get atoms => _atoms.toSet();
   final Set<T> _atoms = <T>{};
+
+  @override
+  List<Map<String, Object>> encode() {
+    return atoms.map((T e) => e.encode()).toList();
+  }
+
+  T newAtom();
+
+  @override
+  void decode(Object object) {
+    assert(object is List<Object>);
+    _atoms..clear()..addAll((object as List<Object>).map((Object e) => newAtom()..decode(e)));
+    notifyListeners();
+  }
 
   void add(T atom) {
     assert(!_atoms.contains(atom));
@@ -81,11 +138,21 @@ abstract class AtomDisposition<T extends Atom> extends ChangeNotifier {
 
 class ThingsDisposition extends AtomDisposition<Thing> {
   ThingsDisposition();
+
+  @override
+
+  Thing newAtom() => Thing();
+
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
 }
 
 class LocationsDisposition extends AtomDisposition<Location> {
   LocationsDisposition();
+
+  @override
+
+  Location newAtom() => Location();
+
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
 }
 
