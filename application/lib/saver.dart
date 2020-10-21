@@ -11,5 +11,6 @@ Future<void> save(String file, JsonEncodable encoder) async {
 }
 
 Future<void> load(String file, JsonEncodable decoder) async {
-  decoder.decode(json.decode(await File(file).readAsString()));
+  if(await File(file).exists())
+    decoder.decode(json.decode(await File(file).readAsString()));
 }

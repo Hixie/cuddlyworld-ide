@@ -129,6 +129,7 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
       element.name.removeListener(_handleListUpdate);
     }
     atoms = widget.disposition(context).atoms.toList();
+    _handleListUpdate();
     for(final Atom element in atoms) {
       element.name.addListener(_handleListUpdate);
     }
