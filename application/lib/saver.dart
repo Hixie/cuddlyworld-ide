@@ -2,14 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 abstract class JsonEncodable {
-  dynamic encode();
-  void decode(Object obj);
+  Object encode();
+  void decode(Object object);
 }
 
 Future<void> save(String file, JsonEncodable encoder) async {
-  await File(file).writeAsString(jsonEncode(encoder.encode()));
+  await File(file).writeAsString(json.encode(encoder.encode()));
 }
 
 Future<void> load(String file, JsonEncodable decoder) async {
-  decoder.decode(jsonDecode(await File(file).readAsString()));
+  decoder.decode(json.decode(await File(file).readAsString()));
 }
