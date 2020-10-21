@@ -3,25 +3,6 @@ import 'package:flutter/widgets.dart';
 
 import 'data_model.dart';
 
-@immutable
-class LoginData {
-  const LoginData(this.username, this.password);
-  final String username;
-  final String password;
-
-  @override
-  bool operator ==(Object other) {
-    if (other.runtimeType != runtimeType)
-      return false;
-    return other is LoginData
-      && other.username == username
-      && other.password == password;
-  }
-
-  @override
-  int get hashCode => hashValues(username, password);
-}
-
 class ServerDisposition extends ChangeNotifier {
   ServerDisposition();
 
@@ -45,17 +26,6 @@ class ServerDisposition extends ChangeNotifier {
     notifyListeners();
   }
 
-  set loginData(LoginData value) {
-    if (value == loginData) {
-      return;
-    }
-    _username = value.username;
-    _password = value.password;
-    notifyListeners();
-  }
-
-  LoginData get loginData => LoginData(username, password);
-
   String get password => _password;
   String _password = '';
   set password(String value) {
@@ -63,6 +33,14 @@ class ServerDisposition extends ChangeNotifier {
       return;
     }
     _password = value;
+    notifyListeners();
+  }
+
+  void setLoginData(String username, String password) {
+    if (username == _username && password == _password)
+      return;
+    _username = username;
+    _password = password;
     notifyListeners();
   }
 

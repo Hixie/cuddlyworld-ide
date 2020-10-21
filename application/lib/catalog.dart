@@ -200,8 +200,7 @@ class _ConsoleTabState extends State<ConsoleTab> {
         ),
         FlatButton(
           onPressed: () {
-            ServerDisposition.of(context).loginData =
-                LoginData(_username.text, _password.text);
+            ServerDisposition.of(context).setLoginData(_username.text, _password.text);
           },
           child: const Text('Login'),
         )
