@@ -17,7 +17,6 @@ class RootDisposition extends saver.JsonEncodable {
   }
 
   @override
-
   Map<String, Object> encode() {
     return <String, Object>{
       'server': serverDisposition.encode(),
@@ -27,7 +26,6 @@ class RootDisposition extends saver.JsonEncodable {
   }
 
   @override
-
   void decode(Object object) {
     assert(object is Map<String, Object>);
     final Map<String, Object> map = object as Map<String, Object>;
@@ -61,7 +59,6 @@ class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
   }
   
   @override
-
   void decode(Object object) {
     assert(object is Map<String, Object>);
     final Map<String, Object> map = object as Map<String, Object>;
@@ -140,7 +137,6 @@ class ThingsDisposition extends AtomDisposition<Thing> {
   ThingsDisposition();
 
   @override
-
   Thing newAtom() => Thing();
 
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
@@ -150,7 +146,6 @@ class LocationsDisposition extends AtomDisposition<Location> {
   LocationsDisposition();
 
   @override
-
   Location newAtom() => Location();
 
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
