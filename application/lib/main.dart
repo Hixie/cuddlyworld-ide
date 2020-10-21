@@ -10,17 +10,11 @@ import 'data_model.dart';
 import 'disposition.dart';
 import 'editor.dart';
 
-void main() {
-  final ServerDisposition serverDisposition = ServerDisposition();
-  final ThingsDisposition thingsDisposition = ThingsDisposition();
-  final LocationsDisposition locationsDisposition = LocationsDisposition();
-  final EditorDisposition editorDisposition = EditorDisposition();
+Future<void> main() async {
+  final RootDisposition rootDisposition = await RootDisposition.load('state.json');
   runApp(
-    Dispositions(
-      serverDisposition: serverDisposition,
-      thingsDisposition: thingsDisposition,
-      locationsDisposition: locationsDisposition,
-      editorDisposition: editorDisposition,
+    Dispositions.withRoot(
+      rootDisposition: rootDisposition,
       child: const CuddlyWorldIDE(),
     ),
   );

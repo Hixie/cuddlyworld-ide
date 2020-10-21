@@ -3,6 +3,19 @@ import 'package:flutter/widgets.dart';
 
 import 'data_model.dart';
 
+class RootDisposition {
+  RootDisposition();
+
+  static Future<RootDisposition> load(String filename) async {
+    return RootDisposition();
+  }
+
+  final ServerDisposition serverDisposition = ServerDisposition();
+  final ThingsDisposition thingsDisposition = ThingsDisposition();
+  final LocationsDisposition locationsDisposition = LocationsDisposition();
+  final EditorDisposition editorDisposition = EditorDisposition();
+}
+
 class ServerDisposition extends ChangeNotifier {
   ServerDisposition();
 
@@ -109,6 +122,16 @@ class Dispositions extends StatelessWidget {
     @required this.editorDisposition,
     @required this.child,
   }) : super(key: key);
+
+  Dispositions.withRoot({
+    Key key,
+    @required RootDisposition rootDisposition,
+    @required this.child,
+  }) : serverDisposition = rootDisposition.serverDisposition,
+       thingsDisposition = rootDisposition.thingsDisposition,
+       locationsDisposition = rootDisposition.locationsDisposition,
+       editorDisposition = rootDisposition.editorDisposition,
+       super(key: key);
 
   final ServerDisposition serverDisposition;
   final ThingsDisposition thingsDisposition;
