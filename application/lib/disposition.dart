@@ -12,6 +12,10 @@ class RootDisposition extends saver.JsonEncodable {
   static Future<RootDisposition> load(String filename) async {
     final RootDisposition d = RootDisposition();
     last = d;
+    d.serverDisposition.parent = d;
+    d.editorDisposition.parent = d;
+    d.thingsDisposition.parent = d;
+    d.locationsDisposition.parent = d;
     await saver.load(filename, d);
     return d;
   }
@@ -23,6 +27,10 @@ class RootDisposition extends saver.JsonEncodable {
       'things': thingsDisposition.encode(), 
       'locations': locationsDisposition.encode(),
     };
+  }
+
+  void didChange() {
+    saver.save('state.json', this);
   }
 
   @override
@@ -42,6 +50,13 @@ class RootDisposition extends saver.JsonEncodable {
 
 class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
   ServerDisposition();
+
+  RootDisposition parent;
+
+  @override void notifyListeners() {
+    super.notifyListeners();
+    parent.didChange();
+  }
 
   String get server => _server;
   String _server = 'ws://damowmow.com:10000';
@@ -101,7 +116,13 @@ class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
 }
 
 abstract class AtomDisposition<T extends Atom> extends ChangeNotifier implements saver.JsonEncodable {
-  AtomDisposition();
+
+  RootDisposition parent;
+
+  @override void notifyListeners() {
+    super.notifyListeners();
+    parent.didChange();
+  }
 
   Set<T> get atoms => _atoms.toSet();
   final Set<T> _atoms = <T>{};
@@ -134,8 +155,6 @@ abstract class AtomDisposition<T extends Atom> extends ChangeNotifier implements
 }
 
 class ThingsDisposition extends AtomDisposition<Thing> {
-  ThingsDisposition();
-
   @override
   Thing newAtom() => Thing();
 
@@ -143,8 +162,6 @@ class ThingsDisposition extends AtomDisposition<Thing> {
 }
 
 class LocationsDisposition extends AtomDisposition<Location> {
-  LocationsDisposition();
-
   @override
   Location newAtom() => Location();
 
@@ -152,7 +169,12 @@ class LocationsDisposition extends AtomDisposition<Location> {
 }
 
 class EditorDisposition extends ChangeNotifier {
-  EditorDisposition();
+  RootDisposition parent;
+
+  @override void notifyListeners() {
+    super.notifyListeners();
+    parent.didChange();
+  }
 
   Atom get current => _current;
   Atom _current;
