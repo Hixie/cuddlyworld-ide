@@ -60,10 +60,34 @@ class _EditorState extends State<Editor> {
 
   String _prettyName(String property) {
     switch (property) {
-      case 'name': return 'Name';
-      case 'pattern': return 'Pattern';
+      case 'backDescription': return 'Description (back)';
+      case 'backSide': return 'Reverse side';
+      case 'cannotMoveExcuse': return 'Cannot move excuse';
+      case 'child': return 'Children';
+      case 'definiteName': return 'Name (definite)';
       case 'description': return 'Description';
+      case 'destination': return 'Destination';
+      case 'door': return 'Door';
+      case 'findDescription': return 'Description (find)';
+      case 'frontDirection': return 'Direction of front';
+      case 'frontDescription': return 'Description (front)';
+      case 'frontSide': return 'Front side';
+      case 'ground': return 'Ground';
+      case 'indefiniteName': return 'Name (indefinite)';
+      case 'ingredients': return 'Ingredients';
+      case 'mass': return 'Mass';
+      case 'master': return 'Master';
+      case 'maxSize': return 'Maximum size';
+      case 'name': return 'Name';
+      case 'landmark': return 'Landmarks';
+      case 'opened': return 'Opened?';
+      case 'pattern': return 'Pattern';
+      case 'pileClass': return 'Pile class';
+      case 'position': return 'Position';
+      case 'size': return 'Size';
+      case 'surface': return 'Surface';
       case 'underDescription': return 'Description (under)';
+      case 'writing': return 'Writing';
       default: return property;
     }
   }
