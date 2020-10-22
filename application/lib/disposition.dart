@@ -2,22 +2,30 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
 import 'data_model.dart';
-import 'saver.dart' as saver;
+import 'saver.dart';
 
-class RootDisposition extends saver.JsonEncodable {
-  RootDisposition();
-  
-  static RootDisposition last;
+class RootDisposition implements JsonEncodable {
+  RootDisposition(this.saveFile) {
+    _serverDisposition = ServerDisposition(this);
+    _thingsDisposition = ThingsDisposition(this);
+    _locationsDisposition = LocationsDisposition(this);
+    _editorDisposition = EditorDisposition(this);
+  }
 
-  static Future<RootDisposition> load(String filename) async {
-    final RootDisposition d = RootDisposition();
-    last = d;
-    d.serverDisposition.parent = d;
-    d.editorDisposition.parent = d;
-    d.thingsDisposition.parent = d;
-    d.locationsDisposition.parent = d;
-    await saver.load(filename, d);
-    return d;
+  final SaveFile saveFile;
+  ServerDisposition get serverDisposition => _serverDisposition;
+  ServerDisposition _serverDisposition;
+  ThingsDisposition get thingsDisposition => _thingsDisposition;
+  ThingsDisposition _thingsDisposition;
+  LocationsDisposition get locationsDisposition => _locationsDisposition;
+  LocationsDisposition _locationsDisposition;
+  EditorDisposition get editorDisposition => _editorDisposition;
+  EditorDisposition _editorDisposition;
+
+  static Future<RootDisposition> load(SaveFile saveFile) async {
+    final RootDisposition result = RootDisposition(saveFile);
+    await saveFile.load(result);
+    return result;
   }
 
   @override
@@ -26,37 +34,38 @@ class RootDisposition extends saver.JsonEncodable {
       'server': serverDisposition.encode(),
       'things': thingsDisposition.encode(), 
       'locations': locationsDisposition.encode(),
+      'editor': editorDisposition.encode(),
     };
   }
 
   void didChange() {
-    saver.save('state.json', this);
+    saveFile.save(this);
   }
 
   @override
   void decode(Object object) {
     assert(object is Map<String, Object>);
     final Map<String, Object> map = object as Map<String, Object>;
-    serverDisposition.decode(map['server']);
-    thingsDisposition.decode(map['things']);
-    locationsDisposition.decode(map['locations']);
+    serverDisposition.decode(map['server'] as Map<String, Object>);
+    thingsDisposition.decode(map['things'] as List<Object>);
+    locationsDisposition.decode(map['locations'] as List<Object>);
+    editorDisposition.decode(map['editor'] as Map<String, Object>);
   }
-
-  final ServerDisposition serverDisposition = ServerDisposition();
-  final ThingsDisposition thingsDisposition = ThingsDisposition();
-  final LocationsDisposition locationsDisposition = LocationsDisposition();
-  final EditorDisposition editorDisposition = EditorDisposition();
 }
 
-class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
-  ServerDisposition();
+abstract class ChildDisposition extends ChangeNotifier {
+  ChildDisposition(this.parent);
 
-  RootDisposition parent;
+  final RootDisposition parent;
 
   @override void notifyListeners() {
     super.notifyListeners();
     parent.didChange();
   }
+}
+
+class ServerDisposition extends ChildDisposition {
+  ServerDisposition(RootDisposition parent) : super(parent);
 
   String get server => _server;
   String _server = 'ws://damowmow.com:10000';
@@ -66,22 +75,6 @@ class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
     }
     _server = value;
     notifyListeners();
-  }
-
-  @override
-  Map<String, String> encode() {
-    return <String, String>{'server': server, 'username': username, 'password': password};
-  }
-  
-  @override
-  void decode(Object object) {
-    assert(object is Map<String, Object>);
-    final Map<String, Object> map = object as Map<String, Object>;
-    assert(map['server'] is String);
-    assert(map['username'] is String);
-    assert(map['password'] is String);
-    server = map['server'] as String;
-    setLoginData(map['username'] as String, map['password'] as String);
   }
 
   String get username => _username;
@@ -112,39 +105,37 @@ class ServerDisposition extends ChangeNotifier implements saver.JsonEncodable {
     notifyListeners();
   }
 
+  Map<String, String> encode() {
+    return <String, String>{'server': server, 'username': username, 'password': password};
+  }
+  
+  void decode(Map<String, Object> object) {
+    assert(object['server'] is String);
+    assert(object['username'] is String);
+    assert(object['password'] is String);
+    _server = object['server'] as String;
+    _username = object['username'] as String;
+    _password = object['password'] as String;
+    notifyListeners();
+  }
+
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-abstract class AtomDisposition<T extends Atom> extends ChangeNotifier implements saver.JsonEncodable {
-
-  RootDisposition parent;
-
-  @override void notifyListeners() {
-    super.notifyListeners();
-    parent.didChange();
-  }
+abstract class AtomDisposition<T extends Atom> extends ChildDisposition implements AtomParent {
+  AtomDisposition(RootDisposition parent) : super(parent);
 
   Set<T> get atoms => _atoms.toSet();
   final Set<T> _atoms = <T>{};
 
-  @override
-  List<Map<String, Object>> encode() {
-    return atoms.map((T e) => e.encode()).toList();
-  }
-
+  @protected
   T newAtom();
 
-  @override
-  void decode(Object object) {
-    assert(object is List<Object>);
-    _atoms..clear()..addAll((object as List<Object>).map((Object e) => newAtom()..decode(e)));
+  T add() {
+    final T result = newAtom();
+    _atoms.add(result);
     notifyListeners();
-  }
-
-  void add(T atom) {
-    assert(!_atoms.contains(atom));
-    _atoms.add(atom);
-    notifyListeners();
+    return result;
   }
 
   void remove(T atom) {
@@ -152,24 +143,42 @@ abstract class AtomDisposition<T extends Atom> extends ChangeNotifier implements
     _atoms.remove(atom);
     notifyListeners();
   }
+
+  List<Object> encode() {
+    return atoms.map((T atom) => atom.encode()).toList();
+  }
+
+  void decode(List<Object> object) {
+    _atoms..clear()..addAll(object.map((Object atom) => newAtom()..decode(atom as Map<String, Object>)));
+    notifyListeners();
+  }
+
+  @override
+  void didChange() {
+    parent.didChange();
+  }
 }
 
 class ThingsDisposition extends AtomDisposition<Thing> {
+  ThingsDisposition(RootDisposition parent) : super(parent);
+
   @override
-  Thing newAtom() => Thing();
+  Thing newAtom() => Thing(this);
 
   static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
 }
 
 class LocationsDisposition extends AtomDisposition<Location> {
+  LocationsDisposition(RootDisposition parent) : super(parent);
+
   @override
-  Location newAtom() => Location();
+  Location newAtom() => Location(this);
 
   static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
 }
 
-class EditorDisposition extends ChangeNotifier {
-  RootDisposition parent;
+class EditorDisposition extends ChildDisposition {
+  EditorDisposition(RootDisposition parent) : super(parent);
 
   @override void notifyListeners() {
     super.notifyListeners();
@@ -183,6 +192,16 @@ class EditorDisposition extends ChangeNotifier {
       return;
     _current = value;
     notifyListeners();
+  }
+
+  Map<String, Object> encode() {
+    return <String, Object>{
+      // TODO(ianh): save current
+    };
+  }
+  
+  void decode(Map<Object, Object> object) {
+    // TODO(ianh): restore current
   }
 
   static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);

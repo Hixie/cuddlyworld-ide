@@ -1,36 +1,88 @@
 import 'package:flutter/foundation.dart';
-import 'saver.dart';
 
-abstract class Atom extends ChangeNotifier implements JsonEncodable{
-  String get kindDescription;
+abstract class AtomParent {
+  void didChange();
+}
 
-  final ValueNotifier<String> name = ValueNotifier<String>(null);
-
-  @override
-  Map<String, Object> encode() {
-    return <String, Object>{'name': name.value};
+abstract class Atom extends ChangeNotifier {
+  Atom(this.parent) {
+    name.addListener(notifyListeners);
   }
 
-  @override
-  void decode(Object object) {
-    assert(object is Map<String, Object>);
-    assert((object as Map<String, Object>)['name'] is String);
-    name.value = (object as Map<String, Object>)['name'] as String;
+  final AtomParent parent;
+
+  String get kindDescription;
+  String get kindCode;
+
+  final ValueNotifier<String> name = ValueNotifier<String>('');
+
+  String get className => _className;
+  String _className = '';
+  set className(String value) {
+    if (value == _className)
+      return;
+    _className = value;
+    notifyListeners();
+  }
+
+  String operator [](String name) => _properties[name];
+  final Map<String, String> _properties = <String, String>{};
+  void operator []=(String name, String value) {
+    if (_properties[name] == value)
+      return;
+    _properties[name] = value;
+    notifyListeners();
+  }
+
+  Map<String, Object> encode() {
+    return <String, Object>{
+      'name': name.value,
+      'className': className,
+      for (String name in _properties.keys)
+        '.$name': _properties[name],
+    };
+  }
+
+  void decode(Map<String, Object> object) {
+    name.value = object['name'] as String;
+    _className = object['className'] as String;
+    for (final String property in object.keys) {
+      if (property.startsWith('.'))
+        _properties[property.substring(1)] = object[property] as String;
+    }
+    notifyListeners();
+  }
+
+  @override void notifyListeners() {
+    super.notifyListeners();
+    parent.didChange();
   }
 
   @override
   void dispose() {
-    name.dispose();
+    name
+      ..removeListener(notifyListeners)
+      ..dispose();
     super.dispose();
   }
 }
 
 class Thing extends Atom {
+  Thing(AtomParent parent): super(parent);
+
   @override
   String get kindDescription => 'Thing';
+
+  @override
+  String get kindCode => 'things';
 }
 
 class Location extends Atom {
+  Location(AtomParent parent): super(parent);
+
   @override
   String get kindDescription => 'Location';
+
+  @override
+  String get kindCode => 'locations';
 }

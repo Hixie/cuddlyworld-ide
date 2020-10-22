@@ -42,20 +42,20 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
   
   Widget get _currentFloatingActionButton {
-    switch(CatalogTab.values[_tabController.index]) {
+    switch (CatalogTab.values[_tabController.index]) {
       case CatalogTab.console:
         return null;
       case CatalogTab.locations:
         return FloatingActionButton(
           onPressed: () {
-            LocationsDisposition.of(context).add(Location());
+            EditorDisposition.of(context).current = LocationsDisposition.of(context).add();
           },
           child: const Icon(Icons.add),
         );
       case CatalogTab.items:
         return FloatingActionButton(
           onPressed: () {
-            ThingsDisposition.of(context).add(Thing());
+            EditorDisposition.of(context).current = ThingsDisposition.of(context).add();
           },
           child: const Icon(Icons.add),
         );
@@ -231,7 +231,10 @@ class _DraggableTextState extends State<DraggableText> {
       },
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(widget.atom.name.value ?? 'UNNAMED'),
+        child: Text(
+          widget.atom.name.value.isEmpty ? '<unnamed>' : widget.atom.name.value,
+          style: widget.atom.name.value.isEmpty ? const TextStyle(fontStyle: FontStyle.italic) : null,
+        ),
       ),
     );
   }

@@ -9,9 +9,11 @@ import 'console.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 import 'editor.dart';
+import 'saver.dart';
 
 Future<void> main() async {
-  final RootDisposition rootDisposition = await RootDisposition.load('state.json');
+  final SaveFile saveFile = SaveFile('state.json');
+  final RootDisposition rootDisposition = await RootDisposition.load(saveFile);
   runApp(
     Dispositions.withRoot(
       rootDisposition: rootDisposition,

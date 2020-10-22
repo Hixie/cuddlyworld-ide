@@ -6,11 +6,17 @@ abstract class JsonEncodable {
   void decode(Object object);
 }
 
-Future<void> save(String file, JsonEncodable encoder) async {
-  await File(file).writeAsString(json.encode(encoder.encode()));
-}
+class SaveFile {
+  SaveFile(String filename) : _file = File(filename);
 
-Future<void> load(String file, JsonEncodable decoder) async {
-  if(await File(file).exists())
-    decoder.decode(json.decode(await File(file).readAsString()));
+  final File _file;
+
+  Future<void> save(JsonEncodable root) async {
+    await _file.writeAsString(json.encode(root.encode()));
+  }
+
+  Future<void> load(JsonEncodable root) async {
+    if (await _file.exists())
+      root.decode(json.decode(await _file.readAsString()));
+  }
 }

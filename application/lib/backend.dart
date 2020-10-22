@@ -10,6 +10,18 @@ class _PendingMessage {
   final Completer<String> completer;
 }
 
+class CuddlyWorldException implements Exception {
+  const CuddlyWorldException(this.message, this.response);
+  final String message;
+  final String response; // raw data from server for debugging purposes
+  @override
+  String toString() => '$message\nRaw response:\n$response';
+}
+
+class ConnectionLostException implements Exception {
+  const ConnectionLostException();
+}
+
 typedef LogCallback = void Function(String message);
 
 class CuddlyWorld extends ChangeNotifier {
@@ -19,7 +31,6 @@ class CuddlyWorld extends ChangeNotifier {
     @required this.url,
     this.onLog,
   }) {
-    _log('connecting to $url...');
     _controller.add(null);
     _loop();
   }
@@ -39,48 +50,89 @@ class CuddlyWorld extends ChangeNotifier {
   final StreamController<_PendingMessage> _controller = StreamController<_PendingMessage>();
   final Queue<Completer<String>> _pendingResponses = Queue<Completer<String>>();
 
+  final Map<String, List<String>> _classesCache = <String, List<String>>{};
+  final Map<String, Map<String, String>> _propertiesCache = <String, Map<String, String>>{};
+
   Future<void> _loop() async {
-    WebSocket socket;
+    WebSocket socket, oldSocket;
     StringBuffer currentResponse;
+    void disconnect() {
+      if (socket != null)
+        _log('Disconnected.');
+      oldSocket = socket;
+      socket = null;
+      _classesCache.clear();
+      _propertiesCache.clear();
+      while (_pendingResponses.isNotEmpty)
+        _pendingResponses.removeFirst().completeError(const ConnectionLostException());
+      currentResponse = null;
+      notifyListeners();
+    }
+    Timer _autoLogout;
     await for (final _PendingMessage message in _controller.stream) {
-      socket ??= await WebSocket.connect(url)
-        ..add('$username $password')
-        ..listen(
-            (Object response) {
-              if (response is String) {
-                _outputController.add(response);
-                if (response.startsWith('\x01> ')) {
-                  assert(currentResponse == null);
-                  assert(_pendingResponses.isNotEmpty);
-                  currentResponse = StringBuffer();
-                  // TODO(ianh): could check that the echo is what we expect, too
-                } else if (currentResponse != null) {
-                  if (response != '\x02') {
-                    currentResponse.writeln(response);
-                  } else {
-                    _pendingResponses.removeFirst().complete(currentResponse.toString());
-                    currentResponse = null;
+      _autoLogout?.cancel();
+      if (oldSocket != null) {
+        await oldSocket.close().timeout(const Duration(seconds: 1)).catchError((Object error) { });
+        oldSocket = null;
+      }
+      Duration delay = const Duration(seconds: 2);
+      while (socket == null) {
+        try {
+          assert(_pendingResponses.isEmpty);
+          _log('Connecting to $url...');
+          socket = await WebSocket.connect(url);
+          socket
+            ..add('$username $password')
+            ..listen(
+                (Object response) {
+                  if (response is String) {
+                    _outputController.add(response);
+                    if (response.startsWith('\x01> ')) {
+                      assert(currentResponse == null);
+                      assert(_pendingResponses.isNotEmpty);
+                      currentResponse = StringBuffer();
+                      // TODO(ianh): could check that the echo is what we expect, too
+                    } else if (currentResponse != null) {
+                      if (response != '\x02') {
+                        currentResponse.writeln(response);
+                      } else {
+                        _pendingResponses.removeFirst().complete(currentResponse.toString());
+                        currentResponse = null;
+                      }
+                    }
                   }
+                },
+                onDone: () {
+                  disconnect();
+                },
+                onError: (Object error) async {
+                  _log('error: $error');
+                  await socket?.close();
+                  disconnect();
                 }
-              }
-            },
-            onDone: () {
-              _log('Disconnected.');
-              socket = null;
-            },
-            onError: (Object error) async {
-              _log('error: $error');
-              await socket?.close();
-              socket = null;
-              while (_pendingResponses.isNotEmpty)
-                _pendingResponses.removeFirst().completeError(error);
-              currentResponse = null;
-            }
-          );
+              );
+        } on SocketException catch (error) {
+          // catches errors on connect
+          String message = error.message;
+          if (message.isEmpty)
+            message = error.osError.message;
+          if (message.isEmpty)
+            message = 'error ${error.osError.errorCode}';
+          _log(message);
+          assert(_pendingResponses.isEmpty);
+          await Future<void>.delayed(delay);
+          if (delay < const Duration(seconds: 60))
+            delay *= 2;
+        }
+      }
       if (message != null) {
         socket.add(message.message);
         _pendingResponses.add(message.completer);
       }
+      _autoLogout = Timer(const Duration(seconds: 20), () {
+        _autoLogout = null;
+        disconnect();
+      });
     }
     await socket?.close();
   }
@@ -89,6 +141,43 @@ class CuddlyWorld extends ChangeNotifier {
     final _PendingMessage pendingMessage = _PendingMessage(message, Completer<String>());
     _controller.add(pendingMessage);
     return pendingMessage.completer.future;
+  }
+
+  Future<List<String>> fetchClassesOf(String kindCode) async {
+    if (_classesCache.containsKey(kindCode))
+      return _classesCache[kindCode];
+    final String rawResult = await sendMessage('debug classes of $kindCode');
+    final List<String> lines = rawResult.split('\n');
+    if (lines.isEmpty || lines.first != 'The following classes are known:' || lines.last != '')
+      throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $kindCode from server.', rawResult);
+    lines
+      ..removeAt(0)
+      ..removeLast();
+    return _classesCache[kindCode] = lines.map<String>((String line) {
+      if (!line.startsWith(' - '))
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $kindCode from server; did not recognize "$line".', rawResult);
+      return line.substring(3);
+    }).toList();
+  }
+
+  Future<Map<String, String>> fetchPropertiesOf(String className) async {
+    if (_propertiesCache.containsKey(className))
+      return _propertiesCache[className];
+    final String rawResult = await sendMessage('debug describe class $className');
+    final List<String> lines = rawResult.split('\n');
+    if (lines.isEmpty || lines.first != 'Properties available on $className:' || lines.last != '')
+      throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server.', rawResult);
+    lines
+      ..removeAt(0)
+      ..removeLast();
+    final Map<String, String> properties = <String, String>{};
+    for (final String line in lines) {
+      if (!line.startsWith(' - ') || !line.contains(': '))
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server; did not recognize "$line".', rawResult);
+      final int splitPosition = line.indexOf(': ');
+      properties[line.substring(3, splitPosition)] = line.substring(splitPosition + 2);
+    }
+    return _propertiesCache[className] = properties;
   }
 
   void _log(String message) {
