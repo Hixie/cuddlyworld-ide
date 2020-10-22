@@ -44,6 +44,7 @@ abstract class Atom extends ChangeNotifier {
   }
 
   void decode(Map<String, Object> object) {
+    assert(!object.values.any((Object value) => value is! String));
     name.value = object['name'] as String;
     _className = object['className'] as String;
     for (final String property in object.keys) {

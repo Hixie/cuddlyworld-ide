@@ -58,12 +58,22 @@ class _EditorState extends State<Editor> {
     }
   }
 
+  String _prettyName(String property) {
+    switch (property) {
+      case 'name': return 'Name';
+      case 'pattern': return 'Pattern';
+      case 'description': return 'Description';
+      case 'underDescription': return 'Description (under)';
+      default: return property;
+    }
+  }
+
   Widget _addField(String property, String propertyType) {
     switch (propertyType) {
       case 'class:TThing':
         return ClassesField(
           key: ValueKey<String>(property),
-          label: property,
+          label: _prettyName(property),
           kind: 'things',
           value: widget.atom[property],
           game: widget.game,
@@ -72,7 +82,7 @@ class _EditorState extends State<Editor> {
       case 'class:TLocation':
         return ClassesField(
           key: ValueKey<String>(property),
-          label: property,
+          label: _prettyName(property),
           kind: 'things',
           value: widget.atom[property],
           game: widget.game,
@@ -81,14 +91,14 @@ class _EditorState extends State<Editor> {
       case 'string':
         return StringField(
           key: ValueKey<String>(property),
-          label: property,
+          label: _prettyName(property),
           value: widget.atom[property],
           onChanged: (String value) { widget.atom[property] = value; },
         );
       default:
         return StringField(
           key: ValueKey<String>(property),
-          label: '$property ($propertyType)',
+          label: '${_prettyName(property)} ($propertyType)',
           value: widget.atom[property],
           onChanged: (String value) { widget.atom[property] = value; },
         );
@@ -103,7 +113,7 @@ class _EditorState extends State<Editor> {
           children: <Widget>[
             Text(widget.atom.kindDescription, style: Theme.of(context).textTheme.headline4),
             StringField(
-              label: 'Name',
+              label: 'Identifier',
               value: widget.atom.name.value,
               onChanged: (String value) { widget.atom.name.value = value; },
             ),
@@ -121,6 +131,35 @@ class _EditorState extends State<Editor> {
       ),
     );
   }
+}
+
+Widget _makeEditor(String label, FocusNode focusNode, Widget field) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          SizedBox(
+            width: 120.0,
+            child: InkWell(
+              onTap: () {
+                focusNode.requestFocus();
+              },
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text('$label:', textAlign: TextAlign.right),
+              ),
+            ),
+          ),
+          const SizedBox(
+            width: 8.0,
+          ),
+          field,
+        ],
+      ),
+    ),
+  );
 }
 
 class StringField extends StatefulWidget {
@@ -166,39 +205,17 @@ class _StringFieldState extends State<StringField> {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SizedBox(
-            width: 120.0,
-            child: InkWell(
-              onTap: () {
-                _focusNode.requestFocus();
-              },
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text('${widget.label}:'),
-              ),
-            ),
-          ),
-          const SizedBox(
-            width: 8.0,
-          ),
-          Expanded(
-            child: TextField(
-              focusNode: _focusNode,
-              controller: _controller,
-              decoration: const InputDecoration(
-                filled: true,
-                border: InputBorder.none,
-              ),
-              onChanged: widget.onChanged,
-            ),
-          ),
-        ],
+    return _makeEditor(widget.label, _focusNode, Expanded(
+      child: TextField(
+        focusNode: _focusNode,
+        controller: _controller,
+        decoration: const InputDecoration(
+          filled: true,
+          border: InputBorder.none,
+        ),
+        onChanged: widget.onChanged,
       ),
-    );
+    ));
   }
 }
 
@@ -262,36 +279,14 @@ class _ClassesFieldState extends State<ClassesField> {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SizedBox(
-            width: 120.0,
-            child: InkWell(
-              onTap: () {
-                _focusNode.requestFocus();
-              },
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text('${widget.label}:'),
-              ),
-            ),
-          ),
-          const SizedBox(
-            width: 8.0,
-          ),
-          DropdownButton<String>(
-            items: _classes.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            )).toList(),
-            value: _classes.contains(widget.value) ? widget.value : null,
-            focusNode: _focusNode,
-            onChanged: widget.onChanged,
-          ),
-        ],
-      ),
-    );
+    return _makeEditor(widget.label, _focusNode, DropdownButton<String>(
+      items: _classes.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
+        value: value,
+        child: Text(value),
+      )).toList(),
+      value: _classes.contains(widget.value) ? widget.value : null,
+      focusNode: _focusNode,
+      onChanged: widget.onChanged,
+    ));
   }
 }

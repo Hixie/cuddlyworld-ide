@@ -46,9 +46,13 @@ class RootDisposition implements JsonEncodable {
   void decode(Object object) {
     assert(object is Map<String, Object>);
     final Map<String, Object> map = object as Map<String, Object>;
+    assert(map['server'] is Map<String, Object>);
     serverDisposition.decode(map['server'] as Map<String, Object>);
+    assert(map['things'] is List<Object>);
     thingsDisposition.decode(map['things'] as List<Object>);
+    assert(map['locations'] is List<Object>);
     locationsDisposition.decode(map['locations'] as List<Object>);
+    assert(map['editor'] is Map<String, Object>);
     editorDisposition.decode(map['editor'] as Map<String, Object>);
   }
 }
@@ -126,7 +130,7 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
   AtomDisposition(RootDisposition parent) : super(parent);
 
   Set<T> get atoms => _atoms.toSet();
-  final Set<T> _atoms = <T>{};
+  Set<T> _atoms = <T>{};
 
   @protected
   T newAtom();
@@ -149,7 +153,11 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
   }
 
   void decode(List<Object> object) {
-    _atoms..clear()..addAll(object.map((Object atom) => newAtom()..decode(atom as Map<String, Object>)));
+    _atoms = object.map<T>((Object atom) {
+      assert(atom is Map<String, Object>);
+      return newAtom()
+        ..decode(atom as Map<String, Object>);
+    }).toSet();
     notifyListeners();
   }
 
@@ -200,7 +208,7 @@ class EditorDisposition extends ChildDisposition {
     };
   }
   
-  void decode(Map<Object, Object> object) {
+  void decode(Map<String, Object> object) {
     // TODO(ianh): restore current
   }
 
