@@ -69,21 +69,15 @@ class _EditorState extends State<Editor> {
   }
 
   Widget _addField(String property, String propertyType) {
-    switch (propertyType) {
-      case 'class:TThing':
+    final List<String> parts = propertyType.split(':');
+    assert(parts.isNotEmpty);
+    assert(parts.length <= 2);
+    switch (parts[0]) {
+      case 'class':
         return ClassesField(
           key: ValueKey<String>(property),
           label: _prettyName(property),
-          kind: 'things',
-          value: widget.atom[property],
-          game: widget.game,
-          onChanged: (String value) { widget.atom[property] = value; },
-        );
-      case 'class:TLocation':
-        return ClassesField(
-          key: ValueKey<String>(property),
-          label: _prettyName(property),
-          kind: 'things',
+          rootClass: parts[1],
           value: widget.atom[property],
           game: widget.game,
           onChanged: (String value) { widget.atom[property] = value; },
@@ -119,7 +113,7 @@ class _EditorState extends State<Editor> {
             ),
             ClassesField(
               label: 'Class',
-              kind: widget.atom.kindCode,
+              rootClass: widget.atom.rootClass,
               value: widget.atom.className,
               game: widget.game,
               onChanged: (String value) { widget.atom.className = value; },
@@ -223,14 +217,14 @@ class ClassesField extends StatefulWidget {
   const ClassesField({
     Key key,
     @required this.game,
-    @required this.kind,
+    @required this.rootClass,
     @required this.label,
     @required this.value,
     this.onChanged,
   }): super(key: key);
 
   final CuddlyWorld game;
-  final String kind;
+  final String rootClass;
   final String label;
   final String value;
   final ValueSetter<String> onChanged;
@@ -253,10 +247,10 @@ class _ClassesFieldState extends State<ClassesField> {
   }
 
   void _updateClasses() async {
-    final List<String> result = await widget.game.fetchClassesOf(widget.kind);
+    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
     if (!mounted)
       return;
-    setState(() { _classes = result; });
+    setState(() { _classes = result..sort(); });
   }
 
   @override
@@ -265,7 +259,7 @@ class _ClassesFieldState extends State<ClassesField> {
     if (oldWidget.game != widget.game) {
       oldWidget.game.removeListener(_updateClasses);
       widget.game.addListener(_updateClasses);
-    } else if (oldWidget.kind != widget.kind) {
+    } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
     }
   }

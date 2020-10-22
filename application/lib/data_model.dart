@@ -12,7 +12,7 @@ abstract class Atom extends ChangeNotifier {
   final AtomParent parent;
 
   String get kindDescription;
-  String get kindCode;
+  String get rootClass;
 
   final ValueNotifier<String> name = ValueNotifier<String>('');
 
@@ -75,7 +75,7 @@ class Thing extends Atom {
   String get kindDescription => 'Thing';
 
   @override
-  String get kindCode => 'things';
+  String get rootClass => 'TThing';
 }
 
 class Location extends Atom {
@@ -85,5 +85,5 @@ class Location extends Atom {
   String get kindDescription => 'Location';
 
   @override
-  String get kindCode => 'locations';
+  String get rootClass => 'TLocation';
 }
