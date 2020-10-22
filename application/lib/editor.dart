@@ -113,6 +113,8 @@ class _EditorState extends State<Editor> {
           value: widget.atom[property],
           onChanged: (String value) { widget.atom[property] = value; },
         );
+      case 'enum':
+        
       default:
         return StringField(
           key: ValueKey<String>(property),
@@ -303,6 +305,78 @@ class _ClassesFieldState extends State<ClassesField> {
         child: Text(value),
       )).toList(),
       value: _classes.contains(widget.value) ? widget.value : null,
+      focusNode: _focusNode,
+      onChanged: widget.onChanged,
+    ));
+  }
+}
+
+class DropdownField extends StatefulWidget {
+  const DropdownField({
+    Key key,
+    @required this.game,
+    @required this.rootClass,
+    @required this.label,
+    @required this.value,
+    this.onChanged,
+  }): super(key: key);
+
+  final CuddlyWorld game;
+  final String rootClass;
+  final String label;
+  final String value;
+  final ValueSetter<String> onChanged;
+
+  @override
+  State<DropdownField> createState() => _DropdownFieldState();
+}
+
+class _DropdownFieldState extends State<DropdownField> {
+  FocusNode _focusNode;
+
+  List<String> _enumValues = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _updateEnumValues();
+    widget.game.addListener(_updateEnumValues);
+  }
+
+  void _updateEnumValues() async {
+    final List<String> result = await widget.game.fetchEnumValuesOf(widget.rootClass);
+    if (!mounted)
+      return;
+    setState(() { _enumValues = result..sort(); });
+  }
+
+  @override
+  void didUpdateWidget(DropdownField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.game != widget.game) {
+      oldWidget.game.removeListener(_updateEnumValues);
+      widget.game.addListener(_updateEnumValues);
+    } else if (oldWidget.rootClass != widget.rootClass) {
+      _updateEnumValues();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.game.removeListener(_updateEnumValues);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _makeEditor(widget.label, _focusNode, DropdownButton<String>(
+      items: _enumValues.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
+        value: value,
+        child: Text(value),
+      )).toList(),
+      value: _enumValues.contains(widget.value) ? widget.value : null,
       focusNode: _focusNode,
       onChanged: widget.onChanged,
     ));
