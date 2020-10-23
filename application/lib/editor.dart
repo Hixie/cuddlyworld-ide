@@ -175,7 +175,7 @@ Widget _makeEditor(String label, FocusNode focusNode, Widget field) {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           SizedBox(
-            width: 120.0,
+            width: 200.0,
             child: InkWell(
               onTap: () {
                 focusNode.requestFocus();
@@ -313,6 +313,8 @@ class _ClassesFieldState extends State<ClassesField> {
 
   @override
   Widget build(BuildContext context) {
+    if (_classes.isEmpty)
+      return _makeEditor(widget.label, _focusNode, const Text('...', style: TextStyle(fontStyle: FontStyle.italic)));
     return _makeEditor(widget.label, _focusNode, DropdownButton<String>(
       items: _classes.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
         value: value,
@@ -362,7 +364,7 @@ class _DropdownFieldState extends State<DropdownField> {
     final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
     if (!mounted)
       return;
-    setState(() { _enumValues = result..sort(); });
+    setState(() { _enumValues = result; });
   }
 
   @override
@@ -385,6 +387,8 @@ class _DropdownFieldState extends State<DropdownField> {
 
   @override
   Widget build(BuildContext context) {
+    if (_enumValues.isEmpty)
+      return _makeEditor(widget.label, _focusNode, const Text('...', style: TextStyle(fontStyle: FontStyle.italic)));
     return _makeEditor(widget.label, _focusNode, DropdownButton<String>(
       items: _enumValues.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
         value: value,
@@ -404,6 +408,7 @@ class CheckboxField extends StatefulWidget {
     @required this.value,
     this.onChanged,
   }): super(key: key);
+
   final String label;
   final bool value;
   final ValueSetter<String> onChanged;
@@ -429,6 +434,6 @@ class _CheckboxFieldState extends State<CheckboxField> {
 
   @override
   Widget build(BuildContext context) {
-    return _makeEditor(widget.label, _focusNode, Checkbox(value: widget.value, onChanged: (bool b) => widget.onChanged(b.toString())));
+    return _makeEditor(widget.label, _focusNode, Checkbox(value: widget.value, onChanged: (bool value) => widget.onChanged('$value')));
   }
 }
