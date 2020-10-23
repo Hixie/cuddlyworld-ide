@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'data_model.dart';
 import 'saver.dart';
 
-class RootDisposition implements JsonEncodable {
+class RootDisposition extends ChangeNotifier implements JsonEncodable {
   RootDisposition(this.saveFile) {
     _serverDisposition = ServerDisposition(this);
     _thingsDisposition = ThingsDisposition(this);
@@ -42,6 +42,16 @@ class RootDisposition implements JsonEncodable {
     saveFile.save(this);
   }
 
+  Atom lookupAtom(String identifier) {
+    final List<Atom> matches = <Atom>[
+      ...thingsDisposition.atoms.where((Atom atom) => atom.name.value == identifier),
+      ...locationsDisposition.atoms.where((Atom atom) => atom.name.value == identifier),
+    ];
+    if (matches.length != 1)
+      return null;
+    return matches.single;
+  }
+
   @override
   void decode(Object object) {
     assert(object is Map<String, Object>);
@@ -54,6 +64,8 @@ class RootDisposition implements JsonEncodable {
     locationsDisposition.decode(map['locations'] as List<Object>);
     assert(map['editor'] is Map<String, Object>);
     editorDisposition.decode(map['editor'] as Map<String, Object>);
+    thingsDisposition.resolveIdentifiers(lookupAtom);
+    locationsDisposition.resolveIdentifiers(lookupAtom);
   }
 }
 
@@ -161,6 +173,11 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
     notifyListeners();
   }
 
+  void resolveIdentifiers(AtomLookupCallback lookupCallback) {
+    for (final T atom in atoms)
+      atom.resolveIdentifiers(lookupCallback);
+  }
+
   @override
   void didChange() {
     parent.didChange();
@@ -227,6 +244,7 @@ class _Disposition<T extends Listenable> extends InheritedNotifier<T> {
 class Dispositions extends StatelessWidget {
   const Dispositions({
     Key key,
+    @required this.rootDisposition,
     @required this.serverDisposition,
     @required this.thingsDisposition,
     @required this.locationsDisposition,
@@ -236,7 +254,7 @@ class Dispositions extends StatelessWidget {
 
   Dispositions.withRoot({
     Key key,
-    @required RootDisposition rootDisposition,
+    @required this.rootDisposition,
     @required this.child,
   }) : serverDisposition = rootDisposition.serverDisposition,
        thingsDisposition = rootDisposition.thingsDisposition,
@@ -244,6 +262,7 @@ class Dispositions extends StatelessWidget {
        editorDisposition = rootDisposition.editorDisposition,
        super(key: key);
 
+  final RootDisposition rootDisposition;
   final ServerDisposition serverDisposition;
   final ThingsDisposition thingsDisposition;
   final LocationsDisposition locationsDisposition;
@@ -253,15 +272,18 @@ class Dispositions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Disposition<ServerDisposition>(
-      disposition: serverDisposition,
-      child: _Disposition<ThingsDisposition>(
-        disposition: thingsDisposition,
-        child: _Disposition<LocationsDisposition>(
-          disposition: locationsDisposition,
-          child: _Disposition<EditorDisposition>(
-            disposition: editorDisposition,
-            child: child,
+    return _Disposition<RootDisposition>(
+      disposition: rootDisposition,
+      child: _Disposition<ServerDisposition>(
+        disposition: serverDisposition,
+        child: _Disposition<ThingsDisposition>(
+          disposition: thingsDisposition,
+          child: _Disposition<LocationsDisposition>(
+            disposition: locationsDisposition,
+            child: _Disposition<EditorDisposition>(
+              disposition: editorDisposition,
+              child: child,
+            ),
           ),
         ),
       ),

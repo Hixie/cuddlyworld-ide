@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
+import 'atom_widget.dart';
 import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';
@@ -126,7 +127,7 @@ class _MainScreenState extends State<MainScreen> {
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: 350.0,
+              width: kCatalogWidth,
               child: Catalog(
                 initialTab: _mode,
                 onTabSwitch: (CatalogTab tab) {

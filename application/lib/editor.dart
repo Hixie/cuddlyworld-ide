@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'atom_widget.dart';
 import 'backend.dart';
 import 'data_model.dart';
 
@@ -97,44 +98,53 @@ class _EditorState extends State<Editor> {
     assert(parts.isNotEmpty);
     assert(parts.length <= 2);
     switch (parts[0]) {
-      case 'class':
-        return ClassesField(
+      case 'atom':
+        return AtomField(
           key: ValueKey<String>(property),
           label: _prettyName(property),
           rootClass: parts[1],
-          value: widget.atom[property],
+          value: widget.atom.ensurePropertyIs<AtomPropertyValue>(property)?.value,
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = value; },
-        );
-      case 'string':
-        return StringField(
-          key: ValueKey<String>(property),
-          label: _prettyName(property),
-          value: widget.atom[property],
-          onChanged: (String value) { widget.atom[property] = value; },
+          onChanged: (Atom value) { widget.atom[property] = value != null ? AtomPropertyValue(value) : null; },
         );
       case 'boolean':
         return CheckboxField(
           key: ValueKey<String>(property),
           label: _prettyName(property),
-          value: widget.atom[property] == 'true',
-          onChanged: (String value) { widget.atom[property] = value; },
+          value: widget.atom.ensurePropertyIs<BooleanPropertyValue>(property)?.value,
+          onChanged: (bool value) { widget.atom[property] = BooleanPropertyValue(value); },
+        );
+      case 'class':
+        return ClassesField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property),
+          rootClass: parts[1],
+          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          game: widget.game,
+          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );
       case 'enum':
         return DropdownField(
           key: ValueKey<String>(property),
           label: _prettyName(property),
           enumName: parts[1],
-          value: widget.atom[property],
+          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = value; },
+          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
+        );
+      case 'string':
+        return StringField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property),
+          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );
       default:
         return StringField(
           key: ValueKey<String>(property),
           label: '${_prettyName(property)} ($propertyType)',
-          value: widget.atom[property],
-          onChanged: (String value) { widget.atom[property] = value; },
+          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );
     }
   }
@@ -411,7 +421,7 @@ class CheckboxField extends StatefulWidget {
 
   final String label;
   final bool value;
-  final ValueSetter<String> onChanged;
+  final ValueSetter<bool> onChanged;
 
   @override
   State<CheckboxField> createState() => _CheckboxFieldState();
@@ -434,6 +444,107 @@ class _CheckboxFieldState extends State<CheckboxField> {
 
   @override
   Widget build(BuildContext context) {
-    return _makeEditor(widget.label, _focusNode, Checkbox(value: widget.value, onChanged: (bool value) => widget.onChanged('$value')));
+    return _makeEditor(widget.label, _focusNode, Checkbox(
+      value: widget.value,
+      tristate: widget.value == null,
+      onChanged: (bool value) => widget.onChanged(value),
+    ));
+  }
+}
+
+class AtomField extends StatefulWidget {
+  const AtomField({
+    Key key,
+    @required this.game,
+    @required this.rootClass,
+    @required this.label,
+    @required this.value,
+    this.onChanged,
+  }): super(key: key);
+
+  final CuddlyWorld game;
+  final String rootClass;
+  final String label;
+  final Atom value;
+  final ValueSetter<Atom> onChanged;
+
+  @override
+  State<AtomField> createState() => _AtomFieldState();
+}
+
+class _AtomFieldState extends State<AtomField> {
+  FocusNode _focusNode;
+
+  List<String> _classes = <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _updateClasses();
+    widget.game.addListener(_updateClasses);
+  }
+
+  void _updateClasses() async {
+    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+    if (!mounted)
+      return;
+    setState(() { _classes = result..sort(); });
+  }
+
+  @override
+  void didUpdateWidget(AtomField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.game != widget.game) {
+      oldWidget.game.removeListener(_updateClasses);
+      widget.game.addListener(_updateClasses);
+    } else if (oldWidget.rootClass != widget.rootClass) {
+      _updateClasses();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.game.removeListener(_updateClasses);
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Widget _pad(Widget child) => Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: child,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return _makeEditor(widget.label, _focusNode, Expanded(
+      child: DragTarget<Atom>(
+        onWillAccept: (Atom atom) => _classes.contains(atom.className),
+        onAccept: (Atom atom) {
+          widget.onChanged(atom);
+        },
+        builder: (BuildContext context, List<Atom> candidateData, List<Object> rejectedData) {
+          return Material(
+            color: const Color(0x0A000000),
+            child: Wrap(
+              children: <Widget>[
+                if (widget.value != null && candidateData.isEmpty)
+                  _pad(AtomWidget(
+                    atom: widget.value,
+                    onDelete: () { widget.onChanged(null); },
+                  )),
+                ...candidateData.map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom))),
+                if (widget.value == null && candidateData.isEmpty)
+                  _pad(const AtomWidget(
+                    elevation: 0.0,
+                    label: SizedBox(width: 64.0, child: Text('')),
+                    color: Color(0x10000000),
+                  )),
+              ],
+            ),
+          );
+        },
+      ),
+    ));
   }
 }

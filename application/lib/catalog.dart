@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'atom_widget.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 
@@ -223,11 +225,19 @@ class _DraggableTextState extends State<DraggableText> {
   @override
   Widget build(BuildContext context) {
     return Draggable<Atom>(
-      feedback: AtomWidget(
-        atom: widget.atom,
+      data: widget.atom,
+      dragAnchor: DragAnchor.pointer,
+      feedback: FractionalTranslation(
+        translation: const Offset(-0.5, -0.5),
+        child: Material(
+          type: MaterialType.transparency,
+          child: AtomWidget(
+            atom: widget.atom,
+          ),
+        ),
       ),
       child: FlatButton(
-        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
+        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null,
         onPressed: () {
           setState(() {
             EditorDisposition.of(context).current = widget.atom;
@@ -238,32 +248,6 @@ class _DraggableTextState extends State<DraggableText> {
           child: Text(
             widget.atom.name.value.isEmpty ? '<unnamed>' : widget.atom.name.value,
             style: widget.atom.name.value.isEmpty ? const TextStyle(fontStyle: FontStyle.italic) : null,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class AtomWidget extends StatelessWidget {
-  const AtomWidget({Key key, @required this.atom}): super(key: key);
-
-  final Atom atom;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      child: Container(
-        width: 350.0,
-        color: atom == EditorDisposition.of(context).current ? Colors.yellow : Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              atom.name.value.isEmpty ? '<unnamed>' : atom.name.value,
-              style: atom.name.value.isEmpty ? const TextStyle(fontStyle: FontStyle.italic) : null,
-            ),
           ),
         ),
       ),
