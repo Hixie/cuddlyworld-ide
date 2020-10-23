@@ -114,7 +114,14 @@ class _EditorState extends State<Editor> {
           onChanged: (String value) { widget.atom[property] = value; },
         );
       case 'enum':
-        
+        return DropdownField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property),
+          enumName: parts[1],
+          value: widget.atom[property],
+          game: widget.game,
+          onChanged: (String value) { widget.atom[property] = value; },
+        );
       default:
         return StringField(
           key: ValueKey<String>(property),
@@ -315,14 +322,14 @@ class DropdownField extends StatefulWidget {
   const DropdownField({
     Key key,
     @required this.game,
-    @required this.rootClass,
+    @required this.enumName,
     @required this.label,
     @required this.value,
     this.onChanged,
   }): super(key: key);
 
   final CuddlyWorld game;
-  final String rootClass;
+  final String enumName;
   final String label;
   final String value;
   final ValueSetter<String> onChanged;
@@ -345,7 +352,7 @@ class _DropdownFieldState extends State<DropdownField> {
   }
 
   void _updateEnumValues() async {
-    final List<String> result = await widget.game.fetchEnumValuesOf(widget.rootClass);
+    final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
     if (!mounted)
       return;
     setState(() { _enumValues = result..sort(); });
@@ -357,7 +364,7 @@ class _DropdownFieldState extends State<DropdownField> {
     if (oldWidget.game != widget.game) {
       oldWidget.game.removeListener(_updateEnumValues);
       widget.game.addListener(_updateEnumValues);
-    } else if (oldWidget.rootClass != widget.rootClass) {
+    } else if (oldWidget.enumName != widget.enumName) {
       _updateEnumValues();
     }
   }
