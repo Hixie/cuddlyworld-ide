@@ -4,6 +4,8 @@ import 'atom_widget.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 
+const double kCatalogWidth = 350.0;
+
 typedef TabSwitchHandler = void Function(CatalogTab newTabState);
 
 class Catalog extends StatefulWidget {
@@ -233,6 +235,7 @@ class _DraggableTextState extends State<DraggableText> {
           type: MaterialType.transparency,
           child: AtomWidget(
             atom: widget.atom,
+            startFromCatalog: true,
           ),
         ),
       ),

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
-import 'atom_widget.dart';
 import 'backend.dart';
 import 'catalog.dart';
 import 'console.dart';

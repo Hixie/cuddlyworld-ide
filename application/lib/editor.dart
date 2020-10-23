@@ -538,7 +538,7 @@ class _AtomFieldState extends State<AtomField> {
                   _pad(const AtomWidget(
                     elevation: 0.0,
                     label: SizedBox(width: 64.0, child: Text('')),
-                    color: Color(0x10000000),
+                    color: Color(0xFFE0E0E0),
                   )),
               ],
             ),
