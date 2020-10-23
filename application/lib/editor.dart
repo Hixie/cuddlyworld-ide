@@ -113,6 +113,13 @@ class _EditorState extends State<Editor> {
           value: widget.atom[property],
           onChanged: (String value) { widget.atom[property] = value; },
         );
+      case 'boolean':
+        return CheckboxField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property),
+          value: widget.atom[property] == 'true',
+          onChanged: (String value) { widget.atom[property] = value; },
+        );
       case 'enum':
         return DropdownField(
           key: ValueKey<String>(property),
@@ -387,5 +394,41 @@ class _DropdownFieldState extends State<DropdownField> {
       focusNode: _focusNode,
       onChanged: widget.onChanged,
     ));
+  }
+}
+
+class CheckboxField extends StatefulWidget {
+  const CheckboxField({
+    Key key,
+    @required this.label,
+    @required this.value,
+    this.onChanged,
+  }): super(key: key);
+  final String label;
+  final bool value;
+  final ValueSetter<String> onChanged;
+
+  @override
+  State<CheckboxField> createState() => _CheckboxFieldState();
+}
+
+class _CheckboxFieldState extends State<CheckboxField> {
+  FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _makeEditor(widget.label, _focusNode, Checkbox(value: widget.value, onChanged: (bool b) => widget.onChanged(b.toString())));
   }
 }
