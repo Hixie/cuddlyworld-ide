@@ -51,6 +51,7 @@ class CuddlyWorld extends ChangeNotifier {
   final Queue<Completer<String>> _pendingResponses = Queue<Completer<String>>();
 
   final Map<String, List<String>> _classesCache = <String, List<String>>{};
+  final Map<String, List<String>> _enumValuesCache = <String, List<String>>{};
   final Map<String, Map<String, String>> _propertiesCache = <String, Map<String, String>>{};
 
   Future<void> _loop() async {
@@ -62,6 +63,7 @@ class CuddlyWorld extends ChangeNotifier {
       oldSocket = socket;
       socket = null;
       _classesCache.clear();
+      _enumValuesCache.clear();
       _propertiesCache.clear();
       while (_pendingResponses.isNotEmpty)
         _pendingResponses.removeFirst().completeError(const ConnectionLostException());
@@ -143,19 +145,36 @@ class CuddlyWorld extends ChangeNotifier {
     return pendingMessage.completer.future;
   }
 
-  Future<List<String>> fetchClassesOf(String kindCode) async {
-    if (_classesCache.containsKey(kindCode))
-      return _classesCache[kindCode];
-    final String rawResult = await sendMessage('debug classes of $kindCode');
+  Future<List<String>> fetchClassesOf(String subclass) async {
+    if (_classesCache.containsKey(subclass))
+      return _classesCache[subclass];
+    final String rawResult = await sendMessage('debug classes of $subclass');
     final List<String> lines = rawResult.split('\n');
     if (lines.isEmpty || lines.first != 'The following classes are known:' || lines.last != '')
-      throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $kindCode from server.', rawResult);
+      throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server.', rawResult);
     lines
       ..removeAt(0)
       ..removeLast();
-    return _classesCache[kindCode] = lines.map<String>((String line) {
+    return _classesCache[subclass] = lines.map<String>((String line) {
       if (!line.startsWith(' - '))
-        throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $kindCode from server; did not recognize "$line".', rawResult);
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server; did not recognize "$line".', rawResult);
+      return line.substring(3);
+    }).toList();
+  }
+
+  Future<List<String>> fetchEnumValuesOf(String enumName) async {
+    if (_enumValuesCache.containsKey(enumName))
+      return _enumValuesCache[enumName];
+    final String rawResult = await sendMessage('debug describe enum $enumName');
+    final List<String> lines = rawResult.split('\n');
+    if (lines.isEmpty || lines.first != 'Enum values available on $enumName:' || lines.last != '')
+      throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server.', rawResult);
+    lines
+      ..removeAt(0)
+      ..removeLast();
+    return _enumValuesCache[enumName] = lines.map<String>((String line) {
+      if (!line.startsWith(' - '))
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server; did not recognize "$line".', rawResult);
       return line.substring(3);
     }).toList();
   }
