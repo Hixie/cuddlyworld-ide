@@ -13,6 +13,12 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     _locationsDisposition = LocationsDisposition(this);
     _editorDisposition = EditorDisposition(this);
   }
+  
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
+  }
 
   final SaveFile saveFile;
   ServerDisposition get serverDisposition => _serverDisposition;
@@ -39,9 +45,16 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       'editor': editorDisposition.encode(),
     };
   }
+  
+  Timer timer;
 
   void didChange() {
-    Timer(const Duration(seconds: 1), () => saveFile.save(this));
+    if(timer != null) {
+      timer = Timer(const Duration(seconds: 1), () {
+        saveFile.save(this);
+        timer = null; 
+      });
+    }
   }
 
   Atom lookupAtom(String identifier) {
