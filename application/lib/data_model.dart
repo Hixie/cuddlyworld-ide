@@ -3,13 +3,11 @@ import 'package:flutter/foundation.dart';
 typedef AtomLookupCallback = Atom Function(String identifier);
 
 String escapeSingleQuotes(String raw) {
-  return raw.replaceAll(r'\', r'\\');
-  return raw.replaceAll(r"'", r"\'");
+  return raw.replaceAll(r'\', r'\\').replaceAll(r"'", r"\'");
 }
 
 String escapeDoubleQuotes(String raw) {
-  return raw.replaceAll(r'\', r'\\');
-  return raw.replaceAll(r'"', r'\"');
+  return raw.replaceAll(r'\', r'\\').replaceAll(r'"', r'\"');
 }
 
 abstract class AtomParent {
