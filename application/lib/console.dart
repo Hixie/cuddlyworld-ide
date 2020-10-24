@@ -30,15 +30,18 @@ class _ConsoleState extends State<Console> {
     super.initState();
     _input = TextEditingController();
     actions = <Type, Action<Intent>>{
-      HistoryUpIntent:CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
+      HistoryUpIntent:
+          CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
         index ??= history.length;
-        index--;
+        if (index > 1) 
+          index--;
         setState(() {
           _input.text = history[index];
         });
         return null;
       }),
-      HistoryDownIntent: CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
+      HistoryDownIntent:
+          CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
         if (index != null && index < history.length - 1) {
           index++;
           setState(() {
@@ -58,9 +61,9 @@ class _ConsoleState extends State<Console> {
 
   void _send() {
     widget.game.sendMessage(_input.text);
+    history.add(_input.text);
     _input.clear();
     index = null;
-    history.add(_input.text);
   }
 
   Widget _buildChip(String command) {
@@ -129,9 +132,6 @@ class _ConsoleState extends State<Console> {
                       border: InputBorder.none,
                       hintText: 'help',
                     ),
-                    onChanged: (String _) {
-                      index = null;
-                    },
                     onEditingComplete: _send,
                   ),
                 ),
