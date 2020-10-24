@@ -17,8 +17,21 @@ abstract class PropertyValue {
     if (object is Map<String, Object>) {
       if (object['type'] == 'atom')
         return AtomPropertyValuePlaceholder(object['identifier'] as String);
+      if (object['type'] == 'child*')
+        assert(object['children'] is List<Object>, 'not a list: $object');
+        assert(!(object['children'] as List<Object>).any((Object child) {
+          return !(child is Map<String, Object> &&
+                   child['position'] is String &&
+                   child['identifier'] is String);
+        }));
+        return ChildrenPropertyValuePlaceholder(
+          (object['children'] as List<Object>).map<PositionedAtomPlaceholder>((Object child) {
+            final Map<String, Object> map = child as Map<String, Object>;
+            return PositionedAtomPlaceholder(map['position'] as String, map['identifier'] as String);
+          }).toList(),
+        );
     }
-    throw FormatException('Unrecognized PropertyValue data', object);
+    throw FormatException('Unrecognized PropertyValue data ($object)', object);
   }
 
   PropertyValue resolve(AtomLookupCallback lookupCallback) => this; // ignore: avoid_returning_this
@@ -66,6 +79,57 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
   PropertyValue resolve(AtomLookupCallback lookupCallback) {
     return AtomPropertyValue(lookupCallback(value));
   }
+}
+
+class ChildrenPropertyValue extends PropertyValue {
+  ChildrenPropertyValue(this.value);
+  
+  final List<PositionedAtom> value;
+  
+  @override
+  Object encode() => <String, Object>{
+    'type': 'child*',
+    'children': value.map<Map<String, Object>>((PositionedAtom entry) => entry.encode()).toList(),
+  };
+}
+
+class ChildrenPropertyValuePlaceholder extends PropertyValue {
+  ChildrenPropertyValuePlaceholder(this.value);
+  
+  final List<PositionedAtomPlaceholder> value;
+
+  @override
+  Object encode() => throw StateError('ChildrenPropertyValuePlaceholder asked to encode');
+
+  @override
+  PropertyValue resolve(AtomLookupCallback lookupCallback) {
+    return ChildrenPropertyValue(value.map<PositionedAtom>((PositionedAtomPlaceholder entry) => entry.resolve(lookupCallback)).toList());
+  }
+}
+
+class PositionedAtom {
+  PositionedAtom(this.position, this.atom);
+  
+  final String position;
+  final Atom atom;
+
+  Map<String, Object> encode() => <String, Object>{
+    'position': position,
+    'identifier': atom.name.value,
+  };
+}
+
+class PositionedAtomPlaceholder {
+  PositionedAtomPlaceholder(this.position, this.identifier);
+
+  final String position;
+  final String identifier;
+
+  PositionedAtom resolve(AtomLookupCallback lookupCallback) {
+    return PositionedAtom(position, lookupCallback(identifier));
+  }
+
+  Object encode() => throw StateError('PositionedAtomPlaceholder asked to encode');
 }
 
 abstract class Atom extends ChangeNotifier {
