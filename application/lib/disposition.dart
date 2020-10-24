@@ -49,10 +49,10 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   void didChange() {
-      _timer ??= Timer(const Duration(seconds: 1), () {
-        saveFile.save(this);
-        _timer = null; 
-      });
+    _timer ??= Timer(const Duration(seconds: 1), () {
+      saveFile.save(this);
+      _timer = null; 
+    });
   }
 
   Atom lookupAtom(String identifier) {
