@@ -120,30 +120,32 @@ class LocationsTab extends AtomTab<Location> {
 }
 
 class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
-  void _handleListUpdate() {
-    setState((){
-      atoms.sort((Atom a, Atom b) => a.name.value.compareTo(b.name.value));
-    });
-  }
+ 
   List<Atom> atoms = <Atom>[];
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    for(final Atom element in atoms) {
-      element.name.removeListener(_handleListUpdate);
+    for (final Atom element in atoms) {
+      element.removeListener(_handleListUpdate);
     }
     atoms = widget.disposition(context).atoms.toList();
     _handleListUpdate();
-    for(final Atom element in atoms) {
-      element.name.addListener(_handleListUpdate);
+    for (final Atom element in atoms) {
+      element.addListener(_handleListUpdate);
     }
+  }
+
+  void _handleListUpdate() {
+    setState((){
+      atoms.sort((Atom a, Atom b) => a.identifier.compareTo(b.identifier));
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    for(final Atom element in atoms) {
-      element.name.removeListener(_handleListUpdate);
+    for (final Atom element in atoms) {
+      element.removeListener(_handleListUpdate);
     }
   }
 
@@ -248,10 +250,7 @@ class _DraggableTextState extends State<DraggableText> {
         },
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-            widget.atom.name.value.isEmpty ? '<unnamed>' : widget.atom.name.value,
-            style: widget.atom.name.value.isEmpty ? const TextStyle(fontStyle: FontStyle.italic) : null,
-          ),
+          child: makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
         ),
       ),
     );

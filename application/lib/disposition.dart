@@ -57,14 +57,24 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   Atom lookupAtom(String identifier) {
     final List<Atom> matches = <Atom>[
-      ...thingsDisposition.atoms.where((Atom atom) => atom.name.value == identifier),
-      ...locationsDisposition.atoms.where((Atom atom) => atom.name.value == identifier),
+      ...thingsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
+      ...locationsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
     ];
-    if (matches.length != 1)
+    if (matches.isEmpty)
       return null;
+    assert(matches.length == 1);
     return matches.single;
   }
 
+  static const String unnamed = 'unnamed';
+
+  Identifier getNewIdentifier([ String name = unnamed ]) {
+    int index = 0;
+    while (lookupAtom('${name}_$index') != null)
+      index += 1;
+    return Identifier(name, index);
+  }
+  
   @override
   void decode(Object object) {
     assert(object is Map<String, Object>);
@@ -80,6 +90,8 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     thingsDisposition.resolveIdentifiers(lookupAtom);
     locationsDisposition.resolveIdentifiers(lookupAtom);
   }
+
+  static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
 }
 
 abstract class ChildDisposition extends ChangeNotifier {
@@ -190,6 +202,9 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
     for (final T atom in atoms)
       atom.resolveIdentifiers(lookupCallback);
   }
+
+  @override
+  Identifier getNewIdentifier() => parent.getNewIdentifier();
 
   @override
   void didChange() {

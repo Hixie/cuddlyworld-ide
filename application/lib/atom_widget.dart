@@ -7,6 +7,35 @@ import 'catalog.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 
+Color _fade(Color color) {
+  final HSVColor hsv = HSVColor.fromColor(color);
+  return hsv.withValue(hsv.value + 0.5).toColor();
+}
+
+Widget makeTextForIdentifier(BuildContext context, Identifier identifier, [ String className = '' ]) {
+  return Text.rich(
+    TextSpan(
+      text: identifier.name,
+      children: <InlineSpan>[
+        if (identifier.disambiguator > 0)
+          TextSpan(
+            text: '_${identifier.disambiguator}',
+            style: TextStyle(
+              color: _fade(DefaultTextStyle.of(context).style.color),
+            ),
+          ),
+        if (className.isNotEmpty)
+          TextSpan(
+            text: ' ($className)',
+            style: const TextStyle(
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
 class AtomWidget extends StatefulWidget {
   const AtomWidget({
     Key key,
@@ -52,7 +81,7 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
     _timer?.cancel();
     super.dispose();
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -72,10 +101,7 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                widget.label ?? Text(
-                  widget.atom.name.value.isEmpty ? '<unnamed>' : widget.atom.name.value,
-                  style: widget.atom.name.value.isEmpty ? const TextStyle(fontStyle: FontStyle.italic) : null,
-                ),
+                widget.label ?? makeTextForIdentifier(context, widget.atom.identifier),
                 if (widget.onDelete != null)
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'atom_widget.dart';
 import 'backend.dart';
 import 'data_model.dart';
+import 'disposition.dart';
 
 class Editor extends StatefulWidget {
   const Editor({ Key key, this.game, this.atom }): super(key: key);
@@ -176,8 +177,9 @@ class _EditorState extends State<Editor> {
             Text(widget.atom.kindDescription, style: Theme.of(context).textTheme.headline4),
             StringField(
               label: 'Identifier',
-              value: widget.atom.name.value,
-              onChanged: (String value) { widget.atom.name.value = value; },
+              value: widget.atom.identifier.name,
+              suffix: '_${widget.atom.identifier.disambiguator}',
+              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(value); },
             ),
             ClassesField(
               label: 'Class',
@@ -276,11 +278,13 @@ class StringField extends StatefulWidget {
     Key key,
     @required this.label,
     @required this.value,
+    this.suffix,
     this.onChanged,
   }): super(key: key);
 
   final String label;
   final String value;
+  final String suffix;
   final ValueSetter<String> onChanged;
 
   @override
@@ -318,9 +322,10 @@ class _StringFieldState extends State<StringField> {
       child: TextField(
         focusNode: _focusNode,
         controller: _controller,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           filled: true,
           border: InputBorder.none,
+          suffix: widget.suffix != null ? Text(widget.suffix) : null,
         ),
         onChanged: widget.onChanged,
       ),

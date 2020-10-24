@@ -4,6 +4,7 @@ typedef AtomLookupCallback = Atom Function(String identifier);
 
 abstract class AtomParent {
   void didChange();
+  Identifier getNewIdentifier();
 }
 
 abstract class PropertyValue {
@@ -80,7 +81,7 @@ class AtomPropertyValue extends PropertyValue {
   @override
   Object encode() => <String, Object>{
     'type': 'atom',
-    'identifier': value.name.value,
+    'identifier': value.identifier.identifier,
   };
 }
 
@@ -158,7 +159,7 @@ class PositionedAtom {
 
   Map<String, Object> encode() => <String, Object>{
     'position': position,
-    'identifier': atom.name.value,
+    'identifier': atom.identifier.identifier,
   };
 }
 
@@ -184,7 +185,7 @@ class Landmark {
 
   Map<String, Object> encode() => <String, Object>{
     'direction': direction,
-    'identifier': atom.name.value,
+    'identifier': atom.identifier.identifier,
     'options': options.toList(),
   };
 }
@@ -203,9 +204,32 @@ class LandmarkPlaceholder {
   Object encode() => throw StateError('LandmarkPlaceholder asked to encode');
 }
 
+class Identifier extends Comparable<Identifier> {
+  Identifier(this.name, this.disambiguator);
+  factory Identifier.split(String identifier) {
+    final int position = identifier.lastIndexOf('_');
+    if (position < 0)
+      return Identifier(identifier, 0);
+    final int disambiguator = int.tryParse(identifier.substring(position + 1));
+    if (disambiguator == null)
+      return Identifier(identifier, 0);
+    return Identifier(identifier.substring(0, position), disambiguator);
+  }
+  final String name;
+  final int disambiguator;
+  String get identifier => '${name}_$disambiguator';
+
+  @override
+  int compareTo(Identifier other) {
+    if (name == other.name)
+      return disambiguator.compareTo(other.disambiguator);
+    return name.compareTo(other.name);
+  }
+}
+
 abstract class Atom extends ChangeNotifier {
   Atom(this.parent) {
-    name.addListener(notifyListeners);
+    identifier = parent.getNewIdentifier();
   }
 
   final AtomParent parent;
@@ -213,7 +237,14 @@ abstract class Atom extends ChangeNotifier {
   String get kindDescription;
   String get rootClass;
 
-  final ValueNotifier<String> name = ValueNotifier<String>('');
+  Identifier get identifier => _identifier;
+  Identifier _identifier; // set by constructor
+  set identifier(Identifier value) {
+    if (value == _identifier)
+      return;
+    _identifier = value;
+    notifyListeners();
+  }
 
   String get className => _className;
   String _className = '';
@@ -246,7 +277,7 @@ abstract class Atom extends ChangeNotifier {
 
   Map<String, Object> encode() {
     return <String, Object>{
-      'name': name.value,
+      'identifier': identifier.identifier,
       'className': className,
       for (String name in _properties.keys)
         '.$name': _properties[name].encode(),
@@ -254,9 +285,9 @@ abstract class Atom extends ChangeNotifier {
   }
 
   void decode(Map<String, Object> object) {
-    assert(object['name'] is String);
+    assert(object['identifier'] is String);
     assert(object['className'] is String);
-    name.value = object['name'] as String;
+    identifier = Identifier.split(object['identifier'] as String);
     _className = object['className'] as String;
     for (final String property in object.keys) {
       if (property.startsWith('.'))
@@ -268,14 +299,6 @@ abstract class Atom extends ChangeNotifier {
   @override void notifyListeners() {
     super.notifyListeners();
     parent.didChange();
-  }
-
-  @override
-  void dispose() {
-    name
-      ..removeListener(notifyListeners)
-      ..dispose();
-    super.dispose();
   }
 }
 
