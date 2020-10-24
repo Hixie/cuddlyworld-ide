@@ -141,6 +141,15 @@ class _EditorState extends State<Editor> {
           game: widget.game,
           onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );
+      case 'landmark*':
+        return LandmarksField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property),
+          rootClass: 'TThing',
+          values: widget.atom.ensurePropertyIs<LandmarksPropertyValue>(property)?.value ?? const <Landmark>[],
+          game: widget.game,
+          onChanged: (List<Landmark> value) { widget.atom[property] = LandmarksPropertyValue(value); },
+        );
       case 'string':
         return StringField(
           key: ValueKey<String>(property),
@@ -670,6 +679,185 @@ class _ChildrenFieldState extends State<ChildrenField> {
       (String position, Atom atom) {
         final List<PositionedAtom> newValues = widget.values.toList()
           ..add(PositionedAtom(position, atom));
+        widget.onChanged(newValues);
+      },
+      null,
+    ));
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
+            width: 200.0,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text('${widget.label}:', textAlign: TextAlign.right),
+              ),
+            ),
+          ),
+          const SizedBox(
+            width: 8.0,
+          ),
+          Expanded(
+            child: ListBody(
+              children: rows,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class LandmarksField extends StatefulWidget {
+  const LandmarksField({
+    Key key,
+    @required this.game,
+    @required this.rootClass,
+    @required this.label,
+    @required this.values,
+    this.onChanged,
+  }): super(key: key);
+
+  final CuddlyWorld game;
+  final String rootClass;
+  final String label;
+  final List<Landmark> values;
+  final ValueSetter<List<Landmark>> onChanged;
+
+  @override
+  State<LandmarksField> createState() => _LandmarksFieldState();
+}
+
+class _LandmarksFieldState extends State<LandmarksField> {
+  Set<String> _classes = const <String>{};
+  List<String> _cardinalDirectionValues = const <String>[];
+  List<String> _landmarkOptionValues = const <String>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _triggerUpdates();
+    widget.game.addListener(_triggerUpdates);
+  }
+
+  void _triggerUpdates() {
+    _updateClasses();
+    _updateThingPositionValues();
+    _updateLandmarkOptionValues();
+  }
+
+  void _updateClasses() async {
+    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+    if (!mounted)
+      return;
+    setState(() { _classes = result.toSet(); });
+  }
+
+  void _updateThingPositionValues() async {
+    final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
+    if (!mounted)
+      return;
+    setState(() { _cardinalDirectionValues = result; });
+  }
+
+  void _updateLandmarkOptionValues() async {
+    final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
+    if (!mounted)
+      return;
+    setState(() { _landmarkOptionValues = result; });
+  }
+
+  @override
+  void didUpdateWidget(LandmarksField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.game != widget.game) {
+      oldWidget.game.removeListener(_triggerUpdates);
+      widget.game.addListener(_triggerUpdates);
+      _triggerUpdates();
+    } else if (oldWidget.rootClass != widget.rootClass) {
+      _updateClasses();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.game.removeListener(_triggerUpdates);
+    super.dispose();
+  }
+
+  Widget _row(String direction, Atom atom, Set<String> options, Function(String direction, Atom atom, Set<String> options) onChanged, VoidCallback onDelete) {
+    return ListBody(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            _makeDropdown(_cardinalDirectionValues, direction, null, (String direction) { onChanged(direction, atom, options); }),
+            const SizedBox(
+              width: 8.0,
+            ),
+            Expanded(
+              child: _makeAtomSlot(_classes, atom, (Atom atom) { onChanged(direction, atom, options); }),
+            ),
+            if (onDelete != null)
+              IconButton(
+                icon: const Icon(Icons.cancel),
+                onPressed: onDelete,
+              ),
+          ],
+        ),
+        Wrap(
+          children: <Widget>[
+            for (final String option in _landmarkOptionValues)
+              _pad(
+                FilterChip(
+                  label: Text(option),
+                  selected: options.contains(option),
+                  onSelected: (bool selected) {
+                    if (selected)
+                      onChanged(direction, atom, options.toSet()..add(option));
+                    else
+                      onChanged(direction, atom, options.toSet()..remove(option));
+                  },
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 24.0),
+      ],
+    );
+  }
+                
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> rows = <Widget>[];
+    for (int index = 0; index < widget.values.length; index += 1) {
+      final Landmark entry = widget.values[index];
+      rows.add(_row(
+        entry.direction,
+        entry.atom,
+        entry.options,
+        (String direction, Atom atom, Set<String> options) {
+          final List<Landmark> newValues = widget.values.toList();
+          newValues[index] = Landmark(direction, atom, options);
+          widget.onChanged(newValues);
+        },
+        () {
+          final List<Landmark> newValues = widget.values.toList()
+            ..removeAt(index);
+          widget.onChanged(newValues);
+        },
+      ));
+    }
+    rows.add(_row(
+      '',
+      null,
+      <String>{},
+      (String direction, Atom atom, Set<String> options) {
+        final List<Landmark> newValues = widget.values.toList()
+          ..add(Landmark(direction, atom, options));
         widget.onChanged(newValues);
       },
       null,

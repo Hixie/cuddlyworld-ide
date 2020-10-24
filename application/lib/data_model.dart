@@ -17,7 +17,7 @@ abstract class PropertyValue {
     if (object is Map<String, Object>) {
       if (object['type'] == 'atom')
         return AtomPropertyValuePlaceholder(object['identifier'] as String);
-      if (object['type'] == 'child*')
+      if (object['type'] == 'child*') {
         assert(object['children'] is List<Object>, 'not a list: $object');
         assert(!(object['children'] as List<Object>).any((Object child) {
           return !(child is Map<String, Object> &&
@@ -30,6 +30,23 @@ abstract class PropertyValue {
             return PositionedAtomPlaceholder(map['position'] as String, map['identifier'] as String);
           }).toList(),
         );
+      }
+      if (object['type'] == 'landmark*') {
+        assert(object['children'] is List<Object>, 'not a list: $object');
+        assert(!(object['children'] as List<Object>).any((Object child) {
+          return !(child is Map<String, Object> &&
+                   child['direction'] is String &&
+                   child['identifier'] is String &&
+                   child['options'] is List<Object> &&
+                   !(child['options'] as List<Object>).any((Object value) => value is! String));
+        }));
+        return LandmarksPropertyValuePlaceholder(
+          (object['children'] as List<Object>).map<LandmarkPlaceholder>((Object child) {
+            final Map<String, Object> map = child as Map<String, Object>;
+            return LandmarkPlaceholder(map['direction'] as String, map['identifier'] as String, (map['options'] as List<Object>).cast<String>().toSet());
+          }).toList(),
+        );
+      }
     }
     throw FormatException('Unrecognized PropertyValue data ($object)', object);
   }
@@ -107,6 +124,32 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
   }
 }
 
+class LandmarksPropertyValue extends PropertyValue {
+  LandmarksPropertyValue(this.value);
+  
+  final List<Landmark> value;
+  
+  @override
+  Object encode() => <String, Object>{
+    'type': 'landmark*',
+    'children': value.map<Map<String, Object>>((Landmark entry) => entry.encode()).toList(),
+  };
+}
+
+class LandmarksPropertyValuePlaceholder extends PropertyValue {
+  LandmarksPropertyValuePlaceholder(this.value);
+  
+  final List<LandmarkPlaceholder> value;
+
+  @override
+  Object encode() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode');
+
+  @override
+  PropertyValue resolve(AtomLookupCallback lookupCallback) {
+    return LandmarksPropertyValue(value.map<Landmark>((LandmarkPlaceholder entry) => entry.resolve(lookupCallback)).toList());
+  }
+}
+
 class PositionedAtom {
   PositionedAtom(this.position, this.atom);
   
@@ -130,6 +173,34 @@ class PositionedAtomPlaceholder {
   }
 
   Object encode() => throw StateError('PositionedAtomPlaceholder asked to encode');
+}
+
+class Landmark {
+  Landmark(this.direction, this.atom, this.options);
+  
+  final String direction;
+  final Atom atom; 
+  final Set<String> options;
+
+  Map<String, Object> encode() => <String, Object>{
+    'direction': direction,
+    'identifier': atom.name.value,
+    'options': options.toList(),
+  };
+}
+
+class LandmarkPlaceholder {
+  LandmarkPlaceholder(this.direction, this.identifier, this.options);
+
+  final String direction;
+  final String identifier;
+  final Set<String> options;
+
+  Landmark resolve(AtomLookupCallback lookupCallback) {
+    return Landmark(direction, lookupCallback(identifier), options);
+  }
+
+  Object encode() => throw StateError('LandmarkPlaceholder asked to encode');
 }
 
 abstract class Atom extends ChangeNotifier {
