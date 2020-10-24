@@ -139,9 +139,9 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           enumName: parts[1],
-          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          value: widget.atom.ensurePropertyIs<EnumPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
+          onChanged: (String value) { widget.atom[property] = EnumPropertyValue(value); },
         );
       case 'landmark*':
         return LandmarksField(
@@ -192,13 +192,20 @@ class _EditorState extends State<Editor> {
             ),
             for (final String property in _properties.keys)
               _addField(property, _properties[property]),
-            const SizedBox(height: 48),
-            OutlinedButton(
-              onPressed: () {
-                widget.game.sendMessage(widget.atom.encodeForServer());
-              },
-              child: const Text('Add to world'),
-            )
+            Padding(
+              padding: const EdgeInsets.all(48.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  OutlinedButton(
+                    onPressed: () {
+                      widget.game.sendMessage('debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'');
+                    },
+                    child: const Text('Add to world'),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
