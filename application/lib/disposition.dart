@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -10,6 +12,14 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     _thingsDisposition = ThingsDisposition(this);
     _locationsDisposition = LocationsDisposition(this);
     _editorDisposition = EditorDisposition(this);
+  }
+  
+  Timer _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   final SaveFile saveFile;
@@ -39,7 +49,10 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   void didChange() {
-    saveFile.save(this);
+    _timer ??= Timer(const Duration(seconds: 1), () {
+      saveFile.save(this);
+      _timer = null; 
+    });
   }
 
   Atom lookupAtom(String identifier) {
