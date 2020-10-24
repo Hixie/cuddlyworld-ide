@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xterm/xterm.dart';
 import 'package:xterm/flutter.dart';
 
@@ -9,7 +10,7 @@ class Console extends StatefulWidget {
     Key key,
     @required this.game,
     @required this.terminal,
-  }): super(key: key);
+  }) : super(key: key);
 
   final CuddlyWorld game;
   final Terminal terminal;
@@ -21,10 +22,35 @@ class Console extends StatefulWidget {
 class _ConsoleState extends State<Console> {
   TextEditingController _input;
 
+  List<String> history = <String>[];
+  int index;
+
   @override
   void initState() {
     super.initState();
     _input = TextEditingController();
+    actions = <Type, Action<Intent>>{
+      HistoryUpIntent:
+          CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
+        index ??= history.length;
+        if (index > 1) 
+          index--;
+        setState(() {
+          _input.text = history[index];
+        });
+        return null;
+      }),
+      HistoryDownIntent:
+          CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
+        if (index != null && index < history.length - 1) {
+          index++;
+          setState(() {
+            _input.text = history[index];
+          });
+        }
+        return null;
+      })
+    };
   }
 
   @override
@@ -35,7 +61,9 @@ class _ConsoleState extends State<Console> {
 
   void _send() {
     widget.game.sendMessage(_input.text);
+    history.add(_input.text);
     _input.clear();
+    index = null;
   }
 
   Widget _buildChip(String command) {
@@ -50,15 +78,22 @@ class _ConsoleState extends State<Console> {
   Iterable<Widget> _addPadding(Iterable<Widget> widgets) sync* {
     bool first = true;
     for (final Widget widget in widgets) {
-      if (!first)
+      if (!first) {
         yield const SizedBox(width: 12.0);
+      }
       yield widget;
       first = false;
     }
   }
 
+  Map<Type, Action<Intent>> actions;
+
   @override
   Widget build(BuildContext context) {
+    final Map<LogicalKeySet, Intent> shortcuts = <LogicalKeySet, Intent>{
+      LogicalKeySet(LogicalKeyboardKey.arrowUp): HistoryUpIntent(),
+      LogicalKeySet(LogicalKeyboardKey.arrowDown): HistoryDownIntent(),
+    };
     return Column(
       children: <Widget>[
         Expanded(child: TerminalView(terminal: widget.terminal)),
@@ -87,13 +122,19 @@ class _ConsoleState extends State<Console> {
           children: <Widget>[
             const Text('> '),
             Expanded(
-              child: TextField(
-                controller: _input,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'help',
+              child: Shortcuts(
+                shortcuts: shortcuts,
+                child: Actions(
+                  actions: actions,
+                  child: TextField(
+                    controller: _input,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: 'help',
+                    ),
+                    onEditingComplete: _send,
+                  ),
                 ),
-                onEditingComplete: _send,
               ),
             ),
             IconButton(
@@ -106,3 +147,7 @@ class _ConsoleState extends State<Console> {
     );
   }
 }
+
+class HistoryUpIntent extends Intent {}
+
+class HistoryDownIntent extends Intent {}
