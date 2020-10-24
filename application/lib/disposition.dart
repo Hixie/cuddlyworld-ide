@@ -14,9 +14,11 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     _editorDisposition = EditorDisposition(this);
   }
   
+  Timer _timer;
+
   @override
   void dispose() {
-    timer?.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
@@ -45,16 +47,12 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       'editor': editorDisposition.encode(),
     };
   }
-  
-  Timer timer;
 
   void didChange() {
-    if(timer != null) {
-      timer = Timer(const Duration(seconds: 1), () {
+      _timer ??= Timer(const Duration(seconds: 1), () {
         saveFile.save(this);
-        timer = null; 
+        _timer = null; 
       });
-    }
   }
 
   Atom lookupAtom(String identifier) {
