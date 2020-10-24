@@ -290,7 +290,11 @@ abstract class Atom extends ChangeNotifier {
   void operator []=(String name, PropertyValue value) {
     if (_properties[name] == value)
       return;
-    _properties[name] = value;
+    if (value == null) {
+      _properties.remove(name);
+    } else {
+      _properties[name] = value;
+    }
     notifyListeners();
   }
 

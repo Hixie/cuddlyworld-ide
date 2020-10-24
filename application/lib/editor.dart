@@ -61,12 +61,12 @@ class _EditorState extends State<Editor> {
     }
   }
 
-  String _prettyName(String property) {
+  String _prettyName(String property, String type) {
     switch (property) {
       case 'backDescription': return 'Description (back)';
       case 'backSide': return 'Reverse side';
       case 'cannotMoveExcuse': return 'Cannot move excuse';
-      case 'child': return 'Children';
+      case 'child': return type == 'child*' ? 'Children' : 'Child';
       case 'definiteName': return 'Name (definite)';
       case 'description': return 'Description';
       case 'destination': return 'Destination';
@@ -82,7 +82,7 @@ class _EditorState extends State<Editor> {
       case 'master': return 'Master';
       case 'maxSize': return 'Maximum size';
       case 'name': return 'Name';
-      case 'landmark': return 'Landmarks';
+      case 'landmark': return type == 'landmark*' ? 'Landmarks' : 'Landmark';
       case 'opened': return 'Opened?';
       case 'pattern': return 'Pattern';
       case 'pileClass': return 'Pile class';
@@ -103,7 +103,7 @@ class _EditorState extends State<Editor> {
       case 'atom':
         return AtomField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           rootClass: parts[1],
           value: widget.atom.ensurePropertyIs<AtomPropertyValue>(property)?.value,
           game: widget.game,
@@ -112,14 +112,14 @@ class _EditorState extends State<Editor> {
       case 'boolean':
         return CheckboxField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           value: widget.atom.ensurePropertyIs<BooleanPropertyValue>(property)?.value,
           onChanged: (bool value) { widget.atom[property] = BooleanPropertyValue(value); },
         );
       case 'child*':
         return ChildrenField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           rootClass: 'TThing',
           values: widget.atom.ensurePropertyIs<ChildrenPropertyValue>(property)?.value ?? const <PositionedAtom>[],
           game: widget.game,
@@ -128,7 +128,7 @@ class _EditorState extends State<Editor> {
       case 'class':
         return ClassesField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           rootClass: parts[1],
           value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
           game: widget.game,
@@ -137,7 +137,7 @@ class _EditorState extends State<Editor> {
       case 'enum':
         return EnumField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           enumName: parts[1],
           value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
           game: widget.game,
@@ -146,7 +146,7 @@ class _EditorState extends State<Editor> {
       case 'landmark*':
         return LandmarksField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           rootClass: 'TThing',
           values: widget.atom.ensurePropertyIs<LandmarksPropertyValue>(property)?.value ?? const <Landmark>[],
           game: widget.game,
@@ -155,14 +155,14 @@ class _EditorState extends State<Editor> {
       case 'string':
         return StringField(
           key: ValueKey<String>(property),
-          label: _prettyName(property),
+          label: _prettyName(property, propertyType),
           value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
           onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );
       default:
         return StringField(
           key: ValueKey<String>(property),
-          label: '${_prettyName(property)} ($propertyType)',
+          label: '${_prettyName(property, propertyType)} ($propertyType)',
           value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
           onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
         );

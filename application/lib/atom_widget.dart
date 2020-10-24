@@ -89,29 +89,34 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
       color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null),
       shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
-      child: AnimatedSize(
-        alignment: Alignment.centerLeft,
-        curve: widget.curve,
-        duration: widget.duration,
-        vsync: this,
-        child: SizedBox(
-          width: _chip ? null : kCatalogWidth,
-          child: Padding(
-            padding: EdgeInsets.only(left: 8.0, top: 4.0, bottom: 4.0, right: widget.onDelete != null ? 4.0 : 8.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                widget.label ?? makeTextForIdentifier(context, widget.atom.identifier),
-                if (widget.onDelete != null)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: InkResponse(
-                      onTap: widget.onDelete,
-                      radius: 18.0,
-                      child: const Icon(Icons.cancel, size: 18.0),
+      child: InkWell(
+        onTap: (widget.atom != null && !widget.startFromCatalog) ? () {
+          EditorDisposition.of(context).current = widget.atom;
+        } : null,
+        child: AnimatedSize(
+          alignment: Alignment.centerLeft,
+          curve: widget.curve,
+          duration: widget.duration,
+          vsync: this,
+          child: SizedBox(
+            width: _chip ? null : kCatalogWidth,
+            child: Padding(
+              padding: EdgeInsets.only(left: 8.0, top: 4.0, bottom: 4.0, right: widget.onDelete != null ? 4.0 : 8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  widget.label ?? makeTextForIdentifier(context, widget.atom.identifier),
+                  if (widget.onDelete != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: InkResponse(
+                        onTap: widget.onDelete,
+                        radius: 18.0,
+                        child: const Icon(Icons.cancel, size: 18.0),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
