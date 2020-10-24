@@ -9,6 +9,7 @@ abstract class AtomParent {
 
 abstract class PropertyValue {
   Object encode();
+  String encodeForServer();
 
   static PropertyValue decode(Object object) {
     if (object is String)
@@ -62,12 +63,18 @@ class StringPropertyValue extends PropertyValue {
   
   @override
   Object encode() => value;
+
+  @override
+  String encodeForServer() => '"$value"';
 }
 
 class BooleanPropertyValue extends PropertyValue {
   BooleanPropertyValue(this.value); // ignore: avoid_positional_boolean_parameters
   
   final bool value;
+
+  @override
+  String encodeForServer() => '$value';
   
   @override
   Object encode() => value;
@@ -79,6 +86,9 @@ class AtomPropertyValue extends PropertyValue {
   final Atom value;
   
   @override
+  String encodeForServer() => value.encodeForServer();
+  
+  @override
   Object encode() => <String, Object>{
     'type': 'atom',
     'identifier': value.identifier.identifier,
@@ -87,6 +97,9 @@ class AtomPropertyValue extends PropertyValue {
 
 class AtomPropertyValuePlaceholder extends PropertyValue {
   AtomPropertyValuePlaceholder(this.value);
+
+  @override
+  String encodeForServer() => throw StateError('AtomPropertyValuePlaceholder asked to encode for server');
   
   final String value;
 
@@ -101,6 +114,9 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
 
 class ChildrenPropertyValue extends PropertyValue {
   ChildrenPropertyValue(this.value);
+
+  @override
+  String encodeForServer() => throw UnimplementedError('Children Property Value');
   
   final List<PositionedAtom> value;
   
@@ -117,6 +133,9 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
   final List<PositionedAtomPlaceholder> value;
 
   @override
+  String encodeForServer() => throw StateError('ChildrenPropertyValuePlaceholder asked to encode for server');
+
+  @override
   Object encode() => throw StateError('ChildrenPropertyValuePlaceholder asked to encode');
 
   @override
@@ -127,7 +146,10 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
 
 class LandmarksPropertyValue extends PropertyValue {
   LandmarksPropertyValue(this.value);
-  
+
+  @override
+  String encodeForServer() => throw UnimplementedError('Landmark Property Value');
+
   final List<Landmark> value;
   
   @override
@@ -141,6 +163,9 @@ class LandmarksPropertyValuePlaceholder extends PropertyValue {
   LandmarksPropertyValuePlaceholder(this.value);
   
   final List<LandmarkPlaceholder> value;
+
+  @override
+  String encodeForServer() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
 
   @override
   Object encode() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode');
@@ -253,6 +278,11 @@ abstract class Atom extends ChangeNotifier {
       return;
     _className = value;
     notifyListeners();
+  }
+
+  String encodeForServer() {
+    final String properties = _properties.map<String, String>((String key, PropertyValue value) => MapEntry<String, String>(key, value.encodeForServer())).toString().substring(0, _properties.length - 1).replaceAll(',', ';');
+    return 'debug make \'$className{$properties}\'';
   }
 
   PropertyValue operator [](String name) => _properties[name];

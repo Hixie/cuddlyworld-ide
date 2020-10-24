@@ -192,6 +192,13 @@ class _EditorState extends State<Editor> {
             ),
             for (final String property in _properties.keys)
               _addField(property, _properties[property]),
+            const SizedBox(height: 48),
+            OutlinedButton(
+              onPressed: () {
+                widget.game.sendMessage(widget.atom.encodeForServer());
+              },
+              child: const Text('Add to world'),
+            )
           ],
         ),
       ),
