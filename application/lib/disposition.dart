@@ -55,11 +55,11 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     });
   }
 
-  Atom lookupAtom(String identifier) {
+  Atom lookupAtom(String identifier, { Atom ignore }) {
     final List<Atom> matches = <Atom>[
       ...thingsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
       ...locationsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
-    ];
+    ]..removeWhere((Atom atom) => atom == ignore);
     if (matches.isEmpty)
       return null;
     assert(matches.length == 1);
@@ -68,9 +68,9 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   static const String unnamed = 'unnamed';
 
-  Identifier getNewIdentifier([ String name = unnamed ]) {
+  Identifier getNewIdentifier({ String name = unnamed, Atom ignore }) {
     int index = 0;
-    while (lookupAtom('${name}_$index') != null)
+    while (lookupAtom('${name}_$index', ignore: ignore) != null)
       index += 1;
     return Identifier(name, index);
   }

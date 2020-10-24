@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'atom_widget.dart';
 import 'backend.dart';
@@ -179,7 +180,8 @@ class _EditorState extends State<Editor> {
               label: 'Identifier',
               value: widget.atom.identifier.name,
               suffix: '_${widget.atom.identifier.disambiguator}',
-              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(value); },
+              filter: '[0-9A-Za-z_]+',
+              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(name: value, ignore: widget.atom); },
             ),
             ClassesField(
               label: 'Class',
@@ -279,12 +281,14 @@ class StringField extends StatefulWidget {
     @required this.label,
     @required this.value,
     this.suffix,
+    this.filter,
     this.onChanged,
   }): super(key: key);
 
   final String label;
   final String value;
   final String suffix;
+  final String filter;
   final ValueSetter<String> onChanged;
 
   @override
@@ -327,6 +331,7 @@ class _StringFieldState extends State<StringField> {
           border: InputBorder.none,
           suffix: widget.suffix != null ? Text(widget.suffix) : null,
         ),
+        inputFormatters: <TextInputFormatter>[ if (widget.filter != null) FilteringTextInputFormatter.allow(RegExp(widget.filter)) ],
         onChanged: widget.onChanged,
       ),
     ));
