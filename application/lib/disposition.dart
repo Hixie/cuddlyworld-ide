@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -39,7 +41,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   void didChange() {
-    saveFile.save(this);
+    Timer(const Duration(seconds: 1), () => saveFile.save(this));
   }
 
   Atom lookupAtom(String identifier) {
