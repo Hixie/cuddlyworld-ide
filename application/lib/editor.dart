@@ -147,7 +147,7 @@ class _EditorState extends State<Editor> {
         return LandmarksField(
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
-          rootClass: 'TThing',
+          rootClass: 'TAtom',
           values: widget.atom.ensurePropertyIs<LandmarksPropertyValue>(property)?.value ?? const <Landmark>[],
           game: widget.game,
           onChanged: (List<Landmark> value) { widget.atom[property] = LandmarksPropertyValue(value); },
