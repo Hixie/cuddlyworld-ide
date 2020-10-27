@@ -10,6 +10,7 @@ import 'data_model.dart';
 import 'disposition.dart';
 import 'editor.dart';
 import 'saver.dart';
+import 'settings.dart';
 
 Future<void> main() async {
   final SaveFile saveFile = SaveFile('state.json');
@@ -113,7 +114,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         children: <Widget>[
           const SizedBox(
             width: kCatalogWidth,
-            child: Catalog(initialTab: CatalogTab.items),
+            child: Catalog(),
           ),
           Expanded(
             child: Column(
@@ -160,7 +161,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                             body = Console(game: _game, terminal: _terminal);
                             break;
                           case 2:
-                            body = const ConsoleTab();
+                            body = const SettingsTab();
                             break;
                         }
                         return AnimatedSwitcher(
