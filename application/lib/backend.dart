@@ -207,7 +207,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   @override
   void dispose() {
-    _autoLogout.cancel();
+    _autoLogout?.cancel();
     _controller.close();
     _outputController.close();
     super.dispose();
