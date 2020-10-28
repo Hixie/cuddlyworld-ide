@@ -54,6 +54,8 @@ class CuddlyWorld extends ChangeNotifier {
   final Map<String, List<String>> _enumValuesCache = <String, List<String>>{};
   final Map<String, Map<String, String>> _propertiesCache = <String, Map<String, String>>{};
 
+  Timer _autoLogout;
+
   Future<void> _loop() async {
     WebSocket socket, oldSocket;
     StringBuffer currentResponse;
@@ -70,7 +72,6 @@ class CuddlyWorld extends ChangeNotifier {
       currentResponse = null;
       notifyListeners();
     }
-    Timer _autoLogout;
     await for (final _PendingMessage message in _controller.stream) {
       _autoLogout?.cancel();
       if (oldSocket != null) {
@@ -206,6 +207,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   @override
   void dispose() {
+    _autoLogout.cancel();
     _controller.close();
     _outputController.close();
     super.dispose();

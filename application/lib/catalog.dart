@@ -6,17 +6,11 @@ import 'disposition.dart';
 
 const double kCatalogWidth = 350.0;
 
-typedef TabSwitchHandler = void Function(CatalogTab newTabState);
-
 class Catalog extends StatefulWidget {
-  const Catalog({Key key, this.onTabSwitch, this.initialTab}) : super(key: key);
-  final TabSwitchHandler onTabSwitch;
-  final CatalogTab initialTab;
+  const Catalog({Key key}) : super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
 }
-
-enum CatalogTab { items, locations, console }
 
 class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   TabController _tabController;
@@ -24,19 +18,12 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   static const List<Widget> tabs = <Widget>[
     Tab(text: 'Items'),
     Tab(text: 'Locations'),
-    Tab(text: 'Console'),
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(
-        vsync: this, length: tabs.length, initialIndex: widget.initialTab.index)
-      ..addListener(() {
-        if (widget.onTabSwitch != null) {
-          widget.onTabSwitch(CatalogTab.values[_tabController.index]);
-        }
-      });
+    _tabController = TabController(vsync: this, length: tabs.length);
   }
 
   @override
@@ -46,17 +33,15 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
   
   Widget get _currentFloatingActionButton {
-    switch (CatalogTab.values[_tabController.index]) {
-      case CatalogTab.console:
-        return null;
-      case CatalogTab.locations:
+    switch (_tabController.index) {
+      case 0:
         return FloatingActionButton(
           onPressed: () {
             EditorDisposition.of(context).current = LocationsDisposition.of(context).add();
           },
           child: const Icon(Icons.add),
         );
-      case CatalogTab.items:
+      case 1:
         return FloatingActionButton(
           onPressed: () {
             EditorDisposition.of(context).current = ThingsDisposition.of(context).add();
@@ -82,7 +67,6 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
               children: const <Widget>[
                 ItemsTab(),
                 LocationsTab(),
-                ConsoleTab(),
               ],
             ),
             floatingActionButton: _currentFloatingActionButton,
@@ -152,67 +136,6 @@ class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
   @override
   Widget build(BuildContext context) {
     return ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList());
-  }
-}
-
-class ConsoleTab extends StatefulWidget {
-  const ConsoleTab({Key key}) : super(key: key);
-  @override
-  _ConsoleTabState createState() => _ConsoleTabState();
-}
-
-class _ConsoleTabState extends State<ConsoleTab> {
-  TextEditingController _username;
-  TextEditingController _password;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _username = TextEditingController(text: ServerDisposition.of(context).username);
-    _password = TextEditingController(text: ServerDisposition.of(context).password);
-  }
-
-  @override
-  void dispose() {
-    _username.dispose();
-    _password.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _username,
-            decoration: const InputDecoration(
-              hintText: 'Username',
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _password,
-            decoration: const InputDecoration(
-              hintText: 'Password',
-            ),
-            enableSuggestions: false,
-            autocorrect: false, 
-            obscureText: true,
-          ),
-        ),
-        FlatButton(
-          onPressed: () {
-            ServerDisposition.of(context).setLoginData(_username.text, _password.text);
-          },
-          child: const Text('Login'),
-        )
-      ],
-    );
   }
 }
 
