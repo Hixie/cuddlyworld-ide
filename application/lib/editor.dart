@@ -175,7 +175,7 @@ class _EditorState extends State<Editor> {
       child: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
-            Text(widget.atom.kindDescription, style: Theme.of(context).textTheme.headline4),
+            Text(widget.atom.className, style: Theme.of(context).textTheme.headline4),
             StringField(
               label: 'Identifier',
               value: widget.atom.identifier.name,

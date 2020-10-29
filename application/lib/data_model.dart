@@ -306,7 +306,6 @@ abstract class Atom extends ChangeNotifier {
 
   final AtomParent parent;
 
-  String get kindDescription;
   String get rootClass;
 
   Identifier get identifier => _identifier;
@@ -392,17 +391,11 @@ class Thing extends Atom {
   Thing(AtomParent parent): super(parent);
 
   @override
-  String get kindDescription => 'Thing';
-
-  @override
-  String get rootClass => 'TThing';
+  String get rootClass => 'TAtom';
 }
 
 class Location extends Atom {
   Location(AtomParent parent): super(parent);
-
-  @override
-  String get kindDescription => 'Location';
 
   @override
   String get rootClass => 'TLocation';

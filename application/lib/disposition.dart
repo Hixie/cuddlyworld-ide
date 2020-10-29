@@ -58,7 +58,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   Atom lookupAtom(String identifier, { Atom ignore }) {
     final List<Atom> matches = <Atom>[
       ...thingsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
-      ...locationsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
     ]..removeWhere((Atom atom) => atom == ignore);
     if (matches.isEmpty)
       return null;
@@ -82,13 +81,11 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     assert(map['server'] is Map<String, Object>);
     serverDisposition.decode(map['server'] as Map<String, Object>);
     assert(map['things'] is List<Object>);
-    thingsDisposition.decode(map['things'] as List<Object>);
     assert(map['locations'] is List<Object>);
-    locationsDisposition.decode(map['locations'] as List<Object>);
+    thingsDisposition.decode((map['things'] as List<Object>) + (map['locations'] as List<Object>));
     assert(map['editor'] is Map<String, Object>);
     editorDisposition.decode(map['editor'] as Map<String, Object>);
     thingsDisposition.resolveIdentifiers(lookupAtom);
-    locationsDisposition.resolveIdentifiers(lookupAtom);
   }
 
   static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
