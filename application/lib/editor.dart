@@ -199,7 +199,7 @@ class _EditorState extends State<Editor> {
                   OutlinedButton(
                     onPressed: () {
                       EditorDisposition.of(context).current = null;
-                      ThingsDisposition.of(context).atoms.remove(widget.atom);
+                      ThingsDisposition.of(context).remove(widget.atom as Thing);
                     },
                     child: const Text('Delete'),
                   ),
