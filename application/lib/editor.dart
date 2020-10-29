@@ -198,6 +198,13 @@ class _EditorState extends State<Editor> {
                 children: <Widget>[
                   OutlinedButton(
                     onPressed: () {
+                      EditorDisposition.of(context).current = null;
+                      AtomsDisposition.of(context).remove(widget.atom);
+                    },
+                    child: const Text('Delete'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
                       widget.game.sendMessage('debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'');
                     },
                     child: const Text('Add to world'),
