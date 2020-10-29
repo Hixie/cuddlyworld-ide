@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'disposition.dart';
 
+const double kSettingsWidth = 100.0;
+
 class SettingsTab extends StatefulWidget {
   const SettingsTab({Key key}) : super(key: key);
   @override
@@ -29,27 +31,32 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _username,
-            decoration: const InputDecoration(
-              hintText: 'Username',
+          child: SizedBox(
+            width: kSettingsWidth,
+            child: TextField(
+              controller: _username,
+              decoration: const InputDecoration(
+                hintText: 'Username',
+              ),
             ),
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _password,
-            decoration: const InputDecoration(
-              hintText: 'Password',
+          child: SizedBox(
+            width: kSettingsWidth,
+            child: TextField(
+              controller: _password,
+              decoration: const InputDecoration(
+                hintText: 'Password',
+              ),
+              enableSuggestions: false,
+              autocorrect: false, 
+              obscureText: true,
             ),
-            enableSuggestions: false,
-            autocorrect: false, 
-            obscureText: true,
           ),
         ),
         OutlinedButton(
