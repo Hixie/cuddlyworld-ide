@@ -13,129 +13,51 @@ class Catalog extends StatefulWidget {
 }
 
 class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
-  TabController _tabController;
+  List<Atom> _atoms = <Atom>[];
 
-  static const List<Widget> tabs = <Widget>[
-    Tab(text: 'Items'),
-    Tab(text: 'Locations'),
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(vsync: this, length: tabs.length);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-  
-  Widget get _currentFloatingActionButton {
-    switch (_tabController.index) {
-      case 0:
-        return FloatingActionButton(
-          onPressed: () {
-            EditorDisposition.of(context).current = LocationsDisposition.of(context).add();
-          },
-          child: const Icon(Icons.add),
-        );
-      case 1:
-        return FloatingActionButton(
-          onPressed: () {
-            EditorDisposition.of(context).current = ThingsDisposition.of(context).add();
-          },
-          child: const Icon(Icons.add),
-        );
-    }
-    throw Exception();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        TabBar(
-          tabs: tabs,
-          controller: _tabController,
-        ),
-        Expanded(
-          child: Scaffold(
-            body: TabBarView(
-              controller: _tabController,
-              children: const <Widget>[
-                ItemsTab(),
-                LocationsTab(),
-              ],
-            ),
-            floatingActionButton: _currentFloatingActionButton,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-abstract class AtomTab<T extends Atom> extends StatefulWidget {
-  const AtomTab({Key key}): super(key: key);
-
-  @override
-  _AtomTabState<T> createState() => _AtomTabState<T>();
-
-  AtomDisposition<T> disposition(BuildContext context);
-
-}
-
-class ItemsTab extends AtomTab<Thing> {
-  const ItemsTab({Key key}): super(key: key);
-
-  @override
-  AtomDisposition<Thing> disposition(BuildContext context) => ThingsDisposition.of(context);
-
-}
-
-class LocationsTab extends AtomTab<Location> {
-  const LocationsTab({Key key}): super(key: key);
-
-  @override
-  AtomDisposition<Location> disposition(BuildContext context) => LocationsDisposition.of(context);
-
-}
-
-class _AtomTabState<T extends Atom> extends State<AtomTab<T>> {
- 
-  List<Atom> atoms = <Atom>[];
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    for (final Atom element in atoms) {
+    for (final Atom element in _atoms) {
       element.removeListener(_handleListUpdate);
     }
-    atoms = widget.disposition(context).atoms.toList();
+    _atoms = AtomsDisposition.of(context).atoms.toList();
     _handleListUpdate();
-    for (final Atom element in atoms) {
+    for (final Atom element in _atoms) {
       element.addListener(_handleListUpdate);
     }
   }
 
   void _handleListUpdate() {
     setState((){
-      atoms.sort((Atom a, Atom b) => a.identifier.compareTo(b.identifier));
+      _atoms.sort((Atom a, Atom b) => a.identifier.compareTo(b.identifier));
     });
   }
 
   @override
   void dispose() {
-    super.dispose();
-    for (final Atom element in atoms) {
+    for (final Atom element in _atoms) {
       element.removeListener(_handleListUpdate);
     }
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(children: atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList());
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.only(top: 36.0),
+        child: ListView(
+          children: _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 }
 

@@ -9,8 +9,7 @@ import 'saver.dart';
 class RootDisposition extends ChangeNotifier implements JsonEncodable {
   RootDisposition(this.saveFile) {
     _serverDisposition = ServerDisposition(this);
-    _thingsDisposition = ThingsDisposition(this);
-    _locationsDisposition = LocationsDisposition(this);
+    _atomsDisposition = AtomsDisposition(this);
     _editorDisposition = EditorDisposition(this);
   }
   
@@ -25,10 +24,8 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   final SaveFile saveFile;
   ServerDisposition get serverDisposition => _serverDisposition;
   ServerDisposition _serverDisposition;
-  ThingsDisposition get thingsDisposition => _thingsDisposition;
-  ThingsDisposition _thingsDisposition;
-  LocationsDisposition get locationsDisposition => _locationsDisposition;
-  LocationsDisposition _locationsDisposition;
+  AtomsDisposition get atomsDisposition => _atomsDisposition;
+  AtomsDisposition _atomsDisposition;
   EditorDisposition get editorDisposition => _editorDisposition;
   EditorDisposition _editorDisposition;
 
@@ -42,8 +39,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   Map<String, Object> encode() {
     return <String, Object>{
       'server': serverDisposition.encode(),
-      'things': thingsDisposition.encode(), 
-      'locations': locationsDisposition.encode(),
+      'atoms': atomsDisposition.encode(), 
       'editor': editorDisposition.encode(),
     };
   }
@@ -56,9 +52,9 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   Atom lookupAtom(String identifier, { Atom ignore }) {
-    final List<Atom> matches = <Atom>[
-      ...thingsDisposition.atoms.where((Atom atom) => atom.identifier.identifier == identifier),
-    ]..removeWhere((Atom atom) => atom == ignore);
+    final List<Atom> matches = atomsDisposition.atoms
+      .where((Atom atom) => atom != ignore && atom.identifier.identifier == identifier)
+      .toList();
     if (matches.isEmpty)
       return null;
     assert(matches.length == 1);
@@ -80,12 +76,17 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     final Map<String, Object> map = object as Map<String, Object>;
     assert(map['server'] is Map<String, Object>);
     serverDisposition.decode(map['server'] as Map<String, Object>);
-    assert(map['things'] is List<Object>);
-    assert(map['locations'] is List<Object>);
-    thingsDisposition.decode((map['things'] as List<Object>) + (map['locations'] as List<Object>));
+    final List<Object> atoms = <Object>[];
+    if (map['atoms'] is List<Object>)
+      atoms.addAll(map['atoms'] as List<Object>);
+    if (map['things'] is List<Object>)
+      atoms.addAll(map['things'] as List<Object>);
+    if (map['locations'] is List<Object>)
+      atoms.addAll(map['locations'] as List<Object>);
+    atomsDisposition.decode(atoms);
     assert(map['editor'] is Map<String, Object>);
     editorDisposition.decode(map['editor'] as Map<String, Object>);
-    thingsDisposition.resolveIdentifiers(lookupAtom);
+    atomsDisposition.resolveIdentifiers(lookupAtom);
   }
 
   static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
@@ -160,34 +161,34 @@ class ServerDisposition extends ChildDisposition {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-abstract class AtomDisposition<T extends Atom> extends ChildDisposition implements AtomParent {
-  AtomDisposition(RootDisposition parent) : super(parent);
+class AtomsDisposition extends ChildDisposition implements AtomParent {
+  AtomsDisposition(RootDisposition parent) : super(parent);
 
-  Set<T> get atoms => _atoms.toSet();
-  Set<T> _atoms = <T>{};
+  Set<Atom> get atoms => _atoms.toSet();
+  Set<Atom> _atoms = <Atom>{};
 
   @protected
-  T newAtom();
+  Atom newAtom() => Atom(this);
 
-  T add() {
-    final T result = newAtom();
+  Atom add() {
+    final Atom result = newAtom();
     _atoms.add(result);
     notifyListeners();
     return result;
   }
 
-  void remove(T atom) {
+  void remove(Atom atom) {
     assert(_atoms.contains(atom));
     _atoms.remove(atom);
     notifyListeners();
   }
 
   List<Object> encode() {
-    return atoms.map((T atom) => atom.encode()).toList();
+    return atoms.map((Atom atom) => atom.encode()).toList();
   }
 
   void decode(List<Object> object) {
-    _atoms = object.map<T>((Object atom) {
+    _atoms = object.map<Atom>((Object atom) {
       assert(atom is Map<String, Object>);
       return newAtom()
         ..decode(atom as Map<String, Object>);
@@ -196,7 +197,7 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
   }
 
   void resolveIdentifiers(AtomLookupCallback lookupCallback) {
-    for (final T atom in atoms)
+    for (final Atom atom in atoms)
       atom.resolveIdentifiers(lookupCallback);
   }
 
@@ -207,24 +208,8 @@ abstract class AtomDisposition<T extends Atom> extends ChildDisposition implemen
   void didChange() {
     parent.didChange();
   }
-}
 
-class ThingsDisposition extends AtomDisposition<Thing> {
-  ThingsDisposition(RootDisposition parent) : super(parent);
-
-  @override
-  Thing newAtom() => Thing(this);
-
-  static ThingsDisposition of(BuildContext context) => _of<ThingsDisposition>(context);
-}
-
-class LocationsDisposition extends AtomDisposition<Location> {
-  LocationsDisposition(RootDisposition parent) : super(parent);
-
-  @override
-  Location newAtom() => Location(this);
-
-  static LocationsDisposition of(BuildContext context) => _of<LocationsDisposition>(context);
+  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context);
 }
 
 class EditorDisposition extends ChildDisposition {
@@ -271,8 +256,7 @@ class Dispositions extends StatelessWidget {
     Key key,
     @required this.rootDisposition,
     @required this.serverDisposition,
-    @required this.thingsDisposition,
-    @required this.locationsDisposition,
+    @required this.atomsDisposition,
     @required this.editorDisposition,
     @required this.child,
   }) : super(key: key);
@@ -282,15 +266,13 @@ class Dispositions extends StatelessWidget {
     @required this.rootDisposition,
     @required this.child,
   }) : serverDisposition = rootDisposition.serverDisposition,
-       thingsDisposition = rootDisposition.thingsDisposition,
-       locationsDisposition = rootDisposition.locationsDisposition,
+       atomsDisposition = rootDisposition.atomsDisposition,
        editorDisposition = rootDisposition.editorDisposition,
        super(key: key);
 
   final RootDisposition rootDisposition;
   final ServerDisposition serverDisposition;
-  final ThingsDisposition thingsDisposition;
-  final LocationsDisposition locationsDisposition;
+  final AtomsDisposition atomsDisposition;
   final EditorDisposition editorDisposition;
 
   final Widget child;
@@ -301,14 +283,11 @@ class Dispositions extends StatelessWidget {
       disposition: rootDisposition,
       child: _Disposition<ServerDisposition>(
         disposition: serverDisposition,
-        child: _Disposition<ThingsDisposition>(
-          disposition: thingsDisposition,
-          child: _Disposition<LocationsDisposition>(
-            disposition: locationsDisposition,
-            child: _Disposition<EditorDisposition>(
-              disposition: editorDisposition,
-              child: child,
-            ),
+        child: _Disposition<AtomsDisposition>(
+          disposition: atomsDisposition,
+          child: _Disposition<EditorDisposition>(
+            disposition: editorDisposition,
+            child: child,
           ),
         ),
       ),

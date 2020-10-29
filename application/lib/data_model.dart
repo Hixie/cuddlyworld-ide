@@ -299,14 +299,14 @@ class Identifier extends Comparable<Identifier> {
   }
 }
 
-abstract class Atom extends ChangeNotifier {
+class Atom extends ChangeNotifier {
   Atom(this.parent) {
     identifier = parent.getNewIdentifier();
   }
 
   final AtomParent parent;
 
-  String get rootClass;
+  String get rootClass => 'TAtom';
 
   Identifier get identifier => _identifier;
   Identifier _identifier; // set by constructor
@@ -385,18 +385,4 @@ abstract class Atom extends ChangeNotifier {
     super.notifyListeners();
     parent.didChange();
   }
-}
-
-class Thing extends Atom {
-  Thing(AtomParent parent): super(parent);
-
-  @override
-  String get rootClass => 'TAtom';
-}
-
-class Location extends Atom {
-  Location(AtomParent parent): super(parent);
-
-  @override
-  String get rootClass => 'TLocation';
 }

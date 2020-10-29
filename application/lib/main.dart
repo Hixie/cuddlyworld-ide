@@ -110,69 +110,70 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     Widget body;
     return Material(
-      child: Row(
+      child: Column(
         children: <Widget>[
-          const SizedBox(
-            width: kCatalogWidth,
-            child: Catalog(),
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabs: const <Widget>[
+              Tab(text: 'Editor'),
+              Tab(text: 'Console'),
+              Tab(text: 'Settings'),
+            ],
           ),
           Expanded(
-            child: Column(
-              children: <Widget>[
-                TabBar(
-                  controller: _tabController,
-                  isScrollable: true,
-                  tabs: const <Widget>[
-                    Tab(text: 'Editor'),
-                    Tab(text: 'Console'),
-                    Tab(text: 'Settings'),
-                  ],
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: AnimatedBuilder(
-                      animation: _tabController,
-                      builder: (BuildContext context, Widget child) {
-                        switch (_tabController.index.round()) {
-                          case 0:
-                            final Atom currentAtom = EditorDisposition.of(context).current;
-                            if (currentAtom != null) {
-                              body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
-                            } else {
-                              body = Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    Text('Nothing selected.', style: Theme.of(context).textTheme.headline3),
-                                    const SizedBox(height: 28.0),
-                                    OutlinedButton(
-                                      onPressed: () {
-                                        EditorDisposition.of(context).current = ThingsDisposition.of(context).add();
-                                      },
-                                      child: const Text('Create Item'),
-                                    ),
-                                  ]
-                                ),
-                              );
-                            }
-                            break;
-                          case 1:
-                            body = Console(game: _game, terminal: _terminal);
-                            break;
-                          case 2:
-                            body = const SettingsTab();
-                            break;
-                        }
-                        return AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 150),
-                          child: body,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: AnimatedBuilder(
+                animation: _tabController,
+                builder: (BuildContext context, Widget child) {
+                  switch (_tabController.index.round()) {
+                    case 0:
+                      final Atom currentAtom = EditorDisposition.of(context).current;
+                      if (currentAtom != null) {
+                        body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
+                      } else {
+                        body = Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Text('Nothing selected.', style: Theme.of(context).textTheme.headline3),
+                              const SizedBox(height: 28.0),
+                              OutlinedButton(
+                                onPressed: () {
+                                  EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
+                                },
+                                child: const Text('Create Item'),
+                              ),
+                            ]
+                          ),
                         );
                       }
-                    ),
-                  ),
-                ),
-              ],
+                      body = Row(
+                        children: <Widget>[
+                          const SizedBox(
+                            width: kCatalogWidth,
+                            child: Catalog(),
+                          ),
+                          Expanded(
+                            child: body,
+                          ),
+                        ],
+                      );
+                      break;
+                    case 1:
+                      body = Console(game: _game, terminal: _terminal);
+                      break;
+                    case 2:
+                      body = const SettingsTab();
+                      break;
+                  }
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 150),
+                    child: body,
+                  );
+                }
+              ),
             ),
           ),
         ],

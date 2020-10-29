@@ -146,58 +146,64 @@ class CuddlyWorld extends ChangeNotifier {
     return pendingMessage.completer.future;
   }
 
-  Future<List<String>> fetchClassesOf(String subclass) async {
+  Future<List<String>> fetchClassesOf(String subclass) {
     if (_classesCache.containsKey(subclass))
-      return _classesCache[subclass];
-    final String rawResult = await sendMessage('debug classes of $subclass');
-    final List<String> lines = rawResult.split('\n');
-    if (lines.isEmpty || lines.first != 'The following classes are known:' || lines.last != '')
-      throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server.', rawResult);
-    lines
-      ..removeAt(0)
-      ..removeLast();
-    return _classesCache[subclass] = lines.map<String>((String line) {
-      if (!line.startsWith(' - '))
-        throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server; did not recognize "$line".', rawResult);
-      return line.substring(3);
-    }).toList();
+      return SynchronousFuture<List<String>>(_classesCache[subclass]);
+    return () async {
+      final String rawResult = await sendMessage('debug classes of $subclass');
+      final List<String> lines = rawResult.split('\n');
+      if (lines.isEmpty || lines.first != 'The following classes are known:' || lines.last != '')
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server.', rawResult);
+      lines
+        ..removeAt(0)
+        ..removeLast();
+      return _classesCache[subclass] = lines.map<String>((String line) {
+        if (!line.startsWith(' - '))
+          throw CuddlyWorldException('Unexpectedly unable to obtain list of classes of $subclass from server; did not recognize "$line".', rawResult);
+        return line.substring(3);
+      }).toList();
+    }();
   }
 
-  Future<List<String>> fetchEnumValuesOf(String enumName) async {
+  Future<List<String>> fetchEnumValuesOf(String enumName) {
     if (_enumValuesCache.containsKey(enumName))
-      return _enumValuesCache[enumName];
-    final String rawResult = await sendMessage('debug describe enum $enumName');
-    final List<String> lines = rawResult.split('\n');
-    if (lines.isEmpty || lines.first != 'Enum values available on $enumName:' || lines.last != '')
-      throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server.', rawResult);
-    lines
-      ..removeAt(0)
-      ..removeLast();
-    return _enumValuesCache[enumName] = lines.map<String>((String line) {
-      if (!line.startsWith(' - '))
-        throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server; did not recognize "$line".', rawResult);
-      return line.substring(3);
-    }).toList();
+      return SynchronousFuture<List<String>>(_enumValuesCache[enumName]);
+    return () async {
+      final String rawResult = await sendMessage('debug describe enum $enumName');
+      final List<String> lines = rawResult.split('\n');
+      if (lines.isEmpty || lines.first != 'Enum values available on $enumName:' || lines.last != '')
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server.', rawResult);
+      lines
+        ..removeAt(0)
+        ..removeLast();
+      return _enumValuesCache[enumName] = lines.map<String>((String line) {
+        if (!line.startsWith(' - '))
+          throw CuddlyWorldException('Unexpectedly unable to obtain list of values of enum $enumName from server; did not recognize "$line".', rawResult);
+        return line.substring(3);
+      }).toList();
+    }();
   }
 
-  Future<Map<String, String>> fetchPropertiesOf(String className) async {
+  Future<Map<String, String>> fetchPropertiesOf(String className) {
     if (_propertiesCache.containsKey(className))
-      return _propertiesCache[className];
-    final String rawResult = await sendMessage('debug describe class $className');
-    final List<String> lines = rawResult.split('\n');
-    if (lines.isEmpty || lines.first != 'Properties available on $className:' || lines.last != '')
-      throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server.', rawResult);
-    lines
-      ..removeAt(0)
-      ..removeLast();
-    final Map<String, String> properties = <String, String>{};
-    for (final String line in lines) {
-      if (!line.startsWith(' - ') || !line.contains(': '))
-        throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server; did not recognize "$line".', rawResult);
-      final int splitPosition = line.indexOf(': ');
-      properties[line.substring(3, splitPosition)] = line.substring(splitPosition + 2);
-    }
-    return _propertiesCache[className] = properties;
+      return SynchronousFuture<Map<String, String>>(_propertiesCache[className]);
+    return () async {
+      final String rawResult = await sendMessage('debug describe class $className');
+      final List<String> lines = rawResult.split('\n');
+      if (lines.isEmpty || lines.first != 'Properties available on $className:' || lines.last != '')
+        throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server.', rawResult);
+      lines
+        ..removeAt(0)
+        ..removeLast();
+      final Map<String, String> properties = <String, String>{};
+      for (final String line in lines) {
+        if (!line.startsWith(' - ') || !line.contains(': '))
+          throw CuddlyWorldException('Unexpectedly unable to obtain list of properties of $className from server; did not recognize "$line".', rawResult);
+        final int splitPosition = line.indexOf(': ');
+        properties[line.substring(3, splitPosition)] = line.substring(splitPosition + 2);
+      }
+      return _propertiesCache[className] = properties;
+    }();
   }
 
   void _log(String message) {
