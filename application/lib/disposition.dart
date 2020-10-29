@@ -76,17 +76,11 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     final Map<String, Object> map = object as Map<String, Object>;
     assert(map['server'] is Map<String, Object>);
     serverDisposition.decode(map['server'] as Map<String, Object>);
-    final List<Object> atoms = <Object>[];
-    if (map['atoms'] is List<Object>)
-      atoms.addAll(map['atoms'] as List<Object>);
-    if (map['things'] is List<Object>)
-      atoms.addAll(map['things'] as List<Object>);
-    if (map['locations'] is List<Object>)
-      atoms.addAll(map['locations'] as List<Object>);
-    atomsDisposition.decode(atoms);
+    assert(map['atoms'] is List<Object>);
+    atomsDisposition.decode(map['atoms'] as List<Object>);
     assert(map['editor'] is Map<String, Object>);
-    editorDisposition.decode(map['editor'] as Map<String, Object>);
     atomsDisposition.resolveIdentifiers(lookupAtom);
+    editorDisposition.decode(map['editor'] as Map<String, Object>, lookupAtom);
   }
 
   static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
@@ -231,12 +225,13 @@ class EditorDisposition extends ChildDisposition {
 
   Map<String, Object> encode() {
     return <String, Object>{
-      // TODO(ianh): save current
+      'current': current.identifier.identifier,
     };
   }
   
-  void decode(Map<String, Object> object) {
-    // TODO(ianh): restore current
+  void decode(Map<String, Object> object, AtomLookupCallback lookupCallback) {
+    assert(object['current'] is String);
+    current = lookupCallback(object['current'] as String);
   }
 
   static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);
