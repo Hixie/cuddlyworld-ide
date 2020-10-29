@@ -204,8 +204,27 @@ class _EditorState extends State<Editor> {
                     child: const Text('Delete'),
                   ),
                   OutlinedButton(
-                    onPressed: () {
-                      widget.game.sendMessage('debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'');
+                    onPressed: () async {
+                      final String reply = await widget.game.sendMessage(
+                        'debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'',
+                      );
+                      await showDialog<void>(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Adding ${widget.atom.identifier.identifier} to world'),
+                            content: SingleChildScrollView(
+                              child: Text(reply),
+                            ),
+                            actions: <Widget>[
+                              OutlinedButton(
+                                onPressed: () { Navigator.pop(context); },
+                                child: const Text('Dismiss'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
                     child: const Text('Add to world'),
                   ),

@@ -225,13 +225,17 @@ class EditorDisposition extends ChildDisposition {
 
   Map<String, Object> encode() {
     return <String, Object>{
-      'current': current.identifier.identifier,
+      'current': (current != null) ? current.identifier.identifier : '',
     };
   }
   
   void decode(Map<String, Object> object, AtomLookupCallback lookupCallback) {
     assert(object['current'] is String);
-    current = lookupCallback(object['current'] as String);
+    final String currentIdentifier = object['current'] as String;
+    if (currentIdentifier.isNotEmpty)
+      current = lookupCallback(currentIdentifier);
+    else
+      current = null;
   }
 
   static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);
