@@ -52,7 +52,7 @@ class _SettingsTabState extends State<SettingsTab> {
             obscureText: true,
           ),
         ),
-        FlatButton(
+        OutlinedButton(
           onPressed: () {
             ServerDisposition.of(context).setLoginData(_username.text, _password.text);
           },
