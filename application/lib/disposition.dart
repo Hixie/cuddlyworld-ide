@@ -155,7 +155,7 @@ class ServerDisposition extends ChildDisposition {
   static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
-class AtomsDisposition extends ChildDisposition implements AtomParent {
+class AtomsDisposition extends ChildDisposition implements AtomOwner {
   AtomsDisposition(RootDisposition parent) : super(parent);
 
   Set<Atom> get atoms => _atoms.toSet();

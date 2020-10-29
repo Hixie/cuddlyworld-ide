@@ -106,6 +106,9 @@ class _EditorState extends State<Editor> {
           label: _prettyName(property, propertyType),
           rootClass: parts[1],
           value: widget.atom.ensurePropertyIs<AtomPropertyValue>(property)?.value,
+          parent: widget.atom,
+          needsTree: true,
+          needsDifferent: true,
           game: widget.game,
           onChanged: (Atom value) { widget.atom[property] = value != null ? AtomPropertyValue(value) : null; },
         );
@@ -122,6 +125,7 @@ class _EditorState extends State<Editor> {
           label: _prettyName(property, propertyType),
           rootClass: 'TThing',
           values: widget.atom.ensurePropertyIs<ChildrenPropertyValue>(property)?.value ?? const <PositionedAtom>[],
+          parent: widget.atom,
           game: widget.game,
           onChanged: (List<PositionedAtom> value) { widget.atom[property] = ChildrenPropertyValue(value); },
         );
@@ -149,6 +153,7 @@ class _EditorState extends State<Editor> {
           label: _prettyName(property, propertyType),
           rootClass: 'TAtom',
           values: widget.atom.ensurePropertyIs<LandmarksPropertyValue>(property)?.value ?? const <Landmark>[],
+          parent: widget.atom,
           game: widget.game,
           onChanged: (List<Landmark> value) { widget.atom[property] = LandmarksPropertyValue(value); },
         );
@@ -171,10 +176,20 @@ class _EditorState extends State<Editor> {
 
   @override
   Widget build(BuildContext context) {
+    final Atom parent = widget.atom.parents.length == 1 ? widget.atom.parents.single : null;
     return SizedBox.expand(
       child: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
+            if (parent != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () { EditorDisposition.of(context).current = parent; },
+                  icon: const Icon(Icons.arrow_upward),
+                  label: makeTextForIdentifier(context, parent.identifier, parent.className),
+                ),
+              ),
             StringField(
               label: 'Identifier',
               value: widget.atom.identifier.name,
@@ -200,9 +215,12 @@ class _EditorState extends State<Editor> {
                     onPressed: () {
                       EditorDisposition.of(context).current = null;
                       AtomsDisposition.of(context).remove(widget.atom);
+                      // TODO(ianh): must make sure anyone whe references this forgets about it
+                      widget.atom.dispose();
                     },
                     child: const Text('Delete'),
                   ),
+                  const SizedBox(width: 24.0),
                   OutlinedButton(
                     onPressed: () async {
                       final String reply = await widget.game.sendMessage(
@@ -286,10 +304,19 @@ Widget _pad(Widget child) => Padding(
   child: child,
 );
 
-Widget _makeAtomSlot(Set<String> classes, Atom value, ValueSetter<Atom> onChanged) {
+Widget _makeAtomSlot(Set<String> classes, Atom value, Atom parent, ValueSetter<Atom> onChanged, {
+  @required bool needsTree,
+  @required bool needsDifferent,
+}) {
+  assert(parent != null);
+  bool _ok(Atom atom) => (!needsTree || parent.canAddToTree(atom))
+                      && (!needsDifferent || parent != atom);
   return DragTarget<Atom>(
-    onWillAccept: (Atom atom) => classes.contains(atom.className),
-    onAccept: onChanged,
+    onWillAccept: (Atom atom) => classes.contains(atom.className) && _ok(atom),
+    onAccept: (Atom atom) {
+      if (_ok(atom))
+        onChanged(atom);
+    },
     builder: (BuildContext context, List<Atom> candidateData, List<Object> rejectedData) {
       return Material(
         color: const Color(0x0A000000),
@@ -301,7 +328,8 @@ Widget _makeAtomSlot(Set<String> classes, Atom value, ValueSetter<Atom> onChange
                 onDelete: () { onChanged(null); },
               )),
             ...candidateData.map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom))),
-            if (value == null && candidateData.isEmpty)
+            ...rejectedData.whereType<Atom>().map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom, color: Colors.red))),
+            if (value == null && candidateData.isEmpty && rejectedData.isEmpty)
               _pad(const AtomWidget(
                 elevation: 0.0,
                 label: SizedBox(width: 64.0, child: Text('')),
@@ -555,6 +583,9 @@ class AtomField extends StatefulWidget {
     @required this.rootClass,
     @required this.label,
     @required this.value,
+    @required this.parent,
+    this.needsTree = false,
+    this.needsDifferent = false,
     this.onChanged,
   }): super(key: key);
 
@@ -562,6 +593,9 @@ class AtomField extends StatefulWidget {
   final String rootClass;
   final String label;
   final Atom value;
+  final Atom parent;
+  final bool needsTree;
+  final bool needsDifferent;
   final ValueSetter<Atom> onChanged;
 
   @override
@@ -610,7 +644,7 @@ class _AtomFieldState extends State<AtomField> {
   @override
   Widget build(BuildContext context) {
     return _makeField(widget.label, _focusNode, Expanded(
-      child: _makeAtomSlot(_classes, widget.value, widget.onChanged),
+      child: _makeAtomSlot(_classes, widget.value, widget.parent, widget.onChanged, needsTree: widget.needsTree, needsDifferent: widget.needsDifferent),
     ));
   }
 }
@@ -622,6 +656,7 @@ class ChildrenField extends StatefulWidget {
     @required this.rootClass,
     @required this.label,
     @required this.values,
+    @required this.parent,
     this.onChanged,
   }): super(key: key);
 
@@ -629,6 +664,7 @@ class ChildrenField extends StatefulWidget {
   final String rootClass;
   final String label;
   final List<PositionedAtom> values;
+  final Atom parent;
   final ValueSetter<List<PositionedAtom>> onChanged;
 
   @override
@@ -691,7 +727,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
           width: 8.0,
         ),
         Expanded(
-          child: _makeAtomSlot(_classes, atom, (Atom atom) { onChanged(position, atom); }),
+          child: _makeAtomSlot(_classes, atom, widget.parent, (Atom atom) { onChanged(position, atom); }, needsTree: true, needsDifferent: true),
         ),
         if (onDelete != null)
           IconButton(
@@ -768,6 +804,7 @@ class LandmarksField extends StatefulWidget {
     @required this.rootClass,
     @required this.label,
     @required this.values,
+    @required this.parent,
     this.onChanged,
   }): super(key: key);
 
@@ -775,6 +812,7 @@ class LandmarksField extends StatefulWidget {
   final String rootClass;
   final String label;
   final List<Landmark> values;
+  final Atom parent;
   final ValueSetter<List<Landmark>> onChanged;
 
   @override
@@ -848,7 +886,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
               width: 8.0,
             ),
             Expanded(
-              child: _makeAtomSlot(_classes, atom, (Atom atom) { onChanged(direction, atom, options); }),
+              child: _makeAtomSlot(_classes, atom, widget.parent, (Atom atom) { onChanged(direction, atom, options); }, needsTree: false, needsDifferent: true),
             ),
             if (onDelete != null)
               IconButton(

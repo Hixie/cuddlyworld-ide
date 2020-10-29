@@ -10,14 +10,13 @@ String escapeDoubleQuotes(String raw) {
   return raw.replaceAll(r'\', r'\\').replaceAll(r'"', r'\"');
 }
 
-abstract class AtomParent {
+abstract class AtomOwner {
   void didChange();
   Identifier getNewIdentifier();
 }
 
 abstract class PropertyValue {
   Object encode();
-  String encodeForServer(String key, Set<Atom> serialized);
 
   static PropertyValue decode(Object object) {
     if (object is String)
@@ -67,7 +66,12 @@ abstract class PropertyValue {
     throw FormatException('Unrecognized PropertyValue data ($object)', object);
   }
 
-  PropertyValue resolve(AtomLookupCallback lookupCallback) => this; // ignore: avoid_returning_this
+  String encodeForServer(String key, Set<Atom> serialized);
+
+  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) => this; // ignore: avoid_returning_this
+
+  void registerChildren(Atom parent) { }
+  void unregisterChildren(Atom parent) { }
 }
 
 class StringPropertyValue extends PropertyValue {
@@ -122,6 +126,16 @@ class AtomPropertyValue extends PropertyValue {
   
   @override
   String encodeForServer(String key, Set<Atom> serialized) => '$key: ${value.encodeForServer(serialized)}; ';
+
+  @override
+  void registerChildren(Atom parent) {
+    value.registerParent(parent);
+  }
+
+  @override
+  void unregisterChildren(Atom parent) {
+    value.unregisterParent(parent);
+  }
 }
 
 class AtomPropertyValuePlaceholder extends PropertyValue {
@@ -136,8 +150,9 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
   String encodeForServer(String key, Set<Atom> serialized) => throw StateError('AtomPropertyValuePlaceholder asked to encode for server');
 
   @override
-  PropertyValue resolve(AtomLookupCallback lookupCallback) {
-    return AtomPropertyValue(lookupCallback(value));
+  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
+    return AtomPropertyValue(lookupCallback(value))
+      ..registerChildren(parent);
   }
 }
 
@@ -160,6 +175,18 @@ class ChildrenPropertyValue extends PropertyValue {
     }
     return buffer.toString();
   }
+
+  @override
+  void registerChildren(Atom parent) {
+    for (final PositionedAtom positionedAtom in value)
+      positionedAtom.atom?.registerParent(parent);
+  }
+
+  @override
+  void unregisterChildren(Atom parent) {
+    for (final PositionedAtom positionedAtom in value)
+      positionedAtom.atom?.unregisterParent(parent);
+  }
 }
 
 class ChildrenPropertyValuePlaceholder extends PropertyValue {
@@ -174,46 +201,9 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
   String encodeForServer(String key, Set<Atom> serialized) => throw StateError('ChildrenPropertyValuePlaceholder asked to encode for server');
 
   @override
-  PropertyValue resolve(AtomLookupCallback lookupCallback) {
-    return ChildrenPropertyValue(value.map<PositionedAtom>((PositionedAtomPlaceholder entry) => entry.resolve(lookupCallback)).toList());
-  }
-}
-
-class LandmarksPropertyValue extends PropertyValue {
-  LandmarksPropertyValue(this.value);
-
-  final List<Landmark> value;
-  
-  @override
-  Object encode() => <String, Object>{
-    'type': 'landmark*',
-    'children': value.map<Map<String, Object>>((Landmark entry) => entry.encode()).toList(),
-  };
-
-  @override
-  String encodeForServer(String key, Set<Atom> serialized) {
-    final StringBuffer buffer = StringBuffer();
-    for (final Landmark landmark in value) {
-      buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
-    }
-    return buffer.toString();
-  }
-}
-
-class LandmarksPropertyValuePlaceholder extends PropertyValue {
-  LandmarksPropertyValuePlaceholder(this.value);
-  
-  final List<LandmarkPlaceholder> value;
-
-  @override
-  Object encode() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode');
-
-  @override
-  String encodeForServer(String key, Set<Atom> serialized) => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
-
-  @override
-  PropertyValue resolve(AtomLookupCallback lookupCallback) {
-    return LandmarksPropertyValue(value.map<Landmark>((LandmarkPlaceholder entry) => entry.resolve(lookupCallback)).toList());
+  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
+    return ChildrenPropertyValue(value.map<PositionedAtom>((PositionedAtomPlaceholder entry) => entry.resolve(lookupCallback)).toList())
+      ..registerChildren(parent);
   }
 }
 
@@ -242,6 +232,57 @@ class PositionedAtomPlaceholder {
 
   PositionedAtom resolve(AtomLookupCallback lookupCallback) {
     return PositionedAtom(position, lookupCallback(identifier));
+  }
+}
+
+class LandmarksPropertyValue extends PropertyValue {
+  LandmarksPropertyValue(this.value);
+
+  final List<Landmark> value;
+  
+  @override
+  Object encode() => <String, Object>{
+    'type': 'landmark*',
+    'children': value.map<Map<String, Object>>((Landmark entry) => entry.encode()).toList(),
+  };
+
+  @override
+  String encodeForServer(String key, Set<Atom> serialized) {
+    final StringBuffer buffer = StringBuffer();
+    for (final Landmark landmark in value) {
+      buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
+    }
+    return buffer.toString();
+  }
+
+  @override
+  void registerChildren(Atom parent) {
+    for (final Landmark landmark in value)
+      landmark.atom?.registerParent(parent);
+  }
+
+  @override
+  void unregisterChildren(Atom parent) {
+    for (final Landmark landmark in value)
+      landmark.atom?.unregisterParent(parent);
+  }
+}
+
+class LandmarksPropertyValuePlaceholder extends PropertyValue {
+  LandmarksPropertyValuePlaceholder(this.value);
+  
+  final List<LandmarkPlaceholder> value;
+
+  @override
+  Object encode() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode');
+
+  @override
+  String encodeForServer(String key, Set<Atom> serialized) => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
+
+  @override
+  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
+    return LandmarksPropertyValue(value.map<Landmark>((LandmarkPlaceholder entry) => entry.resolve(lookupCallback)).toList())
+      ..registerChildren(parent);
   }
 }
 
@@ -300,11 +341,16 @@ class Identifier extends Comparable<Identifier> {
 }
 
 class Atom extends ChangeNotifier {
-  Atom(this.parent) {
-    identifier = parent.getNewIdentifier();
+  Atom(this.owner) {
+    identifier = owner.getNewIdentifier();
   }
 
-  final AtomParent parent;
+  final AtomOwner owner;
+
+  @override void notifyListeners() {
+    super.notifyListeners();
+    owner.didChange();
+  }
 
   String get rootClass => 'TAtom';
 
@@ -326,26 +372,18 @@ class Atom extends ChangeNotifier {
     notifyListeners();
   }
 
-  String encodeForServer(Set<Atom> serialized) {
-    if (serialized.contains(this))
-      return identifier.identifier;
-    serialized.add(this);
-    final StringBuffer buffer = StringBuffer();
-    for (final String key in _properties.keys)
-      buffer.write(_properties[key].encodeForServer(key, serialized));
-    return 'new $className named ${identifier.identifier} { $buffer}';
-  }
-
   PropertyValue operator [](String name) => _properties[name];
   final Map<String, PropertyValue> _properties = <String, PropertyValue>{};
   void operator []=(String name, PropertyValue value) {
     if (_properties[name] == value)
       return;
+    _properties[name]?.unregisterChildren(this);
     if (value == null) {
       _properties.remove(name);
     } else {
       _properties[name] = value;
     }
+    _properties[name]?.registerChildren(this);
     notifyListeners();
   }
 
@@ -357,7 +395,14 @@ class Atom extends ChangeNotifier {
 
   void resolveIdentifiers(AtomLookupCallback lookupCallback) {
     for (final String name in _properties.keys)
-      _properties[name] = _properties[name].resolve(lookupCallback);
+      _properties[name] = _properties[name].resolve(lookupCallback, this);
+  }
+
+  @override
+  void dispose() {
+    for (final PropertyValue property in _properties.values)
+      property.unregisterChildren(this);
+    super.dispose();
   }
 
   Map<String, Object> encode() {
@@ -381,8 +426,60 @@ class Atom extends ChangeNotifier {
     notifyListeners();
   }
 
-  @override void notifyListeners() {
-    super.notifyListeners();
-    parent.didChange();
+  String encodeForServer(Set<Atom> serialized) {
+    if (serialized.contains(this))
+      return identifier.identifier;
+    serialized.add(this);
+    final StringBuffer buffer = StringBuffer();
+    for (final String key in _properties.keys)
+      buffer.write(_properties[key].encodeForServer(key, serialized));
+    return 'new $className named ${identifier.identifier} { $buffer}';
   }
+
+  Set<Atom> get parents => _parents.keys.toSet();
+  final Map<Atom, int> _parents = <Atom, int>{};
+
+  void registerParent(Atom parent) {
+    if (_parents.containsKey(parent)) {
+      _parents[parent] += 1;
+    } else {
+      _parents[parent] = 1;
+    }
+    notifyListeners();
+  }
+
+  void unregisterParent(Atom parent) {
+    assert(_parents.containsKey(parent));
+    if (_parents[parent] > 1) {
+      _parents[parent] -= 1;
+    } else {
+      assert(_parents[parent] == 1);
+      _parents.remove(parent);
+    }
+    notifyListeners();
+  }
+
+  bool canAddToTree(Atom candidateChild) {
+    assert(candidateChild != null);
+    if (candidateChild._parents.isNotEmpty)
+      return false;
+    // check to see if any of our ancestors are the candidate
+    final Set<Atom> examined = <Atom>{};
+    final Set<Atom> pending = <Atom>{..._parents.keys};
+    while (pending.isNotEmpty) {
+      final Atom next = pending.first;
+      pending.remove(next);
+      if (!examined.contains(next)) {
+        if (next == candidateChild)
+          return false;
+        examined.add(next);
+        pending.addAll(next._parents.keys);
+      }
+    }
+    examined.clear();
+    return true;
+  }
+
+  @override
+  String toString() => '$identifier';
 }
