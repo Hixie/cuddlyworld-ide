@@ -45,6 +45,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Padding(
         padding: const EdgeInsets.only(top: 36.0),
         child: FocusTraversalGroup(

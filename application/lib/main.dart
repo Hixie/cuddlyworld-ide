@@ -161,7 +161,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                             child: Catalog(),
                           ),
                           Expanded(
-                            child: body,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 150),
+                              child: body,
+                            ),
                           ),
                         ],
                       );
