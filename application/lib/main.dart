@@ -11,6 +11,7 @@ import 'disposition.dart';
 import 'editor.dart';
 import 'saver.dart';
 import 'settings.dart';
+import 'templates.dart';
 
 Future<void> main() async {
   final SaveFile saveFile = SaveFile('state.json');
@@ -57,7 +58,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _terminal = Terminal();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -122,6 +123,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             isScrollable: true,
             tabs: const <Widget>[
               Tab(text: 'Editor'),
+              Tab(text: 'Templates'),
               Tab(text: 'Console'),
               Tab(text: 'Settings'),
             ],
@@ -170,9 +172,16 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                       );
                       break;
                     case 1:
-                      body = Console(game: _game, terminal: _terminal);
+                      body = TemplateLibrary(
+                        onCreated: () {
+                          _tabController.index = 0;
+                        },
+                      );
                       break;
                     case 2:
+                      body = Console(game: _game, terminal: _terminal);
+                      break;
+                    case 3:
                       body = const SettingsTab();
                       break;
                   }
