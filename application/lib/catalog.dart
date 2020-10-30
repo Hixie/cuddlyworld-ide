@@ -29,8 +29,8 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
 
   void _handleListUpdate() {
-    setState((){
-      _atoms.sort((Atom a, Atom b) => a.identifier.compareTo(b.identifier));
+    setState(() {
+      _atoms.sort();
     });
   }
 
@@ -89,16 +89,24 @@ class _DraggableTextState extends State<DraggableText> {
           ),
         ),
       ),
-      child: FlatButton(
-        color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null,
-        onPressed: () {
-          setState(() {
-            EditorDisposition.of(context).current = widget.atom;
-          });
-        },
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
+      child: Padding(
+        padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
+        child: FlatButton(
+          color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null,
+          onPressed: () {
+            setState(() {
+              EditorDisposition.of(context).current = widget.atom;
+            });
+          },
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 16.0 * widget.atom.depth,
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
+            ),
+          ),
         ),
       ),
     );

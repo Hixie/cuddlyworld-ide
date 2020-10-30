@@ -340,7 +340,7 @@ class Identifier extends Comparable<Identifier> {
   }
 }
 
-class Atom extends ChangeNotifier {
+class Atom extends ChangeNotifier implements Comparable<Atom> {
   Atom(this.owner) {
     identifier = owner.getNewIdentifier();
   }
@@ -439,6 +439,15 @@ class Atom extends ChangeNotifier {
   Set<Atom> get parents => _parents.keys.toSet();
   final Map<Atom, int> _parents = <Atom, int>{};
 
+  Atom get parent => _parents.length == 1 ? _parents.keys.single : null;
+
+  int get depth {
+    final Atom parent = this.parent;
+    if (parent == null)
+      return 0;
+    return parent.depth + 1;
+  }
+
   void registerParent(Atom parent) {
     if (_parents.containsKey(parent)) {
       _parents[parent] += 1;
@@ -478,6 +487,26 @@ class Atom extends ChangeNotifier {
     }
     examined.clear();
     return true;
+  }
+
+  @override
+  int compareTo(Atom other) {
+    final Atom parent = this.parent;
+    final Atom otherParent = other.parent;
+    if (parent == other)
+      return 1;
+    if (otherParent == this)
+      return -1;
+    if (parent == null && otherParent != null)
+      return compareTo(otherParent);
+    if (parent != null && otherParent == null)
+      return parent.compareTo(other);
+    if (parent != otherParent) {
+      assert(parent != null);
+      assert(otherParent != null);
+      return parent.compareTo(otherParent);
+    }
+    return identifier.compareTo(other.identifier);
   }
 
   @override
