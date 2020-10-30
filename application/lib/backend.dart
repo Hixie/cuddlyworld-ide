@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class _PendingMessage {
-  _PendingMessage(this.message, this.completer);
+  _PendingMessage(this.message, this.completer) : assert(completer != null);
   final String message;
   final Completer<String> completer;
 }
@@ -54,12 +54,20 @@ class CuddlyWorld extends ChangeNotifier {
   final Map<String, List<String>> _enumValuesCache = <String, List<String>>{};
   final Map<String, Map<String, String>> _propertiesCache = <String, Map<String, String>>{};
 
+  bool _live = true;
   Timer _autoLogout;
+  LogCallback _onNextLogin;
+
+  void reportNextLogin(LogCallback callback) {
+    _onNextLogin = callback;
+  }
 
   Future<void> _loop() async {
     WebSocket socket, oldSocket;
     StringBuffer currentResponse;
     void disconnect() {
+      if (!_live)
+        return;
       if (socket != null)
         _log('Disconnected.');
       oldSocket = socket;
@@ -88,7 +96,13 @@ class CuddlyWorld extends ChangeNotifier {
             ..add('$username $password')
             ..listen(
                 (Object response) {
+                  if (!_live)
+                    return;
                   if (response is String) {
+                    if (_onNextLogin != null) {
+                      _onNextLogin(response);
+                      _onNextLogin = null;
+                    }
                     _outputController.add(response);
                     if (response.startsWith('\x01> ')) {
                       assert(currentResponse == null);
@@ -213,6 +227,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   @override
   void dispose() {
+    _live = false;
     _autoLogout?.cancel();
     _controller.close();
     _outputController.close();

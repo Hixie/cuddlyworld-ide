@@ -130,12 +130,20 @@ class ServerDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  void setLoginData(String username, String password) {
+  Completer<String> _loginDataCompleter;
+
+  Future<String> setLoginData(String username, String password) {
     if (username == _username && password == _password)
-      return;
+      return Future<String>.value();
     _username = username;
     _password = password;
+    _loginDataCompleter = Completer<String>();
     notifyListeners();
+    return _loginDataCompleter.future;
+  }
+
+  void resolveLogin(String message) {
+    _loginDataCompleter?.complete(message);
   }
 
   Map<String, String> encode() {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'atom_widget.dart';
 import 'backend.dart';
 import 'data_model.dart';
+import 'dialogs.dart';
 import 'disposition.dart';
 
 class Editor extends StatefulWidget {
@@ -21,6 +22,7 @@ class _EditorState extends State<Editor> {
   @override
   void initState() {
     super.initState();
+    widget.game.addListener(_updateProperties);
     widget.atom.addListener(_handleAtomUpdate);
     _updateProperties();
   }
@@ -28,16 +30,25 @@ class _EditorState extends State<Editor> {
   @override
   void didUpdateWidget(Editor oldWidget) {
     super.didUpdateWidget(oldWidget);
+    bool dirty = false;
+    if (oldWidget.game != widget.game) {
+      oldWidget.game.removeListener(_updateProperties);
+      widget.game.addListener(_updateProperties);
+      dirty = true;
+    }
     if (oldWidget.atom != widget.atom) {
       oldWidget.atom.removeListener(_handleAtomUpdate);
       widget.atom.addListener(_handleAtomUpdate);
-      _updateProperties();
+      dirty = true;
     }
+    if (dirty)
+      _updateProperties();
   }
 
   @override
   void dispose() {
     widget.atom.removeListener(_handleAtomUpdate);
+    widget.game.removeListener(_updateProperties);
     super.dispose();
   }
 
@@ -53,11 +64,15 @@ class _EditorState extends State<Editor> {
       _properties = const <String, String>{};
       return;
     }
-    final Map<String, String> properties = await widget.game.fetchPropertiesOf(widget.atom.className);
-    if (mounted) {
-      setState(() {
-        _properties = properties;
-      });
+    try {
+      final Map<String, String> properties = await widget.game.fetchPropertiesOf(widget.atom.className);
+      if (mounted) {
+        setState(() {
+          _properties = properties;
+        });
+      }
+    } on ConnectionLostException {
+      // ignore
     }
   }
 
@@ -223,26 +238,15 @@ class _EditorState extends State<Editor> {
                   const SizedBox(width: 24.0),
                   OutlinedButton(
                     onPressed: () async {
-                      final String reply = await widget.game.sendMessage(
-                        'debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'',
-                      );
-                      await showDialog<void>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: Text('Adding ${widget.atom.identifier.identifier} to world'),
-                            content: SingleChildScrollView(
-                              child: Text(reply),
-                            ),
-                            actions: <Widget>[
-                              OutlinedButton(
-                                onPressed: () { Navigator.pop(context); },
-                                child: const Text('Dismiss'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      final String heading = 'Adding ${widget.atom.identifier.identifier} to world';
+                      try {
+                        final String reply = await widget.game.sendMessage(
+                          'debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'',
+                        );
+                        await showMessage(context, heading, reply);
+                      } on ConnectionLostException {
+                        await showMessage(context, heading, 'Conection lost');
+                      }
                     },
                     child: const Text('Add to world'),
                   ),
@@ -286,16 +290,16 @@ Widget _makeField(String label, FocusNode focusNode, Widget field) {
 }
 
 Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, ValueSetter<String> onChanged) {
+  if (values.isEmpty)
+    return const Text('Loading...', style: TextStyle(fontStyle: FontStyle.italic));
   return DropdownButton<String>(
-    items: values.isEmpty
-      ? const <DropdownMenuItem<String>>[ DropdownMenuItem<String>(child: Text('Loading...', style: TextStyle(fontStyle: FontStyle.italic))) ]
-      : values.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-          value: value,
-          child: Text(value),
-        )).toList(),
+    items: values.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
+      value: value,
+      child: Text(value),
+    )).toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
-    onChanged: values.isEmpty ? null : onChanged,
+    onChanged: onChanged,
   );
 }
 
@@ -439,10 +443,14 @@ class _ClassesFieldState extends State<ClassesField> {
   }
 
   void _updateClasses() async {
-    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
-    if (!mounted)
-      return;
-    setState(() { _classes = result..sort(); });
+    try {
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      if (!mounted)
+        return;
+      setState(() { _classes = result..sort(); });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   @override
@@ -504,10 +512,14 @@ class _EnumFieldState extends State<EnumField> {
   }
 
   void _updateEnumValues() async {
-    final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
-    if (!mounted)
-      return;
-    setState(() { _enumValues = result; });
+    try {
+      final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
+      if (!mounted)
+        return;
+      setState(() { _enumValues = result; });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   @override
@@ -616,10 +628,14 @@ class _AtomFieldState extends State<AtomField> {
   }
 
   void _updateClasses() async {
-    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
-    if (!mounted)
-      return;
-    setState(() { _classes = result.toSet(); });
+    try {
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      if (!mounted)
+        return;
+      setState(() { _classes = result.toSet(); });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   @override
@@ -688,17 +704,25 @@ class _ChildrenFieldState extends State<ChildrenField> {
   }
 
   void _updateClasses() async {
-    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
-    if (!mounted)
-      return;
-    setState(() { _classes = result.toSet(); });
+    try {
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      if (!mounted)
+        return;
+      setState(() { _classes = result.toSet(); });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   void _updateThingPositionValues() async {
-    final List<String> result = await widget.game.fetchEnumValuesOf('TThingPosition');
-    if (!mounted)
-      return;
-    setState(() { _thingPositionValues = result; });
+    try {
+      final List<String> result = await widget.game.fetchEnumValuesOf('TThingPosition');
+      if (!mounted)
+        return;
+      setState(() { _thingPositionValues = result; });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   @override
@@ -838,24 +862,36 @@ class _LandmarksFieldState extends State<LandmarksField> {
   }
 
   void _updateClasses() async {
-    final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
-    if (!mounted)
-      return;
-    setState(() { _classes = result.toSet(); });
+    try {
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      if (!mounted)
+        return;
+      setState(() { _classes = result.toSet(); });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   void _updateThingPositionValues() async {
-    final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
-    if (!mounted)
-      return;
-    setState(() { _cardinalDirectionValues = result; });
+    try {
+      final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
+      if (!mounted)
+        return;
+      setState(() { _cardinalDirectionValues = result; });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   void _updateLandmarkOptionValues() async {
-    final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
-    if (!mounted)
-      return;
-    setState(() { _landmarkOptionValues = result; });
+    try {
+      final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
+      if (!mounted)
+        return;
+      setState(() { _landmarkOptionValues = result; });
+    } on ConnectionLostException {
+      // ignore
+    }
   }
 
   @override

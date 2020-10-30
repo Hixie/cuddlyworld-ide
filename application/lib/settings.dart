@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'dialogs.dart';
 import 'disposition.dart';
 
-const double kSettingsWidth = 100.0;
+const double kSettingsWidth = 400.0;
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({Key key}) : super(key: key);
@@ -17,8 +18,14 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _username = TextEditingController(text: ServerDisposition.of(context).username);
-    _password = TextEditingController(text: ServerDisposition.of(context).password);
+    _username = TextEditingController(text: ServerDisposition.of(context).username)
+      ..addListener(_rebuild);
+    _password = TextEditingController(text: ServerDisposition.of(context).password)
+      ..addListener(_rebuild);
+  }
+
+  void _rebuild() {
+    setState(() { /* text editing controllers changed */ });
   }
 
   @override
@@ -28,30 +35,40 @@ class _SettingsTabState extends State<SettingsTab> {
     super.dispose();
   }
 
+  bool get _isNew {
+    final ServerDisposition serverDisposition = ServerDisposition.of(context);
+    return serverDisposition.username != _username.text
+        || serverDisposition.password != _password.text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: kSettingsWidth,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth),
             child: TextField(
               controller: _username,
               decoration: const InputDecoration(
-                hintText: 'Username',
+                filled: true,
+                border: InputBorder.none,
+                labelText: 'Username',
               ),
             ),
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: kSettingsWidth,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth),
             child: TextField(
               controller: _password,
               decoration: const InputDecoration(
-                hintText: 'Password',
+                filled: true,
+                border: InputBorder.none,
+                labelText: 'Password',
               ),
               enableSuggestions: false,
               autocorrect: false, 
@@ -59,12 +76,22 @@ class _SettingsTabState extends State<SettingsTab> {
             ),
           ),
         ),
-        OutlinedButton(
-          onPressed: () {
-            ServerDisposition.of(context).setLoginData(_username.text, _password.text);
-          },
-          child: const Text('Login'),
-        )
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton(
+                onPressed: _isNew ? () async {
+                  final String reply = await ServerDisposition.of(context).setLoginData(_username.text, _password.text);
+                  await showMessage(context, 'Login', reply);
+                } : null,
+                child: const Text('Login'),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

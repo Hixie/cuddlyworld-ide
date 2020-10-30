@@ -74,10 +74,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         username: server.username,
         password: server.password,
         onLog: _handleLog,
-      );
+      )
+        ..reportNextLogin(_reportLogin);
       _gameStream?.cancel();
       _gameStream = _game.output.listen(_handleOutput);
     }
+  }
+
+  void _reportLogin(String result) {
+    ServerDisposition.of(context).resolveLogin(result);
   }
 
   void _handleOutput(String output) {

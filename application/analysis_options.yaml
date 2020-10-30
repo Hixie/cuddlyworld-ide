@@ -167,7 +167,7 @@ linter:
     - use_key_in_widget_constructors
     - use_late_for_private_fields_and_variables
     - use_rethrow_when_possible
-    - use_setters_to_change_properties
+    # - use_setters_to_change_properties
     - use_string_buffers
     # - use_to_and_as_if_applicable
     - valid_regexps
