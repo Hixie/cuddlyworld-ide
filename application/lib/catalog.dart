@@ -47,8 +47,10 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.only(top: 36.0),
-        child: ListView(
-          children: _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
+        child: FocusTraversalGroup(
+          child: ListView(
+            children: _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

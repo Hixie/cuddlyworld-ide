@@ -11,7 +11,7 @@ Future<void> showMessage(BuildContext context, String caption, String body) {
         ),
         actions: <Widget>[
           Padding(
-            padding: EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(12.0),
             child: OutlinedButton(
               onPressed: () { Navigator.pop(context); },
               child: const Text('Dismiss'),
