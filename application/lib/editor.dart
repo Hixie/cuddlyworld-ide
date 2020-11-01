@@ -150,9 +150,9 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: parts[1],
-          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          value: widget.atom.ensurePropertyIs<EnumPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = StringPropertyValue(value); },
+          onChanged: (String value) { widget.atom[property] = EnumPropertyValue(value); },
         );
       case 'enum':
         return EnumField(
