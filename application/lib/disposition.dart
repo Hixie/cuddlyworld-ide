@@ -182,6 +182,7 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   void remove(Atom atom) {
     assert(_atoms.contains(atom));
     _atoms.remove(atom);
+    atom.delete();
     notifyListeners();
   }
 

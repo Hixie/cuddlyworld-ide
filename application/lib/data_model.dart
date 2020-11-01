@@ -352,6 +352,14 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     owner.didChange();
   }
 
+  bool _deleted = false;
+  bool get deleted => _deleted;
+  void delete() {
+    _deleted = true;
+    notifyListeners();
+    dispose();
+  }
+
   String get rootClass => 'TAtom';
 
   Identifier get identifier => _identifier;

@@ -53,6 +53,7 @@ class _EditorState extends State<Editor> {
   }
 
   void _handleAtomUpdate() {
+    // TODO(elih): check if Atom.deleted
     setState(() { /* atom changed */ });
     _updateProperties();
   }
@@ -230,8 +231,6 @@ class _EditorState extends State<Editor> {
                     onPressed: () {
                       EditorDisposition.of(context).current = null;
                       AtomsDisposition.of(context).remove(widget.atom);
-                      // TODO(ianh): must make sure anyone whe references this forgets about it
-                      widget.atom.dispose();
                     },
                     child: const Text('Delete'),
                   ),
