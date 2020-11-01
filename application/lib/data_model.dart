@@ -28,9 +28,9 @@ abstract class PropertyValue {
         assert(object['identifier'] is String);
         return AtomPropertyValuePlaceholder(object['identifier'] as String);
       }
-      if (object['type'] == 'enum') {
+      if (object['type'] == 'literal') {
         assert(object['value'] is String);
-        return EnumPropertyValue(object['value'] as String);
+        return LiteralPropertyValue(object['value'] as String);
       }
       if (object['type'] == 'child*') {
         assert(object['children'] is List<Object>, 'not a list: $object');
@@ -86,14 +86,14 @@ class StringPropertyValue extends PropertyValue {
   String encodeForServer(String key, Set<Atom> serialized) => '$key: "${escapeDoubleQuotes(value)}"; ';
 }
 
-class EnumPropertyValue extends PropertyValue {
-  EnumPropertyValue(this.value);
+class LiteralPropertyValue extends PropertyValue {
+  LiteralPropertyValue(this.value);
   
   final String value;
   
   @override
   Object encode() => <String, Object>{
-    'type': 'enum',
+    'type': 'literal',
     'value': value,
   };
 

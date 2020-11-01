@@ -150,18 +150,18 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: parts[1],
-          value: widget.atom.ensurePropertyIs<EnumPropertyValue>(property)?.value ?? '',
+          value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = EnumPropertyValue(value); },
+          onChanged: (String value) { widget.atom[property] = LiteralPropertyValue(value); },
         );
       case 'enum':
         return EnumField(
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           enumName: parts[1],
-          value: widget.atom.ensurePropertyIs<EnumPropertyValue>(property)?.value ?? '',
+          value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = EnumPropertyValue(value); },
+          onChanged: (String value) { widget.atom[property] = LiteralPropertyValue(value); },
         );
       case 'landmark*':
         return LandmarksField(
