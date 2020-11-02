@@ -15,7 +15,10 @@ abstract class AtomOwner {
   Identifier getNewIdentifier();
 }
 
+@immutable
 abstract class PropertyValue {
+  const PropertyValue();
+
   Object encode();
 
   static PropertyValue decode(Object object) {
@@ -75,7 +78,7 @@ abstract class PropertyValue {
 }
 
 class StringPropertyValue extends PropertyValue {
-  StringPropertyValue(this.value);
+  const StringPropertyValue(this.value);
   
   final String value;
   
@@ -87,7 +90,7 @@ class StringPropertyValue extends PropertyValue {
 }
 
 class LiteralPropertyValue extends PropertyValue {
-  LiteralPropertyValue(this.value);
+  const LiteralPropertyValue(this.value);
   
   final String value;
   
@@ -102,7 +105,7 @@ class LiteralPropertyValue extends PropertyValue {
 }
 
 class BooleanPropertyValue extends PropertyValue {
-  BooleanPropertyValue(this.value); // ignore: avoid_positional_boolean_parameters
+  const BooleanPropertyValue(this.value); // ignore: avoid_positional_boolean_parameters
   
   final bool value;
   
@@ -114,7 +117,7 @@ class BooleanPropertyValue extends PropertyValue {
 }
 
 class AtomPropertyValue extends PropertyValue {
-  AtomPropertyValue(this.value);
+  const AtomPropertyValue(this.value);
   
   final Atom value;
   
@@ -139,7 +142,7 @@ class AtomPropertyValue extends PropertyValue {
 }
 
 class AtomPropertyValuePlaceholder extends PropertyValue {
-  AtomPropertyValuePlaceholder(this.value);
+  const AtomPropertyValuePlaceholder(this.value);
   
   final String value;
 
@@ -151,13 +154,16 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
 
   @override
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
-    return AtomPropertyValue(lookupCallback(value))
+    final Atom child = lookupCallback(value);
+    if (child == null)
+      return null;
+    return AtomPropertyValue(child)
       ..registerChildren(parent);
   }
 }
 
 class ChildrenPropertyValue extends PropertyValue {
-  ChildrenPropertyValue(this.value);
+  const ChildrenPropertyValue(this.value);
   
   final List<PositionedAtom> value;
   
@@ -190,7 +196,7 @@ class ChildrenPropertyValue extends PropertyValue {
 }
 
 class ChildrenPropertyValuePlaceholder extends PropertyValue {
-  ChildrenPropertyValuePlaceholder(this.value);
+  const ChildrenPropertyValuePlaceholder(this.value);
   
   final List<PositionedAtomPlaceholder> value;
 
@@ -236,7 +242,7 @@ class PositionedAtomPlaceholder {
 }
 
 class LandmarksPropertyValue extends PropertyValue {
-  LandmarksPropertyValue(this.value);
+  const LandmarksPropertyValue(this.value);
 
   final List<Landmark> value;
   
@@ -269,7 +275,7 @@ class LandmarksPropertyValue extends PropertyValue {
 }
 
 class LandmarksPropertyValuePlaceholder extends PropertyValue {
-  LandmarksPropertyValuePlaceholder(this.value);
+  const LandmarksPropertyValuePlaceholder(this.value);
   
   final List<LandmarkPlaceholder> value;
 
@@ -338,6 +344,14 @@ class Identifier extends Comparable<Identifier> {
       return disambiguator.compareTo(other.disambiguator);
     return name.compareTo(other.name);
   }
+
+  bool matches(String identifier) {
+    final Identifier other = Identifier.split(identifier);
+    return compareTo(other) == 0;
+  }
+
+  @override
+  String toString() => identifier;
 }
 
 class Atom extends ChangeNotifier implements Comparable<Atom> {
@@ -392,6 +406,15 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
       _properties[name] = value;
     }
     _properties[name]?.registerChildren(this);
+    notifyListeners();
+  }
+
+  void addAll(Map<String, PropertyValue> properties) {
+    for (final String key in properties.keys)
+      _properties[key]?.unregisterChildren(this);
+    _properties.addAll(properties);
+    for (final String key in properties.keys)
+      _properties[key]?.registerChildren(this);
     notifyListeners();
   }
 
