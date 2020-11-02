@@ -128,28 +128,28 @@ class Blueprint extends StatelessWidget {
         color: Theme.of(context).colorScheme.background,
         elevation: 1.0,
         clipBehavior: Clip.antiAlias,
-        child: GridTile(
-          header: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: <Color>[
-                  color,
-                  color.withOpacity(0.25),
-                ],
+        child: InkWell(
+          onTap: () { _handleCreate(context); },
+          child: GridTile(
+            header: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[
+                    color,
+                    color.withOpacity(0.25),
+                  ],
+                ),
+              ),
+              child: GridTileBar(
+                title: Text(
+                  header,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).primaryTextTheme.headline6,
+                ),
               ),
             ),
-            child: GridTileBar(
-              title: Text(
-                header,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).primaryTextTheme.headline6,
-              ),
-            ),
-          ),
-          child: InkWell(
-            onTap: () { _handleCreate(context); },
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12.0, 48.0, 12.0, 12.0),
               child: FittedBox(
