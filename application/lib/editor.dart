@@ -329,14 +329,21 @@ Widget _makeAtomSlot(Set<String> classes, Atom value, Atom parent, ValueSetter<A
               _pad(AtomWidget(
                 atom: value,
                 onDelete: () { onChanged(null); },
+                onTap: () { EditorDisposition.of(context).current = value; },
               )),
             ...candidateData.map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom))),
             ...rejectedData.whereType<Atom>().map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom, color: Colors.red))),
             if (value == null && candidateData.isEmpty && rejectedData.isEmpty)
-              _pad(const AtomWidget(
+              _pad(AtomWidget(
                 elevation: 0.0,
-                label: SizedBox(width: 64.0, child: Text('')),
-                color: Color(0xFFE0E0E0),
+                label: const SizedBox(width: 64.0, child: Text('')),
+                color: const Color(0xFFE0E0E0),
+                onTap: (classes.isEmpty) ? null : () {
+                  final Atom newAtom = AtomsDisposition.of(context).add()
+                    ..className = classes.first;
+                  onChanged(newAtom);
+                  EditorDisposition.of(context).current = newAtom;
+                },
               )),
           ],
         ),
@@ -659,7 +666,14 @@ class _AtomFieldState extends State<AtomField> {
   @override
   Widget build(BuildContext context) {
     return _makeField(widget.label, _focusNode, Expanded(
-      child: _makeAtomSlot(_classes, widget.value, widget.parent, widget.onChanged, needsTree: widget.needsTree, needsDifferent: widget.needsDifferent),
+      child: _makeAtomSlot(
+        _classes,
+        widget.value,
+        widget.parent,
+        widget.onChanged,
+        needsTree: widget.needsTree,
+        needsDifferent: widget.needsDifferent,
+      ),
     ));
   }
 }

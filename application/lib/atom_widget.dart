@@ -46,6 +46,7 @@ class AtomWidget extends StatefulWidget {
     this.curve = Curves.easeInQuint,
     this.duration = const Duration(milliseconds: 200),
     this.onDelete,
+    this.onTap,
   }): assert((label == null) != (atom == null)),
       super(key: key);
 
@@ -57,6 +58,7 @@ class AtomWidget extends StatefulWidget {
   final Curve curve;
   final Duration duration;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   @override
   State<AtomWidget> createState() => _AtomWidgetState();
@@ -89,9 +91,7 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
       shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: (widget.atom != null && !widget.startFromCatalog) ? () {
-          EditorDisposition.of(context).current = widget.atom;
-        } : null,
+        onTap: widget.onTap,
         child: AnimatedSize(
           alignment: Alignment.centerLeft,
           curve: widget.curve,
