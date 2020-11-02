@@ -7,6 +7,36 @@ import 'data_model.dart';
 import 'dialogs.dart';
 import 'disposition.dart';
 
+const Map<String, String> _enumDescriptions = <String, String>{
+  'tpPartOfImplicit': "Part of; isn't mentioned when looking at its parent",
+  'tpAmbiguousPartOfImplicit': "Part of; placement is made explicit in the name; isn't mentioned when looking at its parent",
+  'tpAroundImplicit': "Around; isn't mentioned when looking at its parent",
+  'tpAtImplicit': "At; isn't mentioned when looking at its parent",
+  'tpOnImplicit': "On; isn't mentioned when looking at its parent",
+  'tpPlantedInImplicit': "Planted in; isn't mentioned when looking at its parent",
+  'tpDirectionalOpening': 'Opening; directional',
+  'tpDirectionalPath': 'Path; directional',
+  'tpSurfaceOpening': 'Opening; on surface',
+  'tpAt': 'At',
+  'tpOn': 'On',
+  'tpPlantedIn': 'Planted in',
+  'tpInstalledIn': 'Installed in',
+  'tpIn': 'In',
+  'tpEmbedded': 'Embedded',
+  'tpCarried': 'Carried',
+  //Masses
+  'tmLight': 'less than 5 kilograms',
+  'tmHeavy': 'between 5 and 25 kilograms',
+  'tmPonderous': 'between 25 and 125 kilograms',
+  'tmLudicrous': 'more than 125 kilograms',
+  //Size
+  'tsSmall': 'less than 10 centimeters',
+  'tsBig': 'between 0.1 and 1 meters',
+  'tsMassive': 'between 1 and 10 meters',
+  'tsGigantic': 'between 10 and 100 meters',
+  'tsLudicrous': 'more than 100 meters',
+};
+
 class Editor extends StatefulWidget {
   const Editor({ Key key, this.game, this.atom }): super(key: key);
 
@@ -294,7 +324,7 @@ Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, Val
   return DropdownButton<String>(
     items: values.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
       value: value,
-      child: Text(value),
+      child: Text(_enumDescriptions[value] ?? value),
     )).toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
