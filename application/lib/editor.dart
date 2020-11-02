@@ -323,8 +323,8 @@ Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, Val
     return const Text('Loading...', style: TextStyle(fontStyle: FontStyle.italic));
   return DropdownButton<String>(
     items: values.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-      value: _enumDescriptions[value] ?? value,
-      child: Text(value),
+      value: value,
+      child: Text(_enumDescriptions[value] ?? value),
     )).toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
