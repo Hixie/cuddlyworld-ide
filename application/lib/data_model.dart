@@ -75,6 +75,7 @@ abstract class PropertyValue {
 
   void registerChildren(Atom parent) { }
   void unregisterChildren(Atom parent) { }
+  Iterable<Atom> get children sync* { }
 }
 
 class StringPropertyValue extends PropertyValue {
@@ -139,6 +140,9 @@ class AtomPropertyValue extends PropertyValue {
   void unregisterChildren(Atom parent) {
     value.unregisterParent(parent);
   }
+
+  @override
+  Iterable<Atom> get children sync* { yield value; }
 }
 
 class AtomPropertyValuePlaceholder extends PropertyValue {
@@ -176,10 +180,8 @@ class ChildrenPropertyValue extends PropertyValue {
   @override
   String encodeForServer(String key, Set<Atom> serialized) {
     final StringBuffer buffer = StringBuffer();
-    for (final PositionedAtom positionedAtom in value) {
-      if (positionedAtom.atom != null)
-        buffer.write('$key: ${positionedAtom.encodeForServer(serialized)}; ');
-    }
+    for (final PositionedAtom positionedAtom in value.where(PositionedAtom.hasChild))
+      buffer.write('$key: ${positionedAtom.encodeForServer(serialized)}; ');
     return buffer.toString();
   }
 
@@ -194,6 +196,9 @@ class ChildrenPropertyValue extends PropertyValue {
     for (final PositionedAtom positionedAtom in value)
       positionedAtom.atom?.unregisterParent(parent);
   }
+
+  @override
+  Iterable<Atom> get children sync* { yield* value.map<Atom>((PositionedAtom positionedAtom) => positionedAtom.atom); }
 }
 
 class ChildrenPropertyValuePlaceholder extends PropertyValue {
@@ -229,6 +234,8 @@ class PositionedAtom {
   String encodeForServer(Set<Atom> serialized) {
     return '$position, ${atom.encodeForServer(serialized)}';
   }
+
+  static bool hasChild(PositionedAtom candidate) => candidate.atom != null;
 }
 
 class PositionedAtomPlaceholder {
@@ -256,24 +263,25 @@ class LandmarksPropertyValue extends PropertyValue {
   @override
   String encodeForServer(String key, Set<Atom> serialized) {
     final StringBuffer buffer = StringBuffer();
-    for (final Landmark landmark in value) {
-      if (landmark.atom != null)
-        buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
-    }
+    for (final Landmark landmark in value.where(Landmark.hasChild))
+      buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
     return buffer.toString();
   }
 
   @override
   void registerChildren(Atom parent) {
-    for (final Landmark landmark in value)
-      landmark.atom?.registerParent(parent);
+    for (final Landmark landmark in value.where(Landmark.hasChild))
+      landmark.atom.registerFriend(parent);
   }
 
   @override
   void unregisterChildren(Atom parent) {
-    for (final Landmark landmark in value)
-      landmark.atom?.unregisterParent(parent);
+    for (final Landmark landmark in value.where(Landmark.hasChild))
+      landmark.atom.unregisterFriend(parent);
   }
+
+  @override
+  Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom>((Landmark landmark) => landmark.atom); }
 }
 
 class LandmarksPropertyValuePlaceholder extends PropertyValue {
@@ -311,6 +319,8 @@ class Landmark {
   String encodeForServer(Set<Atom> serialized) {
     return '$direction, ${atom.encodeForServer(serialized)}, ${options.join(" ")}';
   }
+
+  static bool hasChild(Landmark candidate) => candidate.atom != null;
 }
 
 class LandmarkPlaceholder {
@@ -476,10 +486,13 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     return 'new $className named ${identifier.identifier} { $buffer}';
   }
 
-  Set<Atom> get parents => _parents.keys.toSet();
-  final Map<Atom, int> _parents = <Atom, int>{};
+  Atom get parent => _parent;
+  Atom _parent;
 
-  Atom get parent => _parents.length == 1 ? _parents.keys.single : null;
+  Set<Atom> get friends => _friends.keys.toSet();
+  final Map<Atom, int> _friends = <Atom, int>{};
+
+  Iterable<Atom> get children => _properties.values.expand((PropertyValue value) => value.children);
 
   int get depth {
     final Atom parent = this.parent;
@@ -489,43 +502,50 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   }
 
   void registerParent(Atom parent) {
-    if (_parents.containsKey(parent)) {
-      _parents[parent] += 1;
+    if (parent != _parent) {
+      _parent = parent;
+      notifyListeners();
+    }
+  }
+
+  void unregisterParent(Atom parent) {
+    if (parent == _parent) {
+      _parent = null;
+      notifyListeners();
+    }
+  }
+
+  void registerFriend(Atom friend) {
+    if (_friends.containsKey(friend)) {
+      _friends[friend] += 1;
     } else {
-      _parents[parent] = 1;
+      _friends[friend] = 1;
     }
     notifyListeners();
   }
 
-  void unregisterParent(Atom parent) {
-    assert(_parents.containsKey(parent));
-    if (_parents[parent] > 1) {
-      _parents[parent] -= 1;
+  void unregisterFriend(Atom friend) {
+    assert(_friends.containsKey(friend));
+    if (_friends[friend] > 1) {
+      _friends[friend] -= 1;
     } else {
-      assert(_parents[parent] == 1);
-      _parents.remove(parent);
+      assert(_friends[friend] == 1);
+      _friends.remove(friend);
     }
     notifyListeners();
   }
 
   bool canAddToTree(Atom candidateChild) {
     assert(candidateChild != null);
-    if (candidateChild._parents.isNotEmpty)
+    assert(candidateChild.parent != this);
+    if (candidateChild.parent != null)
       return false;
-    // check to see if any of our ancestors are the candidate
-    final Set<Atom> examined = <Atom>{};
-    final Set<Atom> pending = <Atom>{..._parents.keys};
-    while (pending.isNotEmpty) {
-      final Atom next = pending.first;
-      pending.remove(next);
-      if (!examined.contains(next)) {
-        if (next == candidateChild)
-          return false;
-        examined.add(next);
-        pending.addAll(next._parents.keys);
-      }
+    Atom ancestor = parent;
+    while (ancestor != null) {
+      if (ancestor == candidateChild)
+        return false;
+      ancestor = ancestor.parent;
     }
-    examined.clear();
     return true;
   }
 

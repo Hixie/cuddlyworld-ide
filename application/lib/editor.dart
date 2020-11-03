@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'atom_widget.dart';
 import 'backend.dart';
 import 'data_model.dart';
-import 'dialogs.dart';
 import 'disposition.dart';
 
 const Map<String, String> _enumDescriptions = <String, String>{
@@ -222,7 +221,8 @@ class _EditorState extends State<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    final Atom parent = widget.atom.parents.length == 1 ? widget.atom.parents.single : null;
+    final Atom parent = widget.atom.parent;
+    final EditorDisposition editor = EditorDisposition.of(context);
     return SizedBox.expand(
       child: SingleChildScrollView(
         child: ListBody(
@@ -265,20 +265,18 @@ class _EditorState extends State<Editor> {
                     child: const Text('Delete'),
                   ),
                   const SizedBox(width: 24.0),
-                  OutlinedButton(
-                    onPressed: () async {
-                      final String heading = 'Adding ${widget.atom.identifier.identifier} to world';
-                      try {
-                        final String reply = await widget.game.sendMessage(
-                          'debug make \'${escapeSingleQuotes(widget.atom.encodeForServer(<Atom>{}))}\'',
-                        );
-                        await showMessage(context, heading, reply);
-                      } on ConnectionLostException {
-                        await showMessage(context, heading, 'Conection lost');
-                      }
-                    },
-                    child: const Text('Add to world'),
-                  ),
+                  if (editor.cartHolds(widget.atom))
+                    OutlinedButton.icon(
+                      onPressed: () { editor.removeFromCart(widget.atom); },
+                      icon: const Icon(Icons.shopping_cart),
+                      label: const Text('Remove from cart'),
+                    )
+                  else
+                    OutlinedButton.icon(
+                      onPressed: () { editor.addToCart(widget.atom); },
+                      icon: const Icon(Icons.shopping_cart_outlined),
+                      label: const Text('Add to cart'),
+                    ),
                 ],
               ),
             ),

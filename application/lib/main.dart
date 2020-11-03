@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 
 import 'backend.dart';
+import 'cart.dart';
 import 'catalog.dart';
 import 'console.dart';
 import 'data_model.dart';
@@ -54,11 +55,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   StreamSubscription<String> _gameStream;
   TabController _tabController;
 
+  Atom _lastCurrent;
+
   @override
   void initState() {
     super.initState();
     _terminal = Terminal();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -79,6 +82,10 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         ..reportNextLogin(_reportLogin);
       _gameStream?.cancel();
       _gameStream = _game.output.listen(_handleOutput);
+    }
+    final Atom current = EditorDisposition.of(context).current;
+    if (current != _lastCurrent) {
+      _tabController.index = 0;
     }
   }
 
@@ -124,6 +131,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             tabs: const <Widget>[
               Tab(text: 'Editor'),
               Tab(text: 'Templates'),
+              Tab(text: 'Cart'),
               Tab(text: 'Console'),
               Tab(text: 'Settings'),
             ],
@@ -172,16 +180,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                       );
                       break;
                     case 1:
-                      body = TemplateLibrary(
-                        onCreated: () {
-                          _tabController.index = 0;
-                        },
-                      );
+                      body = const TemplateLibrary();
                       break;
                     case 2:
-                      body = Console(game: _game, terminal: _terminal);
+                      body = Cart(game: _game);
                       break;
                     case 3:
+                      body = Console(game: _game, terminal: _terminal);
+                      break;
+                    case 4:
                       body = const SettingsTab();
                       break;
                   }

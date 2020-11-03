@@ -38,8 +38,9 @@ Widget makeTextForIdentifier(BuildContext context, Identifier identifier, [ Stri
 class AtomWidget extends StatefulWidget {
   const AtomWidget({
     Key key,
-    this.label,
     this.atom,
+    this.icon,
+    this.label,
     this.color,
     this.elevation = 3.0,
     this.startFromCatalog = false,
@@ -51,6 +52,7 @@ class AtomWidget extends StatefulWidget {
       super(key: key);
 
   final Atom atom;
+  final Widget icon;
   final Widget label;
   final Color color;
   final double elevation;
@@ -104,6 +106,11 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
+                  if (widget.icon != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: widget.icon,
+                    ),
                   widget.label ?? makeTextForIdentifier(context, widget.atom.identifier),
                   if (widget.onDelete != null)
                     Padding(

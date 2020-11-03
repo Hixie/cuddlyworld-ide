@@ -77,6 +77,7 @@ class DraggableText extends StatefulWidget {
 class _DraggableTextState extends State<DraggableText> {
   @override
   Widget build(BuildContext context) {
+    final EditorDisposition editor = EditorDisposition.of(context);
     return Draggable<Atom>(
       data: widget.atom,
       dragAnchor: DragAnchor.pointer,
@@ -93,20 +94,18 @@ class _DraggableTextState extends State<DraggableText> {
       child: Padding(
         padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
         child: FlatButton(
-          color: widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null,
+          color: widget.atom == editor.current ? Colors.yellow : null,
           onPressed: () {
             setState(() {
               EditorDisposition.of(context).current = widget.atom;
             });
           },
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16.0 * widget.atom.depth,
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
-            ),
+          child: Row(
+            children: <Widget>[
+              Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
+              SizedBox(width: 16.0 * widget.atom.depth + 12.0),
+              makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
+            ],
           ),
         ),
       ),

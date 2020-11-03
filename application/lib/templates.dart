@@ -23,18 +23,16 @@ class AtomDescription {
 }
 
 class TemplateLibrary extends StatelessWidget {
-  const TemplateLibrary({ Key key, @required this.onCreated }) : super(key: key);
-
-  final VoidCallback onCreated;
+  const TemplateLibrary({ Key key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GridView.extent(
       maxCrossAxisExtent: 350.0,
-      children: <Widget>[
+      children: const <Widget>[
         Blueprint(
           header: 'Outdoor room',
-          atoms: const <AtomDescription>[
+          atoms: <AtomDescription>[
             AtomDescription(
               identifier: 'room',
               className: 'TGroundLocation',
@@ -57,26 +55,22 @@ class TemplateLibrary extends StatelessWidget {
               },
             ),
           ],
-          onCreated: onCreated,
-          icon: const Icon(Icons.landscape),
+          icon: Icon(Icons.landscape),
         ),
         Blueprint(
           header: 'Sky backdrop',
-          atoms: const <AtomDescription>[],
-          onCreated: onCreated,
-          icon: const Icon(Icons.cloud),
+          atoms: <AtomDescription>[],
+          icon: Icon(Icons.cloud),
         ),
         Blueprint(
           header: 'Indoor room',
-          atoms: const <AtomDescription>[],
-          onCreated: onCreated,
-          icon: const Icon(Icons.insert_photo),
+          atoms: <AtomDescription>[],
+          icon: Icon(Icons.insert_photo),
         ),
         Blueprint(
           header: 'Door threshold',
-          atoms: const <AtomDescription>[],
-          onCreated: onCreated,
-          icon: const Icon(Icons.sensor_door),
+          atoms: <AtomDescription>[],
+          icon: Icon(Icons.sensor_door),
         ),
       ],
     );
@@ -89,14 +83,12 @@ class Blueprint extends StatelessWidget {
     @required this.header,
     @required this.icon,
     @required this.atoms,
-    this.onCreated,
   }) : assert(atoms != null),
        super(key: key);
 
   final String header;
   final Widget icon;
   final List<AtomDescription> atoms;
-  final VoidCallback onCreated;
 
   void _handleCreate(BuildContext context) {
     assert(this.atoms.isNotEmpty);
@@ -112,8 +104,6 @@ class Blueprint extends StatelessWidget {
       atom.resolveIdentifiers(_lookupAtom);
     AtomsDisposition.of(context).addAll(atoms);
     EditorDisposition.of(context).current = atoms.first;
-    if (onCreated != null)
-      onCreated();
   }
 
   @override

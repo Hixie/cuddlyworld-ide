@@ -237,19 +237,43 @@ class EditorDisposition extends ChildDisposition {
     notifyListeners();
   }
 
+  Set<Atom> get cart => _cart.toSet();
+  final Set<Atom> _cart = <Atom>{};
+
+  bool cartHolds(Atom atom) => _cart.contains(atom);
+
+  void addToCart(Atom atom) {
+    if (!_cart.contains(atom)) {
+      _cart.add(atom);
+      notifyListeners();
+    }
+  }
+
+  void removeFromCart(Atom atom) {
+    if (_cart.contains(atom)) {
+      _cart.remove(atom);
+      notifyListeners();
+    }
+  }
+
   Map<String, Object> encode() {
     return <String, Object>{
       'current': (current != null) ? current.identifier.identifier : '',
+      'cart': _cart.map<String>((Atom atom) => atom.identifier.identifier).toList(),
     };
   }
   
   void decode(Map<String, Object> object, AtomLookupCallback lookupCallback) {
     assert(object['current'] is String);
+    assert(object['cart'] is List<Object>);
     final String currentIdentifier = object['current'] as String;
     if (currentIdentifier.isNotEmpty)
       current = lookupCallback(currentIdentifier);
     else
       current = null;
+    _cart
+      ..clear()
+      ..addAll((object['cart'] as List<Object>).cast<String>().map(lookupCallback));
   }
 
   static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context);
