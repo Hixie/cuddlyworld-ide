@@ -259,6 +259,9 @@ class _EditorState extends State<Editor> {
                 children: <Widget>[
                   OutlinedButton(
                     onPressed: () {
+                      if (editor.cartHolds(widget.atom)) {
+                        editor.removeFromCart(widget.atom);
+                      }
                       EditorDisposition.of(context).current = null;
                       AtomsDisposition.of(context).remove(widget.atom);
                     },
