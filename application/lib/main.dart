@@ -10,6 +10,7 @@ import 'console.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 import 'editor.dart';
+import 'help.dart';
 import 'saver.dart';
 import 'settings.dart';
 import 'templates.dart';
@@ -61,7 +62,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _terminal = Terminal();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -134,6 +135,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               Tab(text: 'Cart'),
               Tab(text: 'Console'),
               Tab(text: 'Settings'),
+              Tab(text: 'Help'),
             ],
           ),
           Expanded(
@@ -142,7 +144,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               child: AnimatedBuilder(
                 animation: _tabController,
                 builder: (BuildContext context, Widget child) {
-                  switch (_tabController.index.round()) {
+                  switch (_tabController.index) {
                     case 0:
                       final Atom currentAtom = EditorDisposition.of(context).current;
                       if (currentAtom != null) {
@@ -191,6 +193,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                     case 4:
                       body = const SettingsTab();
                       break;
+                    case 5:
+                      body = const HelpTab();
                   }
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 150),
