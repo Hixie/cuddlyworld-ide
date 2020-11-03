@@ -177,7 +177,8 @@ class ChildrenPropertyValue extends PropertyValue {
   String encodeForServer(String key, Set<Atom> serialized) {
     final StringBuffer buffer = StringBuffer();
     for (final PositionedAtom positionedAtom in value) {
-      buffer.write('$key: ${positionedAtom.encodeForServer(serialized)}; ');
+      if (positionedAtom.atom != null)
+        buffer.write('$key: ${positionedAtom.encodeForServer(serialized)}; ');
     }
     return buffer.toString();
   }
@@ -256,7 +257,8 @@ class LandmarksPropertyValue extends PropertyValue {
   String encodeForServer(String key, Set<Atom> serialized) {
     final StringBuffer buffer = StringBuffer();
     for (final Landmark landmark in value) {
-      buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
+      if (landmark.atom != null)
+        buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
     }
     return buffer.toString();
   }
