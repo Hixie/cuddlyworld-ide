@@ -12,21 +12,24 @@ class _HelpTabState extends State<HelpTab>{
   @override
   Widget build(BuildContext context) {
     return ListView(
-          children: const <Widget>[
-            Text(
-                "GENERAL:\n\nTo create a TAtom from scratch, go to the 'editor' tab and press the plus button. "
+          children: <Widget>[
+            Text('Introduction', style: Theme.of(context).textTheme.headline4),
+            const Text(
+                "To create a TAtom from scratch, go to the 'editor' tab and press the plus button. "
                 'Then edit the fields.\n'
                 "To add something to the world, press 'add to cart', then go to cart and press send to server."
               ),
-            Text(
-              'FIELDS\n\nThere are different kinds of fields:\n'
+            Text('\nFields', style: Theme.of(context).textTheme.headline4),
+            const Text(
+              'There are different kinds of fields:\n'
               '- text fields, like name, identifer, pattern, description\n'
               '- dropdown fields, like class, position, size, mass\n'
               '- atom fields, like source, door side, where you drag the atom to the field\n'
               '- children field, which has dropdown and atom fields\n'
               '- landmark field, which has dropdown and atom fields\n'
             ),
-            Text("""PATTERNS:\n\nNested lists are marked by round brackets (...).                                                                                                         
+            Text('Patterns', style: Theme.of(context).textTheme.headline4),
+            const Text("""Nested lists are marked by round brackets (...).                                                                                                         
    Tokens can have a "+" suffix indicating that the token can be repeated.                                                                                  
    Tokens can have a "?" suffix indicating that the token can be omitted.                                                                                   
    Nested lists can have suffixes to indicate what kind of list it is:                                                                                      
