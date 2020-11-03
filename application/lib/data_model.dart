@@ -412,6 +412,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   void addAll(Map<String, PropertyValue> properties) {
     for (final String key in properties.keys)
       _properties[key]?.unregisterChildren(this);
+    assert(!properties.values.any((PropertyValue value) => value == null));
     _properties.addAll(properties);
     for (final String key in properties.keys)
       _properties[key]?.registerChildren(this);
@@ -425,8 +426,11 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   }
 
   void resolveIdentifiers(AtomLookupCallback lookupCallback) {
-    for (final String name in _properties.keys)
-      _properties[name] = _properties[name].resolve(lookupCallback, this);
+    for (final String name in _properties.keys) {
+      final PropertyValue resolved = _properties[name].resolve(lookupCallback, this);
+      if (resolved != null)
+        _properties[name] = resolved;
+    }
   }
 
   @override
