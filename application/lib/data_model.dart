@@ -428,8 +428,11 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   void resolveIdentifiers(AtomLookupCallback lookupCallback) {
     for (final String name in _properties.keys) {
       final PropertyValue resolved = _properties[name].resolve(lookupCallback, this);
-      if (resolved != null)
+      if (resolved != null) {
+        _properties.remove(name);
+      } else {
         _properties[name] = resolved;
+      }
     }
   }
 
