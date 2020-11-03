@@ -46,6 +46,13 @@ class _SettingsTabState extends State<SettingsTab> {
     return Column(
       children: <Widget>[
         Padding(
+          padding: const EdgeInsets.only(top: 12.0, left: 8.0, right: 8.0, bottom: 8.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth, minWidth: kSettingsWidth),
+            child: Text('Server configuration', style: Theme.of(context).textTheme.headline5),
+          ),
+        ),
+        Padding(
           padding: const EdgeInsets.all(8.0),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: kSettingsWidth),
