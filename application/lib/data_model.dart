@@ -69,7 +69,8 @@ abstract class PropertyValue {
     throw FormatException('Unrecognized PropertyValue data ($object)', object);
   }
 
-  String encodeForServer(String key, Set<Atom> serialized);
+  String encodeForServerMake(String key, Set<Atom> serialized);
+  String encodeForServerConnect(String from) => '';
 
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) => this; // ignore: avoid_returning_this
 
@@ -87,7 +88,7 @@ class StringPropertyValue extends PropertyValue {
   Object encode() => value;
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => '$key: "${escapeDoubleQuotes(value)}"; ';
+  String encodeForServerMake(String key, Set<Atom> serialized) => '$key: "${escapeDoubleQuotes(value)}"; ';
 }
 
 class LiteralPropertyValue extends PropertyValue {
@@ -102,7 +103,7 @@ class LiteralPropertyValue extends PropertyValue {
   };
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => '$key: $value; ';
+  String encodeForServerMake(String key, Set<Atom> serialized) => '$key: $value; ';
 }
 
 class BooleanPropertyValue extends PropertyValue {
@@ -114,7 +115,7 @@ class BooleanPropertyValue extends PropertyValue {
   Object encode() => value;
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => '$key: $value; ';
+  String encodeForServerMake(String key, Set<Atom> serialized) => '$key: $value; ';
 }
 
 class AtomPropertyValue extends PropertyValue {
@@ -129,7 +130,7 @@ class AtomPropertyValue extends PropertyValue {
   };
   
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => '$key: ${value.encodeForServer(serialized)}; ';
+  String encodeForServerMake(String key, Set<Atom> serialized) => '$key: ${value.encodeForServerMake(serialized)}; ';
 
   @override
   void registerChildren(Atom parent) {
@@ -154,7 +155,7 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
   Object encode() => throw StateError('AtomPropertyValuePlaceholder asked to encode');
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => throw StateError('AtomPropertyValuePlaceholder asked to encode for server');
+  String encodeForServerMake(String key, Set<Atom> serialized) => throw StateError('AtomPropertyValuePlaceholder asked to encode for server');
 
   @override
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
@@ -178,10 +179,10 @@ class ChildrenPropertyValue extends PropertyValue {
   };
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) {
+  String encodeForServerMake(String key, Set<Atom> serialized) {
     final StringBuffer buffer = StringBuffer();
     for (final PositionedAtom positionedAtom in value.where(PositionedAtom.hasChild))
-      buffer.write('$key: ${positionedAtom.encodeForServer(serialized)}; ');
+      buffer.write('$key: ${positionedAtom.encodeForServerMake(serialized)}; ');
     return buffer.toString();
   }
 
@@ -210,7 +211,7 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
   Object encode() => throw StateError('ChildrenPropertyValuePlaceholder asked to encode');
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => throw StateError('ChildrenPropertyValuePlaceholder asked to encode for server');
+  String encodeForServerMake(String key, Set<Atom> serialized) => throw StateError('ChildrenPropertyValuePlaceholder asked to encode for server');
 
   @override
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
@@ -231,8 +232,8 @@ class PositionedAtom {
       'identifier': atom.identifier.identifier,
   };
 
-  String encodeForServer(Set<Atom> serialized) {
-    return '$position, ${atom.encodeForServer(serialized)}';
+  String encodeForServerMake(Set<Atom> serialized) {
+    return '$position, ${atom.encodeForServerMake(serialized)}';
   }
 
   static bool hasChild(PositionedAtom candidate) => candidate.atom != null;
@@ -261,11 +262,13 @@ class LandmarksPropertyValue extends PropertyValue {
   };
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) {
-    final StringBuffer buffer = StringBuffer();
-    for (final Landmark landmark in value.where(Landmark.hasChild))
-      buffer.write('$key: ${landmark.encodeForServer(serialized)}; ');
-    return buffer.toString();
+  String encodeForServerMake(String key, Set<Atom> serialized) => '';
+
+  @override
+  String encodeForServerConnect(String from) {
+    return value.where(Landmark.hasChild).map<String>((Landmark landmark) {
+      return 'connect $from, ${landmark.encodeForServerConnect()}';
+    }).join('; ');
   }
 
   @override
@@ -293,7 +296,10 @@ class LandmarksPropertyValuePlaceholder extends PropertyValue {
   Object encode() => throw StateError('LandmarksPropertyValuePlaceholder asked to encode');
 
   @override
-  String encodeForServer(String key, Set<Atom> serialized) => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
+  String encodeForServerMake(String key, Set<Atom> serialized) => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
+
+  @override
+  String encodeForServerConnect(String from) => throw StateError('LandmarksPropertyValuePlaceholder asked to encode for server');
 
   @override
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
@@ -316,8 +322,8 @@ class Landmark {
     'options': options.toList(),
   };
 
-  String encodeForServer(Set<Atom> serialized) {
-    return '$direction, ${atom.encodeForServer(serialized)}, ${options.join(" ")}';
+  String encodeForServerConnect() {
+    return '$direction, ${atom.identifier.identifier}, ${options.join(" ")}';
   }
 
   static bool hasChild(Landmark candidate) => candidate.atom != null;
@@ -476,14 +482,21 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     notifyListeners();
   }
 
-  String encodeForServer(Set<Atom> serialized) {
+  String encodeForServerMake(Set<Atom> serialized) {
     if (serialized.contains(this))
       return identifier.identifier;
     serialized.add(this);
     final StringBuffer buffer = StringBuffer();
     for (final String key in _properties.keys)
-      buffer.write(_properties[key].encodeForServer(key, serialized));
+      buffer.write(_properties[key].encodeForServerMake(key, serialized));
     return 'new $className named ${identifier.identifier} { $buffer}';
+  }
+
+  String encodeForServerConnect() {
+    final StringBuffer buffer = StringBuffer();
+    for (final String key in _properties.keys)
+      buffer.write(_properties[key].encodeForServerConnect(identifier.identifier));
+    return buffer.toString();
   }
 
   Atom get parent => _parent;
