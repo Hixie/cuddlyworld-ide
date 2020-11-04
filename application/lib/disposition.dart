@@ -93,8 +93,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     tabDisposition.decode(map['tab'] as int);
   }
 
-  static RootDisposition of(BuildContext context) =>
-      _of<RootDisposition>(context);
+  static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
 }
 
 abstract class ChildDisposition extends ChangeNotifier {
