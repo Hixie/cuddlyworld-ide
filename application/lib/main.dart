@@ -62,18 +62,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _terminal = Terminal();
-    _tabController = TabController(length: 6, vsync: this)..addListener(_newTab);
-  }
-
-  void _newTab() {
-    TabDisposition.of(context).tab = _tabController.index;
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final ServerDisposition server = ServerDisposition.of(context);
-    _tabController.index = TabDisposition.of(context).tab;
     if (_game == null ||
         server.server != _game.url ||
         server.username != _game.username ||
@@ -92,7 +87,6 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     final Atom current = EditorDisposition.of(context).current;
     if (current != _lastCurrent) {
       _tabController.index = 0;
-      TabDisposition.of(context).tab = 0;
     }
   }
 
@@ -122,7 +116,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     _gameStream.cancel();
     _game.dispose();
     _terminal.close();
-    _tabController..removeListener(_newTab)..dispose();
+    _tabController.dispose();
     super.dispose();
   }
 

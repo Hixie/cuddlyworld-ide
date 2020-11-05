@@ -12,7 +12,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     _serverDisposition = ServerDisposition(this);
     _atomsDisposition = AtomsDisposition(this);
     _editorDisposition = EditorDisposition(this);
-    _tabDisposition = TabDisposition(this);
   }
 
   Timer _timer;
@@ -30,8 +29,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   AtomsDisposition _atomsDisposition;
   EditorDisposition get editorDisposition => _editorDisposition;
   EditorDisposition _editorDisposition;
-  TabDisposition get tabDisposition => _tabDisposition;
-  TabDisposition _tabDisposition;
 
   static Future<RootDisposition> load(SaveFile saveFile) async {
     final RootDisposition result = RootDisposition(saveFile);
@@ -45,7 +42,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       'server': serverDisposition.encode(),
       'atoms': atomsDisposition.encode(),
       'editor': editorDisposition.encode(),
-      'tab': tabDisposition.encode(),
     };
   }
 
@@ -89,8 +85,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       ..resolveIdentifiers(lookupAtom);
     assert(map['editor'] is Map<String, Object>);
     editorDisposition.decode(map['editor'] as Map<String, Object>, lookupAtom);
-    assert(map['tab'] is int);
-    tabDisposition.decode(map['tab'] as int);
   }
 
   static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
@@ -235,24 +229,6 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context);
 }
 
-class TabDisposition extends ChildDisposition {
-  TabDisposition(RootDisposition parent) : super(parent);
-
-  int get tab => _tab;
-  int _tab = 0;
-  set tab(int tab) {
-    _tab = tab;
-    notifyListeners();
-  }
-
-  int encode() => tab;
-  void decode(int tab) {
-    this.tab = tab;
-  }
-
-  static TabDisposition of(BuildContext context) => _of<TabDisposition>(context);
-}
-
 class EditorDisposition extends ChildDisposition {
   EditorDisposition(RootDisposition parent) : super(parent);
 
@@ -327,7 +303,6 @@ class Dispositions extends StatelessWidget {
     @required this.serverDisposition,
     @required this.atomsDisposition,
     @required this.editorDisposition,
-    @required this.tabDisposition,
     @required this.child,
   }) : super(key: key);
 
@@ -338,14 +313,12 @@ class Dispositions extends StatelessWidget {
   })  : serverDisposition = rootDisposition.serverDisposition,
         atomsDisposition = rootDisposition.atomsDisposition,
         editorDisposition = rootDisposition.editorDisposition,
-        tabDisposition = rootDisposition.tabDisposition,
         super(key: key);
 
   final RootDisposition rootDisposition;
   final ServerDisposition serverDisposition;
   final AtomsDisposition atomsDisposition;
   final EditorDisposition editorDisposition;
-  final TabDisposition tabDisposition;
 
   final Widget child;
 
@@ -359,10 +332,7 @@ class Dispositions extends StatelessWidget {
           disposition: atomsDisposition,
           child: _Disposition<EditorDisposition>(
             disposition: editorDisposition,
-            child: _Disposition<TabDisposition>(
-              disposition: tabDisposition,
-              child: child,
-            ),
+            child: child,
           ),
         ),
       ),
