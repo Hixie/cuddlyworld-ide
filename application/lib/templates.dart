@@ -59,7 +59,71 @@ class TemplateLibrary extends StatelessWidget {
         ),
         Blueprint(
           header: 'Sky backdrop',
-          atoms: <AtomDescription>[],
+          atoms: <AtomDescription>[
+            AtomDescription(
+              identifier: 'skybox',
+              className: 'TBackdrop',
+              properties: <String, PropertyValue>{
+                'source': AtomPropertyValuePlaceholder('sky'),
+                'position': LiteralPropertyValue('tpAtImplicit'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'sky',
+              className: 'TScenery',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('sky'),
+                'pattern': StringPropertyValue('((blue cloudy sunny)* sky/skies)'),
+                'description': StringPropertyValue('The sky is mostly blue, with a few clouds and the sun.'),
+                'findDescription': StringPropertyValue('It\'s all around you. Mainly above you.'),
+                'cannotMoveExcuse': StringPropertyValue('You can\'t reach the sky.'),
+                'opened': BooleanPropertyValue(true),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsLudicrous'),
+                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                  PositionedAtomPlaceholder('tpEmbedded', 'clouds'),
+                  PositionedAtomPlaceholder('tpEmbedded', 'sun'),
+                ]),
+              },
+            ),
+            AtomDescription(
+              identifier: 'clouds',
+              className: 'TDescribedPhysicalThing',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('clouds'),
+                'pattern': StringPropertyValue('(fluffy white)* (cloud/clouds (water vapor/vapors)%)@'),
+                'description': StringPropertyValue('The clouds appear to be made of cotton, but are actually made of water vapor.'),
+                'mass': LiteralPropertyValue('tmPonderous'),
+                'size': LiteralPropertyValue('tsLudicrous'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'sun',
+              className: 'TScenery',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('sun'),
+                'pattern': StringPropertyValue('(((bright yellow)% (sun/suns star/stars)@) ((nearly? perfect)? sphere/spheres) ((nearly? perfect)? sphere/spheres of hot? plasma))@'),
+                'description': StringPropertyValue('The sun is a nearly perfect sphere of hot plasma, heated to incandescence by nuclear fusion reactions in its core.'),
+                'findDescription': StringPropertyValue('After a long search, you finally determine the sun is THE BRIGHT YELLOW STAR ABOVE YOU.'),
+                'cannotMoveExcuse': StringPropertyValue('Aside from not being able to reach the star, there is the issue that even approaching it would likely vaporize you.'),
+                'opened': BooleanPropertyValue(false),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsLudicrous'),
+                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                  PositionedAtomPlaceholder('tpPartOfImplicit', 'plasma'),
+                ]),
+              },
+            ),
+            AtomDescription(
+              identifier: 'plasma',
+              className: 'TFeature',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('plasma'),
+                'pattern': StringPropertyValue('hot? plasma/plasmas'),
+                'description': StringPropertyValue('The sun\'s plasma is its blood.'),
+              },
+            ),
+          ],
           icon: Icon(Icons.cloud),
         ),
         Blueprint(

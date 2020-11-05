@@ -124,7 +124,7 @@ class _EditorState extends State<Editor> {
       case 'indefiniteName': return 'Name (indefinite)';
       case 'ingredients': return 'Ingredients';
       case 'mass': return 'Mass';
-      case 'master': return 'Master';
+      case 'source': return 'Source';
       case 'maxSize': return 'Maximum size';
       case 'name': return 'Name';
       case 'landmark': return type == 'landmark*' ? 'Landmarks' : 'Landmark';

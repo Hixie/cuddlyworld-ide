@@ -221,7 +221,7 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
 }
 
 class PositionedAtom {
-  PositionedAtom(this.position, this.atom);
+  const PositionedAtom(this.position, this.atom);
   
   final String position;
   final Atom atom;
@@ -240,7 +240,7 @@ class PositionedAtom {
 }
 
 class PositionedAtomPlaceholder {
-  PositionedAtomPlaceholder(this.position, this.identifier);
+  const PositionedAtomPlaceholder(this.position, this.identifier);
 
   final String position;
   final String identifier;
@@ -309,7 +309,7 @@ class LandmarksPropertyValuePlaceholder extends PropertyValue {
 }
 
 class Landmark {
-  Landmark(this.direction, this.atom, this.options);
+  const Landmark(this.direction, this.atom, this.options);
   
   final String direction;
   final Atom atom; 
@@ -330,7 +330,7 @@ class Landmark {
 }
 
 class LandmarkPlaceholder {
-  LandmarkPlaceholder(this.direction, this.identifier, this.options);
+  const LandmarkPlaceholder(this.direction, this.identifier, this.options);
 
   final String direction;
   final String identifier;

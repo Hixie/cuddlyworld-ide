@@ -193,7 +193,10 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   }
 
   void addAll(List<Atom> atoms) {
-    _atoms.addAll(atoms);
+    for (final Atom atom in atoms) {
+      atom.identifier = parent.getNewIdentifier(name: atom.identifier.name, ignore: atom);
+      _atoms.add(atom);
+    }
     notifyListeners();
   }
 
