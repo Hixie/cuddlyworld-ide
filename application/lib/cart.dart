@@ -41,6 +41,8 @@ class _CartState extends State<Cart> {
 
   void _sendToServer() async {
     final Set<Atom> atoms = EditorDisposition.of(context).cart;
+    if(atoms.isEmpty) 
+      return;
     String heading;
     if (atoms.length == 1)
       heading = 'Adding ${atoms.single.identifier.identifier} to world';
