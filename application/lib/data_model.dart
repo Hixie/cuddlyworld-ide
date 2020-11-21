@@ -566,20 +566,26 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   int compareTo(Atom other) {
     final Atom parent = this.parent;
     final Atom otherParent = other.parent;
-    if (parent == other)
+    if (parent == other) // we are child of other
       return 1;
-    if (otherParent == this)
+    if (otherParent == this) // we are parent of other
       return -1;
-    if (parent == null && otherParent != null)
+    if (parent == null && otherParent != null) // same as comparing us to other's parent
       return compareTo(otherParent);
-    if (parent != null && otherParent == null)
+    if (parent != null && otherParent == null) // same as our parent comparing to this
       return parent.compareTo(other);
-    if (parent != otherParent) {
+    if (parent != otherParent) { // same as our parent comparing to other's parent (sometimes...)
       assert(parent != null);
       assert(otherParent != null);
+      if (depth < other.depth) {
+        return compareTo(otherParent);
+      }
+      if (depth > other.depth) {
+        return parent.compareTo(other);
+      }
       return parent.compareTo(otherParent);
     }
-    return identifier.compareTo(other.identifier);
+    return identifier.compareTo(other.identifier); // we have same parent (or no parent) as other
   }
 
   @override
