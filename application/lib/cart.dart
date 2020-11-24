@@ -41,8 +41,6 @@ class _CartState extends State<Cart> {
 
   void _sendToServer() async {
     final Set<Atom> atoms = EditorDisposition.of(context).cart;
-    if(atoms.isEmpty) 
-      return;
     String heading;
     if (atoms.length == 1)
       heading = 'Adding ${atoms.single.identifier.identifier} to world';
@@ -131,7 +129,7 @@ class _CartState extends State<Cart> {
                       padding: const EdgeInsets.only(top: 48.0, bottom: 8.0),
                       child: Center(
                         child: OutlinedButton(
-                          onPressed: _sendToServer,
+                          onPressed: EditorDisposition.of(context).cart.isEmpty ? null : _sendToServer,
                           child: const Text('Send to server'),
                         ),
                       ),
