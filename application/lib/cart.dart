@@ -74,7 +74,7 @@ class _CartState extends State<Cart> {
   Widget build(BuildContext context) {
     final Set<Atom> cart = EditorDisposition.of(context).cart;
     final List<Atom> atoms = expand(cart).toList()..sort();
-    return SizedBox.expand(
+    return EditorDisposition.of(context).cart.isEmpty ? const Text('The cart is empty.') : SizedBox.expand(
       child: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
@@ -129,7 +129,7 @@ class _CartState extends State<Cart> {
                       padding: const EdgeInsets.only(top: 48.0, bottom: 8.0),
                       child: Center(
                         child: OutlinedButton(
-                          onPressed: EditorDisposition.of(context).cart.isEmpty ? null : _sendToServer,
+                          onPressed: _sendToServer,
                           child: const Text('Send to server'),
                         ),
                       ),
