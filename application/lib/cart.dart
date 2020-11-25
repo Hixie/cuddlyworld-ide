@@ -74,7 +74,7 @@ class _CartState extends State<Cart> {
   Widget build(BuildContext context) {
     final Set<Atom> cart = EditorDisposition.of(context).cart;
     final List<Atom> atoms = expand(cart).toList()..sort();
-    return SizedBox.expand(
+    return EditorDisposition.of(context).cart.isEmpty ? const Text('The cart is empty.') : SizedBox.expand(
       child: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
