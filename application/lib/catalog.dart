@@ -29,7 +29,6 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
 
   void _handleListUpdate() {
-    // TODO(elih): check if deleted with Atom.deleted flag
     setState(() {
       _atoms.sort();
     });

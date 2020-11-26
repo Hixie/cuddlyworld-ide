@@ -200,11 +200,21 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
     notifyListeners();
   }
 
-  void remove(Atom atom) {
-    assert(_atoms.contains(atom));
-    _atoms.remove(atom);
-    atom.delete();
+  final Set<Atom> _crematorium = <Atom>{};
+
+  void remove(Atom lateAtom) {
+    assert(_atoms.contains(lateAtom));
+    _atoms.remove(lateAtom);
+    for (final Atom atom in atoms) {
+      atom.deletionNotification(lateAtom);
+    }
+    lateAtom.disconnect();
     notifyListeners();
+    _crematorium.add(lateAtom);
+    lateAtom.onDead = () {
+      _crematorium.remove(lateAtom);
+      lateAtom.dispose();
+    };
   }
 
   List<Object> encode() {

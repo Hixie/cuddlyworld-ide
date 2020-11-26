@@ -77,6 +77,11 @@ abstract class PropertyValue {
   void registerChildren(Atom parent) { }
   void unregisterChildren(Atom parent) { }
   Iterable<Atom> get children sync* { }
+
+  /// Notification that `lateAtom` is being deleted.
+  ///
+  /// Return true if the property should now be removed entirely.
+  PropertyValue deletionNotification(Atom lateAtom) => this;
 }
 
 class StringPropertyValue extends PropertyValue {
@@ -144,6 +149,13 @@ class AtomPropertyValue extends PropertyValue {
 
   @override
   Iterable<Atom> get children sync* { yield value; }
+
+  @override
+  AtomPropertyValue deletionNotification(Atom lateAtom) {
+    if (value == lateAtom)
+      return null;
+    return this;
+  }
 }
 
 class AtomPropertyValuePlaceholder extends PropertyValue {
@@ -164,6 +176,11 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
       return null;
     return AtomPropertyValue(child)
       ..registerChildren(parent);
+  }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    throw StateError('AtomPropertyValuePlaceholder received deletion notification.');
   }
 }
 
@@ -200,6 +217,13 @@ class ChildrenPropertyValue extends PropertyValue {
 
   @override
   Iterable<Atom> get children sync* { yield* value.map<Atom>((PositionedAtom positionedAtom) => positionedAtom.atom); }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    return ChildrenPropertyValue(
+      value.map<PositionedAtom>((PositionedAtom entry) => entry.deletionNotification(lateAtom)).toList(),
+    );
+  }
 }
 
 class ChildrenPropertyValuePlaceholder extends PropertyValue {
@@ -217,6 +241,11 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
   PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
     return ChildrenPropertyValue(value.map<PositionedAtom>((PositionedAtomPlaceholder entry) => entry.resolve(lookupCallback)).toList())
       ..registerChildren(parent);
+  }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    throw StateError('ChildrenPropertyValuePlaceholder received deletion notification.');
   }
 }
 
@@ -237,6 +266,12 @@ class PositionedAtom {
   }
 
   static bool hasChild(PositionedAtom candidate) => candidate.atom != null;
+
+  PositionedAtom deletionNotification(Atom lateAtom) {
+    if (atom == lateAtom)
+      return PositionedAtom(position, null);
+    return this;
+  }
 }
 
 class PositionedAtomPlaceholder {
@@ -285,6 +320,13 @@ class LandmarksPropertyValue extends PropertyValue {
 
   @override
   Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom>((Landmark landmark) => landmark.atom); }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    return LandmarksPropertyValue(
+      value.map<Landmark>((Landmark entry) => entry.deletionNotification(lateAtom)).toList(),
+    );
+  }
 }
 
 class LandmarksPropertyValuePlaceholder extends PropertyValue {
@@ -306,6 +348,11 @@ class LandmarksPropertyValuePlaceholder extends PropertyValue {
     return LandmarksPropertyValue(value.map<Landmark>((LandmarkPlaceholder entry) => entry.resolve(lookupCallback)).toList())
       ..registerChildren(parent);
   }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    throw StateError('LandmarksPropertyValuePlaceholder received deletion notification.');
+  }
 }
 
 class Landmark {
@@ -323,10 +370,17 @@ class Landmark {
   };
 
   String encodeForServerConnect() {
+    assert(atom != null); // TODO(ianh): we should inform the user that the landmark isn't ready
     return '$direction, ${atom.identifier.identifier}, ${options.join(" ")}';
   }
 
   static bool hasChild(Landmark candidate) => candidate.atom != null;
+
+  Landmark deletionNotification(Atom lateAtom) {
+    if (atom == lateAtom)
+      return Landmark(direction, null, options);
+    return this;
+  }
 }
 
 class LandmarkPlaceholder {
@@ -379,17 +433,25 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   final AtomOwner owner;
 
-  @override void notifyListeners() {
-    super.notifyListeners();
-    owner.didChange();
+  VoidCallback get onDead => _onDead;
+  VoidCallback _onDead;
+  set onDead(VoidCallback value) {
+    assert(_onDead == null);
+    assert(value != null);
+    _onDead = value;
   }
 
-  bool _deleted = false;
-  bool get deleted => _deleted;
-  void delete() {
-    _deleted = true;
-    notifyListeners();
-    dispose();
+  @override
+  void removeListener(VoidCallback listener) {
+    super.removeListener(listener);
+    if (!hasListeners && onDead != null)
+      onDead();
+  }
+
+  @override
+  void notifyListeners() {
+    super.notifyListeners();
+    owner.didChange();
   }
 
   String get rootClass => 'TAtom';
@@ -454,10 +516,19 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     }
   }
 
-  @override
-  void dispose() {
+  bool _disconnected = false;
+
+  void disconnect() {
+    assert(!_disconnected);
     for (final PropertyValue property in _properties.values)
       property.unregisterChildren(this);
+    _disconnected = true;
+  }
+
+  @override
+  void dispose() {
+    assert(!hasListeners);
+    assert(_disconnected);
     super.dispose();
   }
 
@@ -550,7 +621,6 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   bool canAddToTree(Atom candidateChild) {
     assert(candidateChild != null);
-    assert(candidateChild.parent != this);
     if (candidateChild.parent != null)
       return false;
     Atom ancestor = parent;
@@ -560,6 +630,18 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
       ancestor = ancestor.parent;
     }
     return true;
+  }
+
+  void deletionNotification(Atom other) {
+    assert(other != this);
+    for (final String name in _properties.keys.toList()) {
+      final PropertyValue newValue = _properties[name].deletionNotification(other);
+      if (newValue == null) {
+        _properties.remove(name);
+      } else {
+        _properties[name] = newValue;
+      }
+    }
   }
 
   @override

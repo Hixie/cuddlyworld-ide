@@ -321,7 +321,7 @@ Widget _makeField(String label, FocusNode focusNode, Widget field) {
 
 Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, ValueSetter<String> onChanged) {
   if (values.isEmpty)
-    return const Text('Loading...', style: TextStyle(fontStyle: FontStyle.italic));
+    return const Text('Not connected...', style: TextStyle(fontStyle: FontStyle.italic));
   return DropdownButton<String>(
     items: values.map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
       value: value,

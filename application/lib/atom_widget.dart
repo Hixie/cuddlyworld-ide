@@ -111,7 +111,12 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
                       padding: const EdgeInsets.only(right: 8.0),
                       child: widget.icon,
                     ),
-                  widget.label ?? makeTextForIdentifier(context, widget.atom.identifier),
+                  widget.label ?? AnimatedBuilder(
+                    animation: widget.atom,
+                    builder: (BuildContext context, Widget child) {
+                      return makeTextForIdentifier(context, widget.atom.identifier);
+                    },
+                  ),
                   if (widget.onDelete != null)
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
