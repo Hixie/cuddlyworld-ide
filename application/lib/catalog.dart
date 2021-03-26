@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 import 'atom_widget.dart';
 import 'data_model.dart';
@@ -74,37 +77,61 @@ class DraggableText extends StatefulWidget {
 }
 
 class _DraggableTextState extends State<DraggableText> {
+  Timer _timer;
+  
+  void _trigger() {
+    EditorDisposition.of(context).current = widget.atom;
+  }
+  
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     final EditorDisposition editor = EditorDisposition.of(context);
-    return Draggable<Atom>(
-      data: widget.atom,
-      dragAnchorStrategy: pointerDragAnchorStrategy,
-      feedback: FractionalTranslation(
-        translation: const Offset(-0.5, -0.5),
-        child: Material(
-          type: MaterialType.transparency,
-          child: AtomWidget(
-            atom: widget.atom,
-            startFromCatalog: true,
+    return MouseRegion(
+      onEnter: (PointerEnterEvent event) {
+        if (event.buttons != 0) {
+          _timer?.cancel();
+          _timer = Timer(const Duration(seconds: 1), _trigger);
+        }
+      },
+      onExit: (PointerExitEvent event) {
+        _timer?.cancel();
+        _timer = null;
+      },
+      child: Draggable<Atom>(
+        data: widget.atom,
+        dragAnchorStrategy: pointerDragAnchorStrategy,
+        feedback: FractionalTranslation(
+          translation: const Offset(-0.5, -0.5),
+          child: Material(
+            type: MaterialType.transparency,
+            child: AtomWidget(
+              atom: widget.atom,
+              startFromCatalog: true,
+            ),
           ),
         ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
-        child: TextButton(
-          style: widget.atom == editor.current ? ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow)) : null,
-          onPressed: () {
-            setState(() {
-              EditorDisposition.of(context).current = widget.atom;
-            });
-          },
-          child: Row(
-            children: <Widget>[
-              Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
-              SizedBox(width: 16.0 * widget.atom.depth + 12.0),
-              makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
-            ],
+        child: Padding(
+          padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
+          child: TextButton(
+            style: widget.atom == editor.current ? ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow)) : null,
+            onPressed: () {
+              setState(() {
+                EditorDisposition.of(context).current = widget.atom;
+              });
+            },
+            child: Row(
+              children: <Widget>[
+                Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
+                SizedBox(width: 16.0 * widget.atom.depth + 12.0),
+                makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
+              ],
+            ),
           ),
         ),
       ),
