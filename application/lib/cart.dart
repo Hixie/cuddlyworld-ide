@@ -22,11 +22,11 @@ class _CartState extends State<Cart> {
   String? _message;
 
   void _updateMessage() {
-    final Set<Atom?> atoms = EditorDisposition.of(context).cart;
+    final Set<Atom> atoms = EditorDisposition.of(context).cart;
     final Set<Atom> history = <Atom>{};
     final String command = <String> [
-       ...atoms.map((Atom? atom) => atom!.encodeForServerMake(history)),
-       ...atoms.map((Atom? atom) => atom!.encodeForServerConnect()),
+       ...atoms.map((Atom atom) => atom.encodeForServerMake(history)),
+       ...atoms.map((Atom atom) => atom.encodeForServerConnect()),
     ].join('; ');
     setState(() {
       _message = 'debug make \'${escapeSingleQuotes(command)}\'';
