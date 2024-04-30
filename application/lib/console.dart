@@ -11,15 +11,15 @@ class Console extends StatefulWidget {
     required this.terminal,
   }) : super(key: key);
 
-  final CuddlyWorld? game;
-  final Terminal? terminal;
+  final CuddlyWorld game;
+  final Terminal terminal;
 
   @override
   _ConsoleState createState() => _ConsoleState();
 }
 
 class _ConsoleState extends State<Console> {
-  TextEditingController? _input;
+  late final TextEditingController _input;
 
   List<String> history = <String>[];
   int? index;
@@ -35,7 +35,7 @@ class _ConsoleState extends State<Console> {
         if (index! > 1) 
           index = index! - 1;
         setState(() {
-          _input!.text = history[index!];
+          _input.text = history[index!];
         });
         return null;
       }),
@@ -44,7 +44,7 @@ class _ConsoleState extends State<Console> {
         if (index != null && index! < history.length - 1) {
           index = index! + 1;
           setState(() {
-            _input!.text = history[index!];
+            _input.text = history[index!];
           });
         }
         return null;
@@ -54,14 +54,14 @@ class _ConsoleState extends State<Console> {
 
   @override
   void dispose() {
-    _input!.dispose();
+    _input.dispose();
     super.dispose();
   }
 
   void _send() {
-    widget.game!.sendMessage(_input!.text).catchError((Object error) { return 'ignorethis';}, test: (Object error) => error is ConnectionLostException);
-    history.add(_input!.text);
-    _input!.clear();
+    widget.game.sendMessage(_input.text).catchError((Object error) => 'ignorethis', test: (Object error) => error is ConnectionLostException);
+    history.add(_input.text);
+    _input.clear();
     index = null;
   }
 
@@ -69,7 +69,7 @@ class _ConsoleState extends State<Console> {
     return ActionChip(
       label: Text(command),
       onPressed: () {
-        widget.game!.sendMessage(command).catchError((Object error) { return 'ignorethis';}, test: (Object error) => error is ConnectionLostException);
+        widget.game.sendMessage(command).catchError((Object error) => 'ignorethis', test: (Object error) => error is ConnectionLostException);
       },
     );
   }
@@ -95,7 +95,7 @@ class _ConsoleState extends State<Console> {
     };
     return Column(
       children: <Widget>[
-        Expanded(child: TerminalView(widget.terminal!)),
+        Expanded(child: TerminalView(widget.terminal)),
         const SizedBox(height: 8.0),
         SizedBox(
           height: 32.0,

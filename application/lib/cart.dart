@@ -22,7 +22,7 @@ class _CartState extends State<Cart> {
   String? _message;
 
   void _updateMessage() {
-    final Set<Atom?> atoms = EditorDisposition.of(context)!.cart;
+    final Set<Atom?> atoms = EditorDisposition.of(context).cart;
     final Set<Atom> history = <Atom>{};
     final String command = <String> [
        ...atoms.map((Atom? atom) => atom!.encodeForServerMake(history)),
@@ -40,7 +40,7 @@ class _CartState extends State<Cart> {
   }
 
   void _sendToServer() async {
-    final Set<Atom?> atoms = EditorDisposition.of(context)!.cart;
+    final Set<Atom?> atoms = EditorDisposition.of(context).cart;
     String heading;
     if (atoms.length == 1)
       heading = 'Adding ${atoms.single!.identifier!.identifier} to world';
@@ -56,15 +56,15 @@ class _CartState extends State<Cart> {
     }
   }
 
-  Set<Atom?> expand(Set<Atom?> cart) {
-    final Set<Atom?> pending = cart.toSet();
-    final Set<Atom?> results = <Atom?>{};
+  Set<Atom> expand(Set<Atom> cart) {
+    final Set<Atom> pending = cart.toSet();
+    final Set<Atom> results = <Atom>{};
     while (pending.isNotEmpty) {
-      final Atom? next = pending.first;
+      final Atom next = pending.first;
       pending.remove(next);
       if (!results.contains(next)) {
         results.add(next);
-        pending.addAll(next!.children);
+        pending.addAll(next.children);
       }
     }
     return results;
@@ -72,9 +72,9 @@ class _CartState extends State<Cart> {
 
   @override
   Widget build(BuildContext context) {
-    final Set<Atom?> cart = EditorDisposition.of(context)!.cart;
-    final List<Atom?> atoms = expand(cart).toList()..sort();
-    return EditorDisposition.of(context)!.cart.isEmpty ? const Text('The cart is empty.') : SizedBox.expand(
+    final Set<Atom> cart = EditorDisposition.of(context).cart;
+    final List<Atom> atoms = expand(cart).toList()..sort();
+    return EditorDisposition.of(context).cart.isEmpty ? const Text('The cart is empty.') : SizedBox.expand(
       child: SingleChildScrollView(
         child: ListBody(
           children: <Widget>[
@@ -107,10 +107,10 @@ class _CartState extends State<Cart> {
                 padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                 child: ListBody(
                   children: <Widget>[
-                    for (final Atom? atom in atoms)
+                    for (final Atom atom in atoms)
                       Padding(
                         padding: EdgeInsets.only(
-                          top: atom!.parent != null ? 4.0 : 16.0,
+                          top: atom.parent != null ? 4.0 : 16.0,
                           left: 16.0 * atom.depth,
                           bottom: 4.0,
                         ),
@@ -120,7 +120,7 @@ class _CartState extends State<Cart> {
                             icon: cart.contains(atom) ? const Icon(Icons.shopping_cart, size: 18.0) : null,
                             atom: atom,
                             onTap: () {
-                              EditorDisposition.of(context)!.current = atom;
+                              EditorDisposition.of(context).current = atom;
                             },
                           ),
                         ),

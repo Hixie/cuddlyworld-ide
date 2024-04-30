@@ -89,7 +89,7 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
-      color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context)!.current ? Colors.yellow : null),
+      color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null),
       shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

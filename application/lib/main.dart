@@ -52,7 +52,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   CuddlyWorld? _game;
-  Terminal? _terminal;
+  late final Terminal _terminal;
   StreamSubscription<String>? _gameStream;
   TabController? _tabController;
 
@@ -84,7 +84,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       _gameStream?.cancel();
       _gameStream = _game!.output.listen(_handleOutput);
     }
-    final Atom? current = EditorDisposition.of(context)!.current;
+    final Atom? current = EditorDisposition.of(context).current;
     if (current != _lastCurrent) {
       _tabController!.index = 0;
     }
@@ -96,16 +96,16 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   void _handleOutput(String output) {
     if (output == '\x02') {
-      _terminal!.write('\r\n');
+      _terminal.write('\r\n');
       return;
     }
-    _terminal!
+    _terminal
       ..write(output.replaceAll('\n', '\r\n').replaceAll('\x01', ''))
       ..write('\r\n');
   }
 
   void _handleLog(String output) {
-    _terminal!
+    _terminal
       ..write('\x1B[31m')
       ..write(output.replaceAll('\n', '\r\n'))
       ..write('\x1B[0m\r\n');
@@ -145,7 +145,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 builder: (BuildContext context, Widget? child) {
                   switch (_tabController!.index) {
                     case 0:
-                      final Atom? currentAtom = EditorDisposition.of(context)!.current;
+                      final Atom? currentAtom = EditorDisposition.of(context).current;
                       if (currentAtom != null) {
                         body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
                       } else {
@@ -157,7 +157,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                               const SizedBox(height: 28.0),
                               OutlinedButton(
                                 onPressed: () {
-                                  EditorDisposition.of(context)!.current = AtomsDisposition.of(context)!.add();
+                                  EditorDisposition.of(context).current = AtomsDisposition.of(context)!.add();
                                 },
                                 child: const Text('Create Item'),
                               ),
@@ -187,7 +187,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                       body = Cart(game: _game);
                       break;
                     case 3:
-                      body = Console(game: _game, terminal: _terminal);
+                      body = Console(game: _game!, terminal: _terminal);
                       break;
                     case 4:
                       body = const SettingsTab();

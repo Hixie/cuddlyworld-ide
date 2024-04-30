@@ -158,9 +158,9 @@ class CuddlyWorld extends ChangeNotifier {
     return pendingMessage.completer.future;
   }
 
-  Future<List<String>?> fetchClassesOf(String subclass) {
+  Future<List<String>> fetchClassesOf(String subclass) {
     if (_classesCache.containsKey(subclass))
-      return SynchronousFuture<List<String>?>(_classesCache[subclass]);
+      return SynchronousFuture<List<String>>(_classesCache[subclass]!);
     return () async {
       final String rawResult = await sendMessage('debug classes of $subclass');
       final List<String> lines = rawResult.split('\n');
@@ -177,9 +177,9 @@ class CuddlyWorld extends ChangeNotifier {
     }();
   }
 
-  Future<List<String>?> fetchEnumValuesOf(String enumName) {
+  Future<List<String>> fetchEnumValuesOf(String enumName) {
     if (_enumValuesCache.containsKey(enumName))
-      return SynchronousFuture<List<String>?>(_enumValuesCache[enumName]);
+      return SynchronousFuture<List<String>>(_enumValuesCache[enumName]!);
     return () async {
       final String rawResult = await sendMessage('debug describe enum $enumName');
       final List<String> lines = rawResult.split('\n');

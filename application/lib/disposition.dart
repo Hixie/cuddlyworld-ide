@@ -258,12 +258,12 @@ class EditorDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  Set<Atom?> get cart => _cart.toSet();
-  final Set<Atom?> _cart = <Atom?>{};
+  Set<Atom> get cart => _cart.toSet();
+  final Set<Atom> _cart = <Atom>{};
 
-  bool cartHolds(Atom? atom) => _cart.contains(atom);
+  bool cartHolds(Atom atom) => _cart.contains(atom);
 
-  void addToCart(Atom? atom) {
+  void addToCart(Atom atom) {
     if (!_cart.contains(atom)) {
       _cart.add(atom);
       notifyListeners();
@@ -294,10 +294,10 @@ class EditorDisposition extends ChildDisposition {
       current = null;
     _cart
       ..clear()
-      ..addAll((object['cart'] as List<Object?>).cast<String>().map(lookupCallback));
+      ..addAll((object['cart'] as List<Object?>).cast<String>().map((String name) => lookupCallback(name)!));
   }
 
-  static EditorDisposition? of(BuildContext context) => _of<EditorDisposition>(context);
+  static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context)!;
 }
 
 T? _of<T extends Listenable>(BuildContext context) {

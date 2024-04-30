@@ -164,7 +164,7 @@ class Blueprint extends StatelessWidget {
     for (final Atom atom in atoms)
       atom.resolveIdentifiers(_lookupAtom);
     AtomsDisposition.of(context)!.addAll(atoms);
-    EditorDisposition.of(context)!.current = atoms.first;
+    EditorDisposition.of(context).current = atoms.first;
   }
 
   @override

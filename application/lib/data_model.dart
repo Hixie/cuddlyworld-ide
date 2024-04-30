@@ -33,7 +33,7 @@ abstract class PropertyValue {
       }
       if (object['type'] == 'literal') {
         assert(object['value'] is String);
-        return LiteralPropertyValue(object['value'] as String?);
+        return LiteralPropertyValue(object['value'] as String);
       }
       if (object['type'] == 'child*') {
         assert(object['children'] is List<Object?>, 'not a list: $object');
@@ -50,7 +50,7 @@ abstract class PropertyValue {
         );
       }
       if (object['type'] == 'landmark*') {
-        assert(object['children'] is List<Object>, 'not a list: $object');
+        assert(object['children'] is List<Object?>, 'not a list: $object');
         assert(!(object['children'] as List<Object>).any((Object child) {
           return !(child is Map<String, Object?> &&
                    child['direction'] is String &&
@@ -99,7 +99,7 @@ class StringPropertyValue extends PropertyValue {
 class LiteralPropertyValue extends PropertyValue {
   const LiteralPropertyValue(this.value);
   
-  final String? value;
+  final String value;
   
   @override
   Object encode() => <String, Object?>{
@@ -318,7 +318,7 @@ class LandmarksPropertyValue extends PropertyValue {
       landmark.atom!.unregisterFriend(parent);
   }
   @override
-  Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom?>((Landmark landmark) => landmark.atom) as Iterable<Atom>; }
+  Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom>((Landmark landmark) => landmark.atom!); }
   @override
   PropertyValue deletionNotification(Atom lateAtom) {
     return LandmarksPropertyValue(
