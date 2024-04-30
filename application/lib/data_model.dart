@@ -216,7 +216,7 @@ class ChildrenPropertyValue extends PropertyValue {
   }
 
   @override
-  Iterable<Atom> get children sync* { yield* value.map<Atom?>((PositionedAtom positionedAtom) => positionedAtom.atom) as Iterable<Atom>; }
+  Iterable<Atom> get children sync* { yield* value.map<Atom>((PositionedAtom positionedAtom) => positionedAtom.atom!); }
 
   @override
   PropertyValue deletionNotification(Atom lateAtom) {
