@@ -10,20 +10,20 @@ class AtomDescription {
     this.properties,
   });
 
-  final String identifier;
-  final String className;
-  final Map<String, PropertyValue> properties;
+  final String? identifier;
+  final String? className;
+  final Map<String, PropertyValue>? properties;
 
   Atom create(AtomsDisposition disposition) {
     return disposition.add()
-      ..identifier = Identifier.split(identifier)
+      ..identifier = Identifier.split(identifier!)
       ..className = className
-      ..addAll(properties);
+      ..addAll(properties!);
   }
 }
 
 class TemplateLibrary extends StatelessWidget {
-  const TemplateLibrary({ Key key }) : super(key: key);
+  const TemplateLibrary({ Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +123,7 @@ class TemplateLibrary extends StatelessWidget {
             ),
           ],
           icon: Icon(Icons.cloud),
-        ),
+        ),/*
         Blueprint(
           header: 'Indoor room',
           atoms: <AtomDescription>[],
@@ -133,7 +133,7 @@ class TemplateLibrary extends StatelessWidget {
           header: 'Door threshold',
           atoms: <AtomDescription>[],
           icon: Icon(Icons.sensor_door),
-        ),
+        ),*/
       ],
     );
   }
@@ -141,12 +141,11 @@ class TemplateLibrary extends StatelessWidget {
 
 class Blueprint extends StatelessWidget {
   const Blueprint({
-    Key key,
-    @required this.header,
-    @required this.icon,
-    @required this.atoms,
-  }) : assert(atoms != null),
-       super(key: key);
+    Key? key,
+    required this.header,
+    required this.icon,
+    required this.atoms,
+  }) : super(key: key);
 
   final String header;
   final Widget icon;
@@ -154,18 +153,18 @@ class Blueprint extends StatelessWidget {
 
   void _handleCreate(BuildContext context) {
     assert(this.atoms.isNotEmpty);
-    final List<Atom> atoms = this.atoms.map<Atom>((AtomDescription description) => description.create(AtomsDisposition.of(context))).toList();
-    Atom _lookupAtom(String identifier, { Atom ignore }) {
+    final List<Atom> atoms = this.atoms.map<Atom>((AtomDescription description) => description.create(AtomsDisposition.of(context)!)).toList();
+    Atom _lookupAtom(String? identifier, { Atom? ignore }) {
       final List<Atom> matches = atoms
-        .where((Atom atom) => atom != ignore && atom.identifier.matches(identifier))
+        .where((Atom atom) => atom != ignore && atom.identifier!.matches(identifier!))
         .toList();
       assert(matches.length == 1, 'could not find unique $identifier; found $matches in $atoms');
       return matches.single;
     }
     for (final Atom atom in atoms)
       atom.resolveIdentifiers(_lookupAtom);
-    AtomsDisposition.of(context).addAll(atoms);
-    EditorDisposition.of(context).current = atoms.first;
+    AtomsDisposition.of(context)!.addAll(atoms);
+    EditorDisposition.of(context)!.current = atoms.first;
   }
 
   @override
@@ -177,7 +176,7 @@ class Blueprint extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).colorScheme.surface,
         elevation: 1.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -198,7 +197,7 @@ class Blueprint extends StatelessWidget {
                 title: Text(
                   header,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).primaryTextTheme.headline6,
+                  style: Theme.of(context).primaryTextTheme.titleLarge,
                 ),
               ),
             ),

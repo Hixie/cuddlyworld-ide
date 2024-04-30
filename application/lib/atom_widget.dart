@@ -20,7 +20,7 @@ Widget makeTextForIdentifier(BuildContext context, Identifier identifier, [ Stri
           TextSpan(
             text: '_${identifier.disambiguator}',
             style: TextStyle(
-              color: _fade(DefaultTextStyle.of(context).style.color),
+              color: _fade(DefaultTextStyle.of(context).style.color!),
             ),
           ),
         if (className.isNotEmpty)
@@ -37,7 +37,7 @@ Widget makeTextForIdentifier(BuildContext context, Identifier identifier, [ Stri
 
 class AtomWidget extends StatefulWidget {
   const AtomWidget({
-    Key key,
+    Key? key,
     this.atom,
     this.icon,
     this.label,
@@ -51,23 +51,23 @@ class AtomWidget extends StatefulWidget {
   }): assert((label == null) != (atom == null)),
       super(key: key);
 
-  final Atom atom;
-  final Widget icon;
-  final Widget label;
-  final Color color;
+  final Atom? atom;
+  final Widget? icon;
+  final Widget? label;
+  final Color? color;
   final double elevation;
   final bool startFromCatalog;
   final Curve curve;
   final Duration duration;
-  final VoidCallback onDelete;
-  final VoidCallback onTap;
+  final VoidCallback? onDelete;
+  final VoidCallback? onTap;
 
   @override
   State<AtomWidget> createState() => _AtomWidgetState();
 }
 
 class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateMixin {
-  Timer _timer;
+  Timer? _timer;
   bool _chip = true;
 
   @override
@@ -89,7 +89,7 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
-      color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null),
+      color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context)!.current ? Colors.yellow : null),
       shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -98,7 +98,6 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
           alignment: Alignment.centerLeft,
           curve: widget.curve,
           duration: widget.duration,
-          vsync: this,
           child: SizedBox(
             width: _chip ? null : kCatalogWidth,
             child: Padding(
@@ -112,9 +111,9 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
                       child: widget.icon,
                     ),
                   widget.label ?? AnimatedBuilder(
-                    animation: widget.atom,
-                    builder: (BuildContext context, Widget child) {
-                      return makeTextForIdentifier(context, widget.atom.identifier);
+                    animation: widget.atom!,
+                    builder: (BuildContext context, Widget? child) {
+                      return makeTextForIdentifier(context, widget.atom!.identifier!);
                     },
                   ),
                   if (widget.onDelete != null)

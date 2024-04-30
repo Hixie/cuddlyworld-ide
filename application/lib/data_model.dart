@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-typedef AtomLookupCallback = Atom Function(String identifier);
+typedef AtomLookupCallback = Atom? Function(String? identifier);
 
 String escapeSingleQuotes(String raw) {
   return raw.replaceAll(r'\', r'\\').replaceAll(r"'", r"\'");
@@ -21,38 +21,38 @@ abstract class PropertyValue {
 
   Object encode();
 
-  static PropertyValue decode(Object object) {
+  static PropertyValue decode(Object? object) {
     if (object is String)
       return StringPropertyValue(object);
     if (object is bool)
       return BooleanPropertyValue(object);
-    if (object is Map<String, Object>) {
+    if (object is Map<String, Object?>) {
       if (object['type'] == 'atom') {
         assert(object['identifier'] is String);
-        return AtomPropertyValuePlaceholder(object['identifier'] as String);
+        return AtomPropertyValuePlaceholder(object['identifier'] as String?);
       }
       if (object['type'] == 'literal') {
         assert(object['value'] is String);
-        return LiteralPropertyValue(object['value'] as String);
+        return LiteralPropertyValue(object['value'] as String?);
       }
       if (object['type'] == 'child*') {
-        assert(object['children'] is List<Object>, 'not a list: $object');
-        assert(!(object['children'] as List<Object>).any((Object child) {
-          return !(child is Map<String, Object> &&
+        assert(object['children'] is List<Object?>, 'not a list: $object');
+        assert(!(object['children'] as List<Object?>).any((Object? child) {
+          return !(child is Map<String, Object?> &&
                    child['position'] is String &&
                    (!child.containsKey('identifier') || child['identifier'] is String));
         }));
         return ChildrenPropertyValuePlaceholder(
           (object['children'] as List<Object>).map<PositionedAtomPlaceholder>((Object child) {
-            final Map<String, Object> map = child as Map<String, Object>;
-            return PositionedAtomPlaceholder(map['position'] as String, map['identifier'] as String);
+            final Map<String, Object?> map = child as Map<String, Object?>;
+            return PositionedAtomPlaceholder(map['position'] as String?, map['identifier'] as String?);
           }).toList(),
         );
       }
       if (object['type'] == 'landmark*') {
         assert(object['children'] is List<Object>, 'not a list: $object');
         assert(!(object['children'] as List<Object>).any((Object child) {
-          return !(child is Map<String, Object> &&
+          return !(child is Map<String, Object?> &&
                    child['direction'] is String &&
                    (!child.containsKey('identifier') || child['identifier'] is String) &&
                    child['options'] is List<Object> &&
@@ -60,8 +60,8 @@ abstract class PropertyValue {
         }));
         return LandmarksPropertyValuePlaceholder(
           (object['children'] as List<Object>).map<LandmarkPlaceholder>((Object child) {
-            final Map<String, Object> map = child as Map<String, Object>;
-            return LandmarkPlaceholder(map['direction'] as String, map['identifier'] as String, (map['options'] as List<Object>).cast<String>().toSet());
+            final Map<String, Object?> map = child as Map<String, Object?>;
+            return LandmarkPlaceholder(map['direction'] as String?, map['identifier'] as String?, (map['options'] as List<Object>).cast<String>().toSet());
           }).toList(),
         );
       }
@@ -72,7 +72,7 @@ abstract class PropertyValue {
   String encodeForServerMake(String key, Set<Atom> serialized);
   String encodeForServerConnect(String from) => '';
 
-  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) => this; // ignore: avoid_returning_this
+  PropertyValue? resolve(AtomLookupCallback lookupCallback, Atom parent) => this; // ignore: avoid_returning_this
 
   void registerChildren(Atom parent) { }
   void unregisterChildren(Atom parent) { }
@@ -81,7 +81,7 @@ abstract class PropertyValue {
   /// Notification that `lateAtom` is being deleted.
   ///
   /// Return true if the property should now be removed entirely.
-  PropertyValue deletionNotification(Atom lateAtom) => this;
+  PropertyValue? deletionNotification(Atom lateAtom) => this;
 }
 
 class StringPropertyValue extends PropertyValue {
@@ -99,10 +99,10 @@ class StringPropertyValue extends PropertyValue {
 class LiteralPropertyValue extends PropertyValue {
   const LiteralPropertyValue(this.value);
   
-  final String value;
+  final String? value;
   
   @override
-  Object encode() => <String, Object>{
+  Object encode() => <String, Object?>{
     'type': 'literal',
     'value': value,
   };
@@ -131,7 +131,7 @@ class AtomPropertyValue extends PropertyValue {
   @override
   Object encode() => <String, Object>{
     'type': 'atom',
-    'identifier': value.identifier.identifier,
+    'identifier': value.identifier!.identifier,
   };
   
   @override
@@ -151,7 +151,7 @@ class AtomPropertyValue extends PropertyValue {
   Iterable<Atom> get children sync* { yield value; }
 
   @override
-  AtomPropertyValue deletionNotification(Atom lateAtom) {
+  AtomPropertyValue? deletionNotification(Atom lateAtom) {
     if (value == lateAtom)
       return null;
     return this;
@@ -161,7 +161,7 @@ class AtomPropertyValue extends PropertyValue {
 class AtomPropertyValuePlaceholder extends PropertyValue {
   const AtomPropertyValuePlaceholder(this.value);
   
-  final String value;
+  final String? value;
 
   @override
   Object encode() => throw StateError('AtomPropertyValuePlaceholder asked to encode');
@@ -170,8 +170,8 @@ class AtomPropertyValuePlaceholder extends PropertyValue {
   String encodeForServerMake(String key, Set<Atom> serialized) => throw StateError('AtomPropertyValuePlaceholder asked to encode for server');
 
   @override
-  PropertyValue resolve(AtomLookupCallback lookupCallback, Atom parent) {
-    final Atom child = lookupCallback(value);
+  PropertyValue? resolve(AtomLookupCallback lookupCallback, Atom parent) {
+    final Atom? child = lookupCallback(value);
     if (child == null)
       return null;
     return AtomPropertyValue(child)
@@ -192,7 +192,7 @@ class ChildrenPropertyValue extends PropertyValue {
   @override
   Object encode() => <String, Object>{
     'type': 'child*',
-    'children': value.map<Map<String, Object>>((PositionedAtom entry) => entry.encode()).toList(),
+    'children': value.map<Map<String, Object?>>((PositionedAtom entry) => entry.encode()).toList(),
   };
 
   @override
@@ -216,7 +216,7 @@ class ChildrenPropertyValue extends PropertyValue {
   }
 
   @override
-  Iterable<Atom> get children sync* { yield* value.map<Atom>((PositionedAtom positionedAtom) => positionedAtom.atom); }
+  Iterable<Atom> get children sync* { yield* value.map<Atom?>((PositionedAtom positionedAtom) => positionedAtom.atom) as Iterable<Atom>; }
 
   @override
   PropertyValue deletionNotification(Atom lateAtom) {
@@ -252,17 +252,17 @@ class ChildrenPropertyValuePlaceholder extends PropertyValue {
 class PositionedAtom {
   const PositionedAtom(this.position, this.atom);
   
-  final String position;
-  final Atom atom;
+  final String? position;
+  final Atom? atom;
 
-  Map<String, Object> encode() => <String, Object>{
+  Map<String, Object?> encode() => <String, Object?>{
     'position': position,
     if (atom != null)
-      'identifier': atom.identifier.identifier,
+      'identifier': atom!.identifier!.identifier,
   };
 
   String encodeForServerMake(Set<Atom> serialized) {
-    return '$position, ${atom.encodeForServerMake(serialized)}';
+    return '$position, ${atom!.encodeForServerMake(serialized)}';
   }
 
   static bool hasChild(PositionedAtom candidate) => candidate.atom != null;
@@ -277,8 +277,8 @@ class PositionedAtom {
 class PositionedAtomPlaceholder {
   const PositionedAtomPlaceholder(this.position, this.identifier);
 
-  final String position;
-  final String identifier;
+  final String? position;
+  final String? identifier;
 
   PositionedAtom resolve(AtomLookupCallback lookupCallback) {
     return PositionedAtom(position, lookupCallback(identifier));
@@ -293,7 +293,7 @@ class LandmarksPropertyValue extends PropertyValue {
   @override
   Object encode() => <String, Object>{
     'type': 'landmark*',
-    'children': value.map<Map<String, Object>>((Landmark entry) => entry.encode()).toList(),
+    'children': value.map<Map<String, Object?>>((Landmark entry) => entry.encode()).toList(),
   };
 
   @override
@@ -309,18 +309,16 @@ class LandmarksPropertyValue extends PropertyValue {
   @override
   void registerChildren(Atom parent) {
     for (final Landmark landmark in value.where(Landmark.hasChild))
-      landmark.atom.registerFriend(parent);
+      landmark.atom!.registerFriend(parent);
   }
 
   @override
   void unregisterChildren(Atom parent) {
     for (final Landmark landmark in value.where(Landmark.hasChild))
-      landmark.atom.unregisterFriend(parent);
+      landmark.atom!.unregisterFriend(parent);
   }
-
   @override
-  Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom>((Landmark landmark) => landmark.atom); }
-
+  Iterable<Atom> get children sync* { yield* value.where(Landmark.hasChild).map<Atom?>((Landmark landmark) => landmark.atom) as Iterable<Atom>; }
   @override
   PropertyValue deletionNotification(Atom lateAtom) {
     return LandmarksPropertyValue(
@@ -358,20 +356,20 @@ class LandmarksPropertyValuePlaceholder extends PropertyValue {
 class Landmark {
   const Landmark(this.direction, this.atom, this.options);
   
-  final String direction;
-  final Atom atom; 
+  final String? direction;
+  final Atom? atom; 
   final Set<String> options;
 
-  Map<String, Object> encode() => <String, Object>{
+  Map<String, Object?> encode() => <String, Object?>{
     'direction': direction,
     if (atom != null)
-      'identifier': atom.identifier.identifier,
+      'identifier': atom!.identifier!.identifier,
     'options': options.toList(),
   };
 
   String encodeForServerConnect() {
     assert(atom != null); // TODO(ianh): we should inform the user that the landmark isn't ready
-    return '$direction, ${atom.identifier.identifier}, ${options.join(" ")}';
+    return '$direction, ${atom!.identifier!.identifier}, ${options.join(" ")}';
   }
 
   static bool hasChild(Landmark candidate) => candidate.atom != null;
@@ -386,8 +384,8 @@ class Landmark {
 class LandmarkPlaceholder {
   const LandmarkPlaceholder(this.direction, this.identifier, this.options);
 
-  final String direction;
-  final String identifier;
+  final String? direction;
+  final String? identifier;
   final Set<String> options;
 
   Landmark resolve(AtomLookupCallback lookupCallback) {
@@ -401,7 +399,7 @@ class Identifier extends Comparable<Identifier> {
     final int position = identifier.lastIndexOf('_');
     if (position < 0)
       return Identifier(identifier, 0);
-    final int disambiguator = int.tryParse(identifier.substring(position + 1));
+    final int? disambiguator = int.tryParse(identifier.substring(position + 1));
     if (disambiguator == null)
       return Identifier(identifier, 0);
     return Identifier(identifier.substring(0, position), disambiguator);
@@ -433,9 +431,9 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   final AtomOwner owner;
 
-  VoidCallback get onDead => _onDead;
-  VoidCallback _onDead;
-  set onDead(VoidCallback value) {
+  VoidCallback? get onDead => _onDead;
+  VoidCallback? _onDead;
+  set onDead(VoidCallback? value) {
     assert(_onDead == null);
     assert(value != null);
     _onDead = value;
@@ -445,7 +443,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   void removeListener(VoidCallback listener) {
     super.removeListener(listener);
     if (!hasListeners && onDead != null)
-      onDead();
+      onDead!();
   }
 
   @override
@@ -456,27 +454,27 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   String get rootClass => 'TAtom';
 
-  Identifier get identifier => _identifier;
-  Identifier _identifier; // set by constructor
-  set identifier(Identifier value) {
+  Identifier? get identifier => _identifier;
+  Identifier? _identifier; // set by constructor
+  set identifier(Identifier? value) {
     if (value == _identifier)
       return;
     _identifier = value;
     notifyListeners();
   }
 
-  String get className => _className;
-  String _className = '';
-  set className(String value) {
+  String? get className => _className;
+  String? _className = '';
+  set className(String? value) {
     if (value == _className)
       return;
     _className = value;
     notifyListeners();
   }
 
-  PropertyValue operator [](String name) => _properties[name];
+  PropertyValue? operator [](String name) => _properties[name];
   final Map<String, PropertyValue> _properties = <String, PropertyValue>{};
-  void operator []=(String name, PropertyValue value) {
+  void operator []=(String name, PropertyValue? value) {
     if (_properties[name] == value)
       return;
     _properties[name]?.unregisterChildren(this);
@@ -492,22 +490,21 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   void addAll(Map<String, PropertyValue> properties) {
     for (final String key in properties.keys)
       _properties[key]?.unregisterChildren(this);
-    assert(!properties.values.any((PropertyValue value) => value == null));
     _properties.addAll(properties);
     for (final String key in properties.keys)
       _properties[key]?.registerChildren(this);
     notifyListeners();
   }
 
-  T ensurePropertyIs<T>(String name) {
+  T? ensurePropertyIs<T>(String name) {
     if (_properties[name] is T)
-      return _properties[name] as T;
+      return _properties[name] as T?;
     return null;
   }
 
   void resolveIdentifiers(AtomLookupCallback lookupCallback) {
     for (final String name in _properties.keys.toList()) {
-      final PropertyValue resolved = _properties[name].resolve(lookupCallback, this);
+      final PropertyValue? resolved = _properties[name]!.resolve(lookupCallback, this);
       if (resolved == null) {
         _properties.remove(name);
       } else {
@@ -532,20 +529,20 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     super.dispose();
   }
 
-  Map<String, Object> encode() {
-    return <String, Object>{
-      'identifier': identifier.identifier,
+  Map<String, Object?> encode() {
+    return <String, Object?>{
+      'identifier': identifier!.identifier,
       'className': className,
-      for (String name in _properties.keys)
-        '.$name': _properties[name].encode(),
+      for (final String name in _properties.keys)
+        '.$name': _properties[name]!.encode(),
     };
   }
 
-  void decode(Map<String, Object> object) {
+  void decode(Map<String, Object?> object) {
     assert(object['identifier'] is String);
     assert(object['className'] is String);
     identifier = Identifier.split(object['identifier'] as String);
-    _className = object['className'] as String;
+    _className = object['className'] as String?;
     for (final String property in object.keys) {
       if (property.startsWith('.'))
         _properties[property.substring(1)] = PropertyValue.decode(object[property]);
@@ -555,23 +552,23 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   String encodeForServerMake(Set<Atom> serialized) {
     if (serialized.contains(this))
-      return identifier.identifier;
+      return identifier!.identifier;
     serialized.add(this);
     final StringBuffer buffer = StringBuffer();
     for (final String key in _properties.keys)
-      buffer.write(_properties[key].encodeForServerMake(key, serialized));
-    return 'new $className named ${identifier.identifier} { $buffer}';
+      buffer.write(_properties[key]!.encodeForServerMake(key, serialized));
+    return 'new $className named ${identifier!.identifier} { $buffer}';
   }
 
   String encodeForServerConnect() {
     final StringBuffer buffer = StringBuffer();
     for (final String key in _properties.keys)
-      buffer.write(_properties[key].encodeForServerConnect(identifier.identifier));
+      buffer.write(_properties[key]!.encodeForServerConnect(identifier!.identifier));
     return buffer.toString();
   }
 
-  Atom get parent => _parent;
-  Atom _parent;
+  Atom? get parent => _parent;
+  Atom? _parent;
 
   Set<Atom> get friends => _friends.keys.toSet();
   final Map<Atom, int> _friends = <Atom, int>{};
@@ -579,7 +576,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   Iterable<Atom> get children => _properties.values.expand((PropertyValue value) => value.children);
 
   int get depth {
-    final Atom parent = this.parent;
+    final Atom? parent = this.parent;
     if (parent == null)
       return 0;
     return parent.depth + 1;
@@ -601,7 +598,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   void registerFriend(Atom friend) {
     if (_friends.containsKey(friend)) {
-      _friends[friend] += 1;
+      _friends[friend] = _friends[friend]! + 1;
     } else {
       _friends[friend] = 1;
     }
@@ -610,8 +607,8 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   void unregisterFriend(Atom friend) {
     assert(_friends.containsKey(friend));
-    if (_friends[friend] > 1) {
-      _friends[friend] -= 1;
+    if (_friends[friend]! > 1) {
+      _friends[friend] = _friends[friend]! - 1;
     } else {
       assert(_friends[friend] == 1);
       _friends.remove(friend);
@@ -620,10 +617,10 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   }
 
   bool canAddToTree(Atom candidateChild) {
-    assert(candidateChild != null);
+    assert(candidateChild.parent != this);
     if (candidateChild.parent != null)
       return false;
-    Atom ancestor = parent;
+    Atom? ancestor = parent;
     while (ancestor != null) {
       if (ancestor == candidateChild)
         return false;
@@ -635,7 +632,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   void deletionNotification(Atom other) {
     assert(other != this);
     for (final String name in _properties.keys.toList()) {
-      final PropertyValue newValue = _properties[name].deletionNotification(other);
+      final PropertyValue? newValue = _properties[name]!.deletionNotification(other);
       if (newValue == null) {
         _properties.remove(name);
       } else {
@@ -646,8 +643,8 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   @override
   int compareTo(Atom other) {
-    final Atom parent = this.parent;
-    final Atom otherParent = other.parent;
+    final Atom? parent = this.parent;
+    final Atom? otherParent = other.parent;
     if (parent == other) // we are child of other
       return 1;
     if (otherParent == this) // we are parent of other
@@ -660,14 +657,14 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
       assert(parent != null);
       assert(otherParent != null);
       if (depth < other.depth) {
-        return compareTo(otherParent);
+        return compareTo(otherParent!);
       }
       if (depth > other.depth) {
-        return parent.compareTo(other);
+        return parent!.compareTo(other);
       }
-      return parent.compareTo(otherParent);
+      return parent!.compareTo(otherParent!);
     }
-    return identifier.compareTo(other.identifier); // we have same parent (or no parent) as other
+    return identifier!.compareTo(other.identifier!); // we have same parent (or no parent) as other
   }
 
   @override

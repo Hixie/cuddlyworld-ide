@@ -6,21 +6,21 @@ import 'disposition.dart';
 const double kSettingsWidth = 400.0;
 
 class SettingsTab extends StatefulWidget {
-  const SettingsTab({Key key}) : super(key: key);
+  const SettingsTab({Key? key}) : super(key: key);
   @override
   _SettingsTabState createState() => _SettingsTabState();
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  TextEditingController _username;
-  TextEditingController _password;
+  TextEditingController? _username;
+  TextEditingController? _password;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _username = TextEditingController(text: ServerDisposition.of(context).username)
+    _username = TextEditingController(text: ServerDisposition.of(context)!.username)
       ..addListener(_rebuild);
-    _password = TextEditingController(text: ServerDisposition.of(context).password)
+    _password = TextEditingController(text: ServerDisposition.of(context)!.password)
       ..addListener(_rebuild);
   }
 
@@ -30,15 +30,15 @@ class _SettingsTabState extends State<SettingsTab> {
 
   @override
   void dispose() {
-    _username.dispose();
-    _password.dispose();
+    _username!.dispose();
+    _password!.dispose();
     super.dispose();
   }
 
   bool get _isNew {
-    final ServerDisposition serverDisposition = ServerDisposition.of(context);
-    return serverDisposition.username != _username.text
-        || serverDisposition.password != _password.text;
+    final ServerDisposition serverDisposition = ServerDisposition.of(context)!;
+    return serverDisposition.username != _username!.text
+        || serverDisposition.password != _password!.text;
   }
 
   @override
@@ -49,7 +49,7 @@ class _SettingsTabState extends State<SettingsTab> {
           padding: const EdgeInsets.only(top: 12.0, left: 8.0, right: 8.0, bottom: 8.0),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: kSettingsWidth, minWidth: kSettingsWidth),
-            child: Text('Server configuration', style: Theme.of(context).textTheme.headline5),
+            child: Text('Server configuration', style: Theme.of(context).textTheme.headlineSmall),
           ),
         ),
         Padding(
@@ -91,8 +91,8 @@ class _SettingsTabState extends State<SettingsTab> {
               alignment: Alignment.centerRight,
               child: OutlinedButton(
                 onPressed: _isNew ? () async {
-                  final String reply = await ServerDisposition.of(context).setLoginData(_username.text, _password.text);
-                  await showMessage(context, 'Login', reply);
+                  final String reply = await ServerDisposition.of(this.context)!.setLoginData(_username!.text, _password!.text);
+                  await showMessage(this.context, 'Login', reply);
                 } : null,
                 child: const Text('Login'),
               ),

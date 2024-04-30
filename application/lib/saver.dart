@@ -3,7 +3,7 @@ import 'dart:io';
 
 abstract class JsonEncodable {
   Object encode();
-  void decode(Object object);
+  void decode(Object? object);
 }
 
 class SaveFile {

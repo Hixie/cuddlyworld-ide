@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 
 import 'atom_widget.dart';
 import 'data_model.dart';
@@ -10,7 +10,7 @@ import 'disposition.dart';
 const double kCatalogWidth = 350.0;
 
 class Catalog extends StatefulWidget {
-  const Catalog({Key key}) : super(key: key);
+  const Catalog({Key? key}) : super(key: key);
   @override
   _CatalogState createState() => _CatalogState();
 }
@@ -24,7 +24,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     for (final Atom element in _atoms) {
       element.removeListener(_handleListUpdate);
     }
-    _atoms = AtomsDisposition.of(context).atoms.toList();
+    _atoms = AtomsDisposition.of(context)!.atoms.toList();
     _handleListUpdate();
     for (final Atom element in _atoms) {
       element.addListener(_handleListUpdate);
@@ -53,13 +53,15 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         padding: const EdgeInsets.only(top: 36.0),
         child: FocusTraversalGroup(
           child: ListView(
-            children: _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
+            children:
+                _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
+          EditorDisposition.of(context)!.current =
+              AtomsDisposition.of(context)!.add();
         },
         child: const Icon(Icons.add),
       ),
@@ -68,19 +70,19 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
 }
 
 class DraggableText extends StatefulWidget {
-  const DraggableText({this.atom, Key key}): super(key: key);
+  const DraggableText({this.atom, Key? key}) : super(key: key);
 
-  final Atom atom;
+  final Atom? atom;
 
   @override
   _DraggableTextState createState() => _DraggableTextState();
 }
 
 class _DraggableTextState extends State<DraggableText> {
-  Timer _timer;
+  Timer? _timer;
   
   void _trigger() {
-    EditorDisposition.of(context).current = widget.atom;
+    EditorDisposition.of(context)!.current = widget.atom;
   }
   
   @override
@@ -91,7 +93,7 @@ class _DraggableTextState extends State<DraggableText> {
   
   @override
   Widget build(BuildContext context) {
-    final EditorDisposition editor = EditorDisposition.of(context);
+    final EditorDisposition editor = EditorDisposition.of(context)!;
     return MouseRegion(
       onEnter: (PointerEnterEvent event) {
         if (event.buttons != 0) {
@@ -117,19 +119,19 @@ class _DraggableTextState extends State<DraggableText> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
+          padding: EdgeInsets.only(top: widget.atom!.parent != null ? 0.0 : 8.0),
           child: TextButton(
-            style: widget.atom == editor.current ? ButtonStyle(backgroundColor: MaterialStateProperty.all<Color>(Colors.yellow)) : null,
+            style: widget.atom == editor.current ? ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.yellow)) : null,
             onPressed: () {
               setState(() {
-                EditorDisposition.of(context).current = widget.atom;
+                EditorDisposition.of(context)!.current = widget.atom;
               });
             },
             child: Row(
               children: <Widget>[
                 Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
-                SizedBox(width: 16.0 * widget.atom.depth + 12.0),
-                makeTextForIdentifier(context, widget.atom.identifier, widget.atom.className),
+                SizedBox(width: 16.0 * widget.atom!.depth + 12.0),
+                makeTextForIdentifier(context, widget.atom!.identifier!, widget.atom!.className!),
               ],
             ),
           ),

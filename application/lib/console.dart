@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xterm/xterm.dart';
-import 'package:xterm/flutter.dart';
 
 import 'backend.dart';
 
 class Console extends StatefulWidget {
   const Console({
-    Key key,
-    @required this.game,
-    @required this.terminal,
+    Key? key,
+    required this.game,
+    required this.terminal,
   }) : super(key: key);
 
-  final CuddlyWorld game;
-  final Terminal terminal;
+  final CuddlyWorld? game;
+  final Terminal? terminal;
 
   @override
   _ConsoleState createState() => _ConsoleState();
 }
 
 class _ConsoleState extends State<Console> {
-  TextEditingController _input;
+  TextEditingController? _input;
 
   List<String> history = <String>[];
-  int index;
+  int? index;
 
   @override
   void initState() {
@@ -33,19 +32,19 @@ class _ConsoleState extends State<Console> {
       HistoryUpIntent:
           CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
         index ??= history.length;
-        if (index > 1) 
-          index--;
+        if (index! > 1) 
+          index = index! - 1;
         setState(() {
-          _input.text = history[index];
+          _input!.text = history[index!];
         });
         return null;
       }),
       HistoryDownIntent:
           CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
-        if (index != null && index < history.length - 1) {
-          index++;
+        if (index != null && index! < history.length - 1) {
+          index = index! + 1;
           setState(() {
-            _input.text = history[index];
+            _input!.text = history[index!];
           });
         }
         return null;
@@ -55,14 +54,14 @@ class _ConsoleState extends State<Console> {
 
   @override
   void dispose() {
-    _input.dispose();
+    _input!.dispose();
     super.dispose();
   }
 
   void _send() {
-    widget.game.sendMessage(_input.text).catchError((Object error) { }, test: (Object error) => error is ConnectionLostException);
-    history.add(_input.text);
-    _input.clear();
+    widget.game!.sendMessage(_input!.text).catchError((Object error) { return 'ignorethis';}, test: (Object error) => error is ConnectionLostException);
+    history.add(_input!.text);
+    _input!.clear();
     index = null;
   }
 
@@ -70,7 +69,7 @@ class _ConsoleState extends State<Console> {
     return ActionChip(
       label: Text(command),
       onPressed: () {
-        widget.game.sendMessage(command).catchError((Object error) { }, test: (Object error) => error is ConnectionLostException);
+        widget.game!.sendMessage(command).catchError((Object error) { return 'ignorethis';}, test: (Object error) => error is ConnectionLostException);
       },
     );
   }
@@ -86,7 +85,7 @@ class _ConsoleState extends State<Console> {
     }
   }
 
-  Map<Type, Action<Intent>> actions;
+  late Map<Type, Action<Intent>> actions;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +95,7 @@ class _ConsoleState extends State<Console> {
     };
     return Column(
       children: <Widget>[
-        Expanded(child: TerminalView(terminal: widget.terminal)),
+        Expanded(child: TerminalView(widget.terminal!)),
         const SizedBox(height: 8.0),
         SizedBox(
           height: 32.0,

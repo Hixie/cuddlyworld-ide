@@ -27,7 +27,7 @@ Future<void> main() async {
 }
 
 class CuddlyWorldIDE extends StatelessWidget {
-  const CuddlyWorldIDE({ Key key }): super(key: key);
+  const CuddlyWorldIDE({ Key? key }): super(key: key);
   
   @override
   Widget build(BuildContext context) {
@@ -44,19 +44,19 @@ class CuddlyWorldIDE extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({ Key key }) : super(key: key);
+  const MainScreen({ Key? key }) : super(key: key);
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
-  CuddlyWorld _game;
-  Terminal _terminal;
-  StreamSubscription<String> _gameStream;
-  TabController _tabController;
+  CuddlyWorld? _game;
+  Terminal? _terminal;
+  StreamSubscription<String>? _gameStream;
+  TabController? _tabController;
 
-  Atom _lastCurrent;
+  Atom? _lastCurrent;
 
   @override
   void initState() {
@@ -68,44 +68,44 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final ServerDisposition server = ServerDisposition.of(context);
+    final ServerDisposition? server = ServerDisposition.of(context);
     if (_game == null ||
-        server.server != _game.url ||
-        server.username != _game.username ||
-        server.password != _game.password) {
+        server!.server != _game!.url ||
+        server.username != _game!.username ||
+        server.password != _game!.password) {
       _game?.dispose();
       _game = CuddlyWorld(
-        url: server.server,
+        url: server!.server,
         username: server.username,
         password: server.password,
         onLog: _handleLog,
       )
         ..reportNextLogin(_reportLogin);
       _gameStream?.cancel();
-      _gameStream = _game.output.listen(_handleOutput);
+      _gameStream = _game!.output.listen(_handleOutput);
     }
-    final Atom current = EditorDisposition.of(context).current;
+    final Atom? current = EditorDisposition.of(context)!.current;
     if (current != _lastCurrent) {
-      _tabController.index = 0;
+      _tabController!.index = 0;
     }
   }
 
   void _reportLogin(String result) {
-    ServerDisposition.of(context).resolveLogin(result);
+    ServerDisposition.of(context)!.resolveLogin(result);
   }
 
   void _handleOutput(String output) {
     if (output == '\x02') {
-      _terminal.write('\r\n');
+      _terminal!.write('\r\n');
       return;
     }
-    _terminal
+    _terminal!
       ..write(output.replaceAll('\n', '\r\n').replaceAll('\x01', ''))
       ..write('\r\n');
   }
 
   void _handleLog(String output) {
-    _terminal
+    _terminal!
       ..write('\x1B[31m')
       ..write(output.replaceAll('\n', '\r\n'))
       ..write('\x1B[0m\r\n');
@@ -113,16 +113,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
 
   @override
   void dispose() {
-    _gameStream.cancel();
-    _game.dispose();
-    _terminal.close();
-    _tabController.dispose();
+    _gameStream!.cancel();
+    _game!.dispose();
+    _tabController!.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
+    Widget? body;
     return Material(
       child: Column(
         children: <Widget>[
@@ -142,11 +141,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: AnimatedBuilder(
-                animation: _tabController,
-                builder: (BuildContext context, Widget child) {
-                  switch (_tabController.index) {
+                animation: _tabController!,
+                builder: (BuildContext context, Widget? child) {
+                  switch (_tabController!.index) {
                     case 0:
-                      final Atom currentAtom = EditorDisposition.of(context).current;
+                      final Atom? currentAtom = EditorDisposition.of(context)!.current;
                       if (currentAtom != null) {
                         body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
                       } else {
@@ -154,11 +153,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Text('Nothing selected.', style: Theme.of(context).textTheme.headline3),
+                              Text('Nothing selected.', style: Theme.of(context).textTheme.displaySmall),
                               const SizedBox(height: 28.0),
                               OutlinedButton(
                                 onPressed: () {
-                                  EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
+                                  EditorDisposition.of(context)!.current = AtomsDisposition.of(context)!.add();
                                 },
                                 child: const Text('Create Item'),
                               ),
