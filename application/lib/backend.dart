@@ -196,9 +196,9 @@ class CuddlyWorld extends ChangeNotifier {
     }();
   }
 
-  Future<Map<String, String>?> fetchPropertiesOf(String? className) {
+  Future<Map<String, String>> fetchPropertiesOf(String? className) {
     if (_propertiesCache.containsKey(className))
-      return SynchronousFuture<Map<String, String>?>(_propertiesCache[className]);
+      return SynchronousFuture<Map<String, String>>(_propertiesCache[className]!);
     return () async {
       final String rawResult = await sendMessage('debug describe class $className');
       final List<String> lines = rawResult.split('\n');

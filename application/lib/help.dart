@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HelpTab extends StatefulWidget {
-  const HelpTab({Key? key}) : super(key: key);
+  const HelpTab({super.key});
 
   @override
   _HelpTabState createState() => _HelpTabState();

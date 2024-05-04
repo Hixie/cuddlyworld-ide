@@ -10,7 +10,7 @@ import 'disposition.dart';
 const double kCatalogWidth = 350.0;
 
 class Catalog extends StatefulWidget {
-  const Catalog({Key? key}) : super(key: key);
+  const Catalog({super.key});
   @override
   _CatalogState createState() => _CatalogState();
 }
@@ -70,7 +70,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
 }
 
 class DraggableText extends StatefulWidget {
-  const DraggableText({required this.atom, Key? key}) : super(key: key);
+  const DraggableText({required this.atom, super.key});
 
   final Atom atom;
 
@@ -131,7 +131,7 @@ class _DraggableTextState extends State<DraggableText> {
               children: <Widget>[
                 Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
                 SizedBox(width: 16.0 * widget.atom.depth + 12.0),
-                makeTextForIdentifier(context, widget.atom.identifier!, widget.atom.className!),
+                makeTextForIdentifier(context, widget.atom.identifier!, widget.atom.className),
               ],
             ),
           ),

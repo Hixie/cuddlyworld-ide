@@ -43,7 +43,7 @@ abstract class PropertyValue {
                    (!child.containsKey('identifier') || child['identifier'] is String));
         }));
         return ChildrenPropertyValuePlaceholder(
-          (object['children'] as List<Object>).map<PositionedAtomPlaceholder>((Object child) {
+          (object['children'] as List<Object?>).map<PositionedAtomPlaceholder>((Object? child) {
             final Map<String, Object?> map = child as Map<String, Object?>;
             return PositionedAtomPlaceholder(map['position'] as String?, map['identifier'] as String?);
           }).toList(),
@@ -393,7 +393,7 @@ class LandmarkPlaceholder {
   }
 }
 
-class Identifier extends Comparable<Identifier> {
+class Identifier implements Comparable<Identifier> {
   Identifier(this.name, this.disambiguator);
   factory Identifier.split(String identifier) {
     final int position = identifier.lastIndexOf('_');
@@ -463,9 +463,9 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     notifyListeners();
   }
 
-  String? get className => _className;
-  String? _className = '';
-  set className(String? value) {
+  String get className => _className;
+  String _className = '';
+  set className(String value) {
     if (value == _className)
       return;
     _className = value;
@@ -542,7 +542,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     assert(object['identifier'] is String);
     assert(object['className'] is String);
     identifier = Identifier.split(object['identifier'] as String);
-    _className = object['className'] as String?;
+    _className = object['className'] as String;
     for (final String property in object.keys) {
       if (property.startsWith('.'))
         _properties[property.substring(1)] = PropertyValue.decode(object[property]);

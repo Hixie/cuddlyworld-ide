@@ -167,7 +167,7 @@ class ServerDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  static ServerDisposition? of(BuildContext context) => _of<ServerDisposition>(context);
+  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context)!;
 }
 
 class AtomsDisposition extends ChildDisposition implements AtomOwner {

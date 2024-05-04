@@ -59,7 +59,7 @@ class _ConsoleState extends State<Console> {
   }
 
   void _send() {
-    widget.game.sendMessage(_input.text).catchError((Object error) => 'ignorethis', test: (Object error) => error is ConnectionLostException);
+    widget.game.sendMessage(_input.text).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
     history.add(_input.text);
     _input.clear();
     index = null;
@@ -69,7 +69,7 @@ class _ConsoleState extends State<Console> {
     return ActionChip(
       label: Text(command),
       onPressed: () {
-        widget.game.sendMessage(command).catchError((Object error) => 'ignorethis', test: (Object error) => error is ConnectionLostException);
+        widget.game.sendMessage(command).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
       },
     );
   }

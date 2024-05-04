@@ -5,25 +5,25 @@ import 'disposition.dart';
 
 class AtomDescription {
   const AtomDescription({
-    this.identifier,
-    this.className,
-    this.properties,
+    required this.identifier,
+    required this.className,
+    required this.properties,
   });
 
-  final String? identifier;
-  final String? className;
-  final Map<String, PropertyValue>? properties;
+  final String identifier;
+  final String className;
+  final Map<String, PropertyValue> properties;
 
   Atom create(AtomsDisposition disposition) {
     return disposition.add()
-      ..identifier = Identifier.split(identifier!)
+      ..identifier = Identifier.split(identifier)
       ..className = className
-      ..addAll(properties!);
+      ..addAll(properties);
   }
 }
 
 class TemplateLibrary extends StatelessWidget {
-  const TemplateLibrary({ Key? key }) : super(key: key);
+  const TemplateLibrary({ super.key }) ;
 
   @override
   Widget build(BuildContext context) {

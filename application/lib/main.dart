@@ -27,7 +27,7 @@ Future<void> main() async {
 }
 
 class CuddlyWorldIDE extends StatelessWidget {
-  const CuddlyWorldIDE({ Key? key }): super(key: key);
+  const CuddlyWorldIDE({ super.key });
   
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class CuddlyWorldIDE extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({ Key? key }) : super(key: key);
+  const MainScreen({ super.key }) ;
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   CuddlyWorld? _game;
   late final Terminal _terminal;
   StreamSubscription<String>? _gameStream;
-  TabController? _tabController;
+  late final TabController _tabController;
 
   Atom? _lastCurrent;
 
@@ -68,14 +68,14 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final ServerDisposition? server = ServerDisposition.of(context);
+    final ServerDisposition server = ServerDisposition.of(context);
     if (_game == null ||
-        server!.server != _game!.url ||
+        server.server != _game!.url ||
         server.username != _game!.username ||
         server.password != _game!.password) {
       _game?.dispose();
       _game = CuddlyWorld(
-        url: server!.server,
+        url: server.server,
         username: server.username,
         password: server.password,
         onLog: _handleLog,
@@ -86,12 +86,12 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
     }
     final Atom? current = EditorDisposition.of(context).current;
     if (current != _lastCurrent) {
-      _tabController!.index = 0;
+      _tabController.index = 0;
     }
   }
 
   void _reportLogin(String result) {
-    ServerDisposition.of(context)!.resolveLogin(result);
+    ServerDisposition.of(context).resolveLogin(result);
   }
 
   void _handleOutput(String output) {
@@ -115,7 +115,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void dispose() {
     _gameStream!.cancel();
     _game!.dispose();
-    _tabController!.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -141,13 +141,13 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: AnimatedBuilder(
-                animation: _tabController!,
+                animation: _tabController,
                 builder: (BuildContext context, Widget? child) {
-                  switch (_tabController!.index) {
+                  switch (_tabController.index) {
                     case 0:
                       final Atom? currentAtom = EditorDisposition.of(context).current;
                       if (currentAtom != null) {
-                        body = Editor(key: ValueKey<Atom>(currentAtom), game: _game, atom: currentAtom);
+                        body = Editor(key: ValueKey<Atom>(currentAtom), game: _game!, atom: currentAtom);
                       } else {
                         body = Center(
                           child: Column(

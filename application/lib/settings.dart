@@ -6,21 +6,21 @@ import 'disposition.dart';
 const double kSettingsWidth = 400.0;
 
 class SettingsTab extends StatefulWidget {
-  const SettingsTab({Key? key}) : super(key: key);
+  const SettingsTab({super.key});
   @override
   _SettingsTabState createState() => _SettingsTabState();
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  TextEditingController? _username;
-  TextEditingController? _password;
+  late final TextEditingController _username;
+  late final TextEditingController _password;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _username = TextEditingController(text: ServerDisposition.of(context)!.username)
+    _username = TextEditingController(text: ServerDisposition.of(context).username)
       ..addListener(_rebuild);
-    _password = TextEditingController(text: ServerDisposition.of(context)!.password)
+    _password = TextEditingController(text: ServerDisposition.of(context).password)
       ..addListener(_rebuild);
   }
 
@@ -30,15 +30,15 @@ class _SettingsTabState extends State<SettingsTab> {
 
   @override
   void dispose() {
-    _username!.dispose();
-    _password!.dispose();
+    _username.dispose();
+    _password.dispose();
     super.dispose();
   }
 
   bool get _isNew {
-    final ServerDisposition serverDisposition = ServerDisposition.of(context)!;
-    return serverDisposition.username != _username!.text
-        || serverDisposition.password != _password!.text;
+    final ServerDisposition serverDisposition = ServerDisposition.of(context);
+    return serverDisposition.username != _username.text
+        || serverDisposition.password != _password.text;
   }
 
   @override
@@ -91,7 +91,7 @@ class _SettingsTabState extends State<SettingsTab> {
               alignment: Alignment.centerRight,
               child: OutlinedButton(
                 onPressed: _isNew ? () async {
-                  final String reply = await ServerDisposition.of(this.context)!.setLoginData(_username!.text, _password!.text);
+                  final String reply = await ServerDisposition.of(this.context).setLoginData(_username.text, _password.text);
                   if(!mounted) {
                     return;
                   }
