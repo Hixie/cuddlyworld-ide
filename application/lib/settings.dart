@@ -92,7 +92,7 @@ class _SettingsTabState extends State<SettingsTab> {
               child: OutlinedButton(
                 onPressed: _isNew ? () async {
                   final String reply = await ServerDisposition.of(this.context)!.setLoginData(_username!.text, _password!.text);
-                  if(!mounted) {
+                  if (!mounted) {
                     return;
                   }
                   await showMessage(this.context, 'Login', reply);
