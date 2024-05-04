@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-typedef AtomLookupCallback = Atom? Function(String? identifier);
+typedef AtomLookupCallback = Atom? Function(String identifier);
 
 String escapeSingleQuotes(String raw) {
   return raw.replaceAll(r'\', r'\\').replaceAll(r"'", r"\'");
@@ -29,7 +29,7 @@ abstract class PropertyValue {
     if (object is Map<String, Object?>) {
       if (object['type'] == 'atom') {
         assert(object['identifier'] is String);
-        return AtomPropertyValuePlaceholder(object['identifier'] as String?);
+        return AtomPropertyValuePlaceholder(object['identifier'] as String);
       }
       if (object['type'] == 'literal') {
         assert(object['value'] is String);
@@ -161,7 +161,7 @@ class AtomPropertyValue extends PropertyValue {
 class AtomPropertyValuePlaceholder extends PropertyValue {
   const AtomPropertyValuePlaceholder(this.value);
   
-  final String? value;
+  final String value;
 
   @override
   Object encode() => throw StateError('AtomPropertyValuePlaceholder asked to encode');
@@ -281,7 +281,7 @@ class PositionedAtomPlaceholder {
   final String? identifier;
 
   PositionedAtom resolve(AtomLookupCallback lookupCallback) {
-    return PositionedAtom(position, lookupCallback(identifier));
+    return PositionedAtom(position, lookupCallback(identifier!));
   }
 }
 
@@ -389,7 +389,7 @@ class LandmarkPlaceholder {
   final Set<String> options;
 
   Landmark resolve(AtomLookupCallback lookupCallback) {
-    return Landmark(direction, lookupCallback(identifier), options);
+    return Landmark(direction, lookupCallback(identifier!), options);
   }
 }
 
@@ -573,7 +573,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   Set<Atom> get friends => _friends.keys.toSet();
   final Map<Atom, int> _friends = <Atom, int>{};
 
-  Iterable<Atom> get children => _properties.values.expand((PropertyValue value) => value.children);
+  Iterable<Atom> get children => _properties.values.expand<Atom>((PropertyValue value) => value.children);
 
   int get depth {
     final Atom? parent = this.parent;

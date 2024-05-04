@@ -153,17 +153,17 @@ class Blueprint extends StatelessWidget {
 
   void _handleCreate(BuildContext context) {
     assert(this.atoms.isNotEmpty);
-    final List<Atom> atoms = this.atoms.map<Atom>((AtomDescription description) => description.create(AtomsDisposition.of(context)!)).toList();
-    Atom _lookupAtom(String? identifier, { Atom? ignore }) {
+    final List<Atom> atoms = this.atoms.map<Atom>((AtomDescription description) => description.create(AtomsDisposition.of(context))).toList();
+    Atom _lookupAtom(String identifier, { Atom? ignore }) {
       final List<Atom> matches = atoms
-        .where((Atom atom) => atom != ignore && atom.identifier!.matches(identifier!))
+        .where((Atom atom) => atom != ignore && atom.identifier!.matches(identifier))
         .toList();
       assert(matches.length == 1, 'could not find unique $identifier; found $matches in $atoms');
       return matches.single;
     }
     for (final Atom atom in atoms)
       atom.resolveIdentifiers(_lookupAtom);
-    AtomsDisposition.of(context)!.addAll(atoms);
+    AtomsDisposition.of(context).addAll(atoms);
     EditorDisposition.of(context).current = atoms.first;
   }
 

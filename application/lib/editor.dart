@@ -263,7 +263,7 @@ class _EditorState extends State<Editor> {
                         editor.removeFromCart(widget.atom);
                       }
                       EditorDisposition.of(context).current = null;
-                      AtomsDisposition.of(context)!.remove(widget.atom);
+                      AtomsDisposition.of(context).remove(widget.atom);
                     },
                     child: const Text('Delete'),
                   ),
@@ -369,7 +369,7 @@ Widget _makeAtomSlot(Set<String> classes, Atom? value, Atom parent, ValueSetter<
                 label: const SizedBox(width: 64.0, child: Text('')),
                 color: const Color(0xFFE0E0E0),
                 onTap: (classes.isEmpty) ? null : () {
-                  final Atom newAtom = AtomsDisposition.of(context)!.add()
+                  final Atom newAtom = AtomsDisposition.of(context).add()
                     ..className = classes.first;
                   onChanged(newAtom);
                   EditorDisposition.of(context).current = newAtom;
@@ -789,6 +789,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
   Widget _row(String? position, Atom? atom, Function(String? position, Atom? atom) onChanged, VoidCallback? onDelete) {
     return Row(
       children: <Widget>[
+        // TODO: this takes up a lot of horizontal space
         _makeDropdown(_thingPositionValues, position, null, (String? position) { onChanged(position, atom); }),
         const SizedBox(
           width: 8.0,

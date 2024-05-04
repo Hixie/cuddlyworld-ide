@@ -238,7 +238,7 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   @override
   Identifier getNewIdentifier() => parent.getNewIdentifier();
 
-  static AtomsDisposition? of(BuildContext context) => _of<AtomsDisposition>(context);
+  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context)!;
 }
 
 class EditorDisposition extends ChildDisposition {

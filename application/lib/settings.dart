@@ -91,11 +91,11 @@ class _SettingsTabState extends State<SettingsTab> {
               alignment: Alignment.centerRight,
               child: OutlinedButton(
                 onPressed: _isNew ? () async {
-                  final String reply = await ServerDisposition.of(this.context).setLoginData(_username.text, _password.text);
+                  final String reply = await ServerDisposition.of(context).setLoginData(_username.text, _password.text);
                   if (!mounted) {
                     return;
                   }
-                  await showMessage(this.context, 'Login', reply);
+                  await showMessage(context, 'Login', reply);
                 } : null,
                 child: const Text('Login'),
               ),
