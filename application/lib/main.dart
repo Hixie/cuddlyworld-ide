@@ -157,7 +157,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                               const SizedBox(height: 28.0),
                               OutlinedButton(
                                 onPressed: () {
-                                  EditorDisposition.of(context).current = AtomsDisposition.of(context)!.add();
+                                  EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
                                 },
                                 child: const Text('Create Item'),
                               ),

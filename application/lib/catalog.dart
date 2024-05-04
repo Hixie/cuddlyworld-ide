@@ -24,7 +24,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
     for (final Atom element in _atoms) {
       element.removeListener(_handleListUpdate);
     }
-    _atoms = AtomsDisposition.of(context)!.atoms.toList();
+    _atoms = AtomsDisposition.of(context).atoms.toList();
     _handleListUpdate();
     for (final Atom element in _atoms) {
       element.addListener(_handleListUpdate);
@@ -61,7 +61,7 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           EditorDisposition.of(context).current =
-              AtomsDisposition.of(context)!.add();
+              AtomsDisposition.of(context).add();
         },
         child: const Icon(Icons.add),
       ),
