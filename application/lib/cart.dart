@@ -52,7 +52,7 @@ class _CartState extends State<Cart> {
         await showMessage(context, heading, reply);
     } on ConnectionLostException {
       if (mounted)
-        await showMessage(context, heading, 'Conection lost');
+        await showMessage(context, heading, 'Connection lost');
     }
   }
 

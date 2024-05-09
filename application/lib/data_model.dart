@@ -51,7 +51,7 @@ abstract class PropertyValue {
       }
       if (object['type'] == 'landmark*') {
         assert(object['children'] is List<Object?>, 'not a list: $object');
-        assert(!(object['children'] as List<Object>).any((Object child) {
+        assert(!(object['children'] as List<Object?>).any((Object? child) {
           return !(child is Map<String, Object?> &&
                    child['direction'] is String &&
                    (!child.containsKey('identifier') || child['identifier'] is String) &&
