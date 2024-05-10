@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HelpTab extends StatefulWidget {
-  const HelpTab({Key key}) : super(key: key);
+  const HelpTab({super.key});
 
   @override
   _HelpTabState createState() => _HelpTabState();
@@ -12,20 +12,20 @@ class _HelpTabState extends State<HelpTab> {
   Widget build(BuildContext context) {
     return ListView(
       children: <Widget>[
-        Text('Introduction', style: Theme.of(context).textTheme.headline4),
+        Text('Introduction', style: Theme.of(context).textTheme.headlineMedium),
         const Text(
             "To create a TAtom from scratch, go to the 'editor' tab and press the plus button. "
             'Then edit the fields.\n'
             "To add something to the world, press 'add to cart', then go to cart and press send to server."),
         const SizedBox(height: 24.0),
-        Text('Fields', style: Theme.of(context).textTheme.headline4),
+        Text('Fields', style: Theme.of(context).textTheme.headlineMedium),
         const Text('There are different kinds of fields:\n'
             '- text fields, like name, identifer, pattern, description\n'
             '- dropdown fields, like class, position, size, mass\n'
             '- atom fields, like source, door side, where you drag the atom to the field\n'
             '- children field, which has dropdown and atom fields\n'
             '- landmark field, which has dropdown and atom fields\n'),
-        Text('Patterns', style: Theme.of(context).textTheme.headline4),
+        Text('Patterns', style: Theme.of(context).textTheme.headlineMedium),
         const Text(
             """Nested lists are marked by round brackets (...).
    Tokens can have a "+" suffix indicating that the token can be repeated.

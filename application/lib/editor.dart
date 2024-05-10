@@ -37,7 +37,7 @@ const Map<String, String> _enumDescriptions = <String, String>{
 };
 
 class Editor extends StatefulWidget {
-  const Editor({ Key key, this.game, this.atom }): super(key: key);
+  const Editor({ super.key, required this.game, required this.atom });
 
   final CuddlyWorld game;
 
@@ -155,14 +155,14 @@ class _EditorState extends State<Editor> {
           needsTree: true,
           needsDifferent: true,
           game: widget.game,
-          onChanged: (Atom value) { widget.atom[property] = value != null ? AtomPropertyValue(value) : null; },
+          onChanged: (Atom? value) { widget.atom[property] = value != null ? AtomPropertyValue(value) : null; },
         );
       case 'boolean':
         return CheckboxField(
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           value: widget.atom.ensurePropertyIs<BooleanPropertyValue>(property)?.value,
-          onChanged: (bool value) { widget.atom[property] = BooleanPropertyValue(value); },
+          onChanged: (bool? value) { widget.atom[property] = BooleanPropertyValue(value!); },
         );
       case 'child*':
         return ChildrenField(
@@ -181,7 +181,7 @@ class _EditorState extends State<Editor> {
           rootClass: parts[1],
           value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = LiteralPropertyValue(value); },
+          onChanged: (String? value) { widget.atom[property] = LiteralPropertyValue(value!); },
         );
       case 'enum':
         return EnumField(
@@ -190,7 +190,7 @@ class _EditorState extends State<Editor> {
           enumName: parts[1],
           value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
           game: widget.game,
-          onChanged: (String value) { widget.atom[property] = LiteralPropertyValue(value); },
+          onChanged: (String? value) { widget.atom[property] = LiteralPropertyValue(value!); },
         );
       case 'landmark*':
         return LandmarksField(
@@ -221,7 +221,7 @@ class _EditorState extends State<Editor> {
 
   @override
   Widget build(BuildContext context) {
-    final Atom parent = widget.atom.parent;
+    final Atom? parent = widget.atom.parent;
     final EditorDisposition editor = EditorDisposition.of(context);
     return SizedBox.expand(
       child: SingleChildScrollView(
@@ -233,13 +233,13 @@ class _EditorState extends State<Editor> {
                 child: OutlinedButton.icon(
                   onPressed: () { EditorDisposition.of(context).current = parent; },
                   icon: const Icon(Icons.arrow_upward),
-                  label: makeTextForIdentifier(context, parent.identifier, parent.className),
+                  label: makeTextForIdentifier(context, parent.identifier!, parent.className),
                 ),
               ),
             StringField(
               label: 'Identifier',
-              value: widget.atom.identifier.name,
-              suffix: '_${widget.atom.identifier.disambiguator}',
+              value: widget.atom.identifier!.name,
+              suffix: '_${widget.atom.identifier!.disambiguator}',
               filter: '[0-9A-Za-z_]+',
               onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(name: value, ignore: widget.atom); },
             ),
@@ -251,7 +251,7 @@ class _EditorState extends State<Editor> {
               onChanged: (String value) { widget.atom.className = value; },
             ),
             for (final String property in _properties.keys)
-              _addField(property, _properties[property]),
+              _addField(property, _properties[property]!),
             Padding(
               padding: const EdgeInsets.all(48.0),
               child: Row(
@@ -319,7 +319,7 @@ Widget _makeField(String label, FocusNode focusNode, Widget field) {
   );
 }
 
-Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, ValueSetter<String> onChanged) {
+Widget _makeDropdown(List<String> values, String? value, FocusNode? focusNode, ValueSetter<String> onChanged) {
   if (values.isEmpty)
     return const Text('Not connected...', style: TextStyle(fontStyle: FontStyle.italic));
   return DropdownButton<String>(
@@ -329,7 +329,7 @@ Widget _makeDropdown(List<String> values, String value, FocusNode focusNode, Val
     )).toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
-    onChanged: onChanged,
+    onChanged: (String? value) => onChanged(value!),
   );
 }
 
@@ -338,20 +338,19 @@ Widget _pad(Widget child) => Padding(
   child: child,
 );
 
-Widget _makeAtomSlot(Set<String> classes, Atom value, Atom parent, ValueSetter<Atom> onChanged, {
-  @required bool needsTree,
-  @required bool needsDifferent,
+Widget _makeAtomSlot(Set<String> classes, Atom? value, Atom parent, ValueSetter<Atom?> onChanged, {
+  required bool needsTree,
+  required bool needsDifferent,
 }) {
-  assert(parent != null);
   bool _ok(Atom atom) => (!needsTree || parent.canAddToTree(atom))
                       && (!needsDifferent || parent != atom);
   return DragTarget<Atom>(
-    onWillAccept: (Atom atom) => classes.contains(atom.className) && _ok(atom),
-    onAccept: (Atom atom) {
-      if (_ok(atom))
-        onChanged(atom);
+    onWillAcceptWithDetails: (DragTargetDetails<Atom>? details) => classes.contains(details!.data.className) && _ok(details.data),
+    onAcceptWithDetails: (DragTargetDetails<Atom> details) {
+      if (_ok(details.data))
+        onChanged(details.data);
     },
-    builder: (BuildContext context, List<Atom> candidateData, List<Object> rejectedData) {
+    builder: (BuildContext context, List<Atom?> candidateData, List<Object?> rejectedData) {
       return Material(
         color: const Color(0x0A000000),
         child: Wrap(
@@ -362,7 +361,7 @@ Widget _makeAtomSlot(Set<String> classes, Atom value, Atom parent, ValueSetter<A
                 onDelete: () { onChanged(null); },
                 onTap: () { EditorDisposition.of(context).current = value; },
               )),
-            ...candidateData.map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom))),
+            ...candidateData.map<Widget>((Atom? atom) => _pad(AtomWidget(atom: atom))),
             ...rejectedData.whereType<Atom>().map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom, color: Colors.red))),
             if (value == null && candidateData.isEmpty && rejectedData.isEmpty)
               _pad(AtomWidget(
@@ -385,33 +384,32 @@ Widget _makeAtomSlot(Set<String> classes, Atom value, Atom parent, ValueSetter<A
 
 class StringField extends StatefulWidget {
   const StringField({
-    Key key,
-    @required this.label,
-    @required this.value,
+    super.key,
+    required this.label,
+    required this.value,
     this.suffix,
     this.filter,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final String label;
   final String value;
-  final String suffix;
-  final String filter;
-  final ValueSetter<String> onChanged;
+  final String? suffix;
+  final String? filter;
+  final ValueSetter<String>? onChanged;
 
   @override
   State<StringField> createState() => _StringFieldState();
 }
 
 class _StringFieldState extends State<StringField> {
-  TextEditingController _controller;
-  FocusNode _focusNode;
+  late final TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.value);
-    _focusNode = FocusNode();
   }
 
   @override
@@ -425,6 +423,7 @@ class _StringFieldState extends State<StringField> {
   @override
   void dispose() {
     _focusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -437,9 +436,9 @@ class _StringFieldState extends State<StringField> {
         decoration: InputDecoration(
           filled: true,
           border: InputBorder.none,
-          suffix: widget.suffix != null ? Text(widget.suffix) : null,
+          suffix: widget.suffix != null ? Text(widget.suffix!) : null,
         ),
-        inputFormatters: <TextInputFormatter>[ if (widget.filter != null) FilteringTextInputFormatter.allow(RegExp(widget.filter)) ],
+        inputFormatters: <TextInputFormatter>[ if (widget.filter != null) FilteringTextInputFormatter.allow(RegExp(widget.filter!)) ],
         onChanged: widget.onChanged,
       ),
     ));
@@ -448,13 +447,13 @@ class _StringFieldState extends State<StringField> {
 
 class ClassesField extends StatefulWidget {
   const ClassesField({
-    Key key,
-    @required this.game,
-    @required this.rootClass,
-    @required this.label,
-    @required this.value,
-    this.onChanged,
-  }): super(key: key);
+    super.key,
+    required this.game,
+    required this.rootClass,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   final CuddlyWorld game;
   final String rootClass;
@@ -467,14 +466,13 @@ class ClassesField extends StatefulWidget {
 }
 
 class _ClassesFieldState extends State<ClassesField> {
-  FocusNode _focusNode;
+  final FocusNode _focusNode = FocusNode();
 
   List<String> _classes = const <String>[];
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
     _updateClasses();
     widget.game.addListener(_updateClasses);
   }
@@ -517,13 +515,13 @@ class _ClassesFieldState extends State<ClassesField> {
 
 class EnumField extends StatefulWidget {
   const EnumField({
-    Key key,
-    @required this.game,
-    @required this.enumName,
-    @required this.label,
-    @required this.value,
-    this.onChanged,
-  }): super(key: key);
+    super.key,
+    required this.game,
+    required this.enumName,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   final CuddlyWorld game;
   final String enumName;
@@ -536,7 +534,7 @@ class EnumField extends StatefulWidget {
 }
 
 class _EnumFieldState extends State<EnumField> {
-  FocusNode _focusNode;
+  late final FocusNode _focusNode;
 
   List<String> _enumValues = const <String>[];
 
@@ -586,28 +584,22 @@ class _EnumFieldState extends State<EnumField> {
 
 class CheckboxField extends StatefulWidget {
   const CheckboxField({
-    Key key,
-    @required this.label,
-    @required this.value,
+    super.key,
+    required this.label,
+    required this.value,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final String label;
-  final bool value;
-  final ValueSetter<bool> onChanged;
+  final bool? value;
+  final ValueSetter<bool?>? onChanged;
 
   @override
   State<CheckboxField> createState() => _CheckboxFieldState();
 }
 
 class _CheckboxFieldState extends State<CheckboxField> {
-  FocusNode _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-  }
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
@@ -620,46 +612,45 @@ class _CheckboxFieldState extends State<CheckboxField> {
     return _makeField(widget.label, _focusNode, Checkbox(
       value: widget.value,
       tristate: widget.value == null,
-      onChanged: (bool value) => widget.onChanged(value),
+      onChanged: (bool? value) => widget.onChanged!(value),
     ));
   }
 }
 
 class AtomField extends StatefulWidget {
   const AtomField({
-    Key key,
-    @required this.game,
-    @required this.rootClass,
-    @required this.label,
-    @required this.value,
-    @required this.parent,
+    super.key,
+    required this.game,
+    required this.rootClass,
+    required this.label,
+    required this.value,
+    required this.parent,
     this.needsTree = false,
     this.needsDifferent = false,
-    this.onChanged,
-  }): super(key: key);
+    required this.onChanged,
+  });
 
   final CuddlyWorld game;
   final String rootClass;
   final String label;
-  final Atom value;
-  final Atom parent;
+  final Atom? value;
+  final Atom? parent;
   final bool needsTree;
   final bool needsDifferent;
-  final ValueSetter<Atom> onChanged;
+  final ValueSetter<Atom?> onChanged;
 
   @override
   State<AtomField> createState() => _AtomFieldState();
 }
 
 class _AtomFieldState extends State<AtomField> {
-  FocusNode _focusNode;
+  final FocusNode _focusNode = FocusNode();
 
   Set<String> _classes = const <String>{};
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
     _updateClasses();
     widget.game.addListener(_updateClasses);
   }
@@ -700,7 +691,7 @@ class _AtomFieldState extends State<AtomField> {
       child: _makeAtomSlot(
         _classes,
         widget.value,
-        widget.parent,
+        widget.parent!,
         widget.onChanged,
         needsTree: widget.needsTree,
         needsDifferent: widget.needsDifferent,
@@ -711,21 +702,21 @@ class _AtomFieldState extends State<AtomField> {
 
 class ChildrenField extends StatefulWidget {
   const ChildrenField({
-    Key key,
-    @required this.game,
-    @required this.rootClass,
-    @required this.label,
-    @required this.values,
-    @required this.parent,
+    super.key,
+    required this.game,
+    required this.rootClass,
+    required this.label,
+    required this.values,
+    required this.parent,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<PositionedAtom> values;
-  final Atom parent;
-  final ValueSetter<List<PositionedAtom>> onChanged;
+  final Atom? parent;
+  final ValueSetter<List<PositionedAtom>>? onChanged;
 
   @override
   State<ChildrenField> createState() => _ChildrenFieldState();
@@ -787,15 +778,16 @@ class _ChildrenFieldState extends State<ChildrenField> {
     super.dispose();
   }
 
-  Widget _row(String position, Atom atom, Function(String position, Atom atom) onChanged, VoidCallback onDelete) {
+  Widget _row(String? position, Atom? atom, Function(String? position, Atom? atom) onChanged, VoidCallback? onDelete) {
     return Row(
       children: <Widget>[
-        _makeDropdown(_thingPositionValues, position, null, (String position) { onChanged(position, atom); }),
+        // TODO: this takes up a lot of horizontal space (#74)
+        _makeDropdown(_thingPositionValues, position, null, (String? position) { onChanged(position, atom); }),
         const SizedBox(
           width: 8.0,
         ),
         Expanded(
-          child: _makeAtomSlot(_classes, atom, widget.parent, (Atom atom) { onChanged(position, atom); }, needsTree: true, needsDifferent: true),
+          child: _makeAtomSlot(_classes, atom, widget.parent!, (Atom? atom) { onChanged(position, atom); }, needsTree: true, needsDifferent: true),
         ),
         if (onDelete != null)
           IconButton(
@@ -814,25 +806,25 @@ class _ChildrenFieldState extends State<ChildrenField> {
       rows.add(_row(
         entry.position,
         entry.atom,
-        (String position, Atom atom) {
+        (String? position, Atom? atom) {
           final List<PositionedAtom> newValues = widget.values.toList();
           newValues[index] = PositionedAtom(position, atom);
-          widget.onChanged(newValues);
+          widget.onChanged!(newValues);
         },
         () {
           final List<PositionedAtom> newValues = widget.values.toList()
             ..removeAt(index);
-          widget.onChanged(newValues);
+          widget.onChanged!(newValues);
         },
       ));
     }
     rows.add(_row(
       '',
       null,
-      (String position, Atom atom) {
+      (String? position, Atom? atom) {
         final List<PositionedAtom> newValues = widget.values.toList()
           ..add(PositionedAtom(position, atom));
-        widget.onChanged(newValues);
+        widget.onChanged!(newValues);
       },
       null,
     ));
@@ -867,21 +859,21 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
 class LandmarksField extends StatefulWidget {
   const LandmarksField({
-    Key key,
-    @required this.game,
-    @required this.rootClass,
-    @required this.label,
-    @required this.values,
-    @required this.parent,
+    super.key,
+    required this.game,
+    required this.rootClass,
+    required this.label,
+    required this.values,
+    required this.parent,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<Landmark> values;
-  final Atom parent;
-  final ValueSetter<List<Landmark>> onChanged;
+  final Atom? parent;
+  final ValueSetter<List<Landmark>>? onChanged;
 
   @override
   State<LandmarksField> createState() => _LandmarksFieldState();
@@ -956,17 +948,17 @@ class _LandmarksFieldState extends State<LandmarksField> {
     super.dispose();
   }
 
-  Widget _row(String direction, Atom atom, Set<String> options, Function(String direction, Atom atom, Set<String> options) onChanged, VoidCallback onDelete) {
+  Widget _row(String? direction, Atom? atom, Set<String> options, Function(String? direction, Atom? atom, Set<String> options) onChanged, VoidCallback? onDelete) {
     return ListBody(
       children: <Widget>[
         Row(
           children: <Widget>[
-            _makeDropdown(_cardinalDirectionValues, direction, null, (String direction) { onChanged(direction, atom, options); }),
+            _makeDropdown(_cardinalDirectionValues, direction, null, (String? direction) { onChanged(direction, atom, options); }),
             const SizedBox(
               width: 8.0,
             ),
             Expanded(
-              child: _makeAtomSlot(_classes, atom, widget.parent, (Atom atom) { onChanged(direction, atom, options); }, needsTree: false, needsDifferent: true),
+              child: _makeAtomSlot(_classes, atom, widget.parent!, (Atom? atom) { onChanged(direction, atom, options); }, needsTree: false, needsDifferent: true),
             ),
             if (onDelete != null)
               IconButton(
@@ -1006,15 +998,15 @@ class _LandmarksFieldState extends State<LandmarksField> {
         entry.direction,
         entry.atom,
         entry.options,
-        (String direction, Atom atom, Set<String> options) {
+        (String? direction, Atom? atom, Set<String> options) {
           final List<Landmark> newValues = widget.values.toList();
           newValues[index] = Landmark(direction, atom, options);
-          widget.onChanged(newValues);
+          widget.onChanged!(newValues);
         },
         () {
           final List<Landmark> newValues = widget.values.toList()
             ..removeAt(index);
-          widget.onChanged(newValues);
+          widget.onChanged!(newValues);
         },
       ));
     }
@@ -1022,10 +1014,10 @@ class _LandmarksFieldState extends State<LandmarksField> {
       '',
       null,
       <String>{},
-      (String direction, Atom atom, Set<String> options) {
+      (String? direction, Atom? atom, Set<String> options) {
         final List<Landmark> newValues = widget.values.toList()
           ..add(Landmark(direction, atom, options));
-        widget.onChanged(newValues);
+        widget.onChanged!(newValues);
       },
       null,
     ));

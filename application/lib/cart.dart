@@ -8,18 +8,18 @@ import 'disposition.dart';
 
 class Cart extends StatefulWidget {
   const Cart({
-    Key key,
-    @required this.game,
+    Key? key,
+    required this.game,
   }) : super(key: key);
 
-  final CuddlyWorld game;
+  final CuddlyWorld? game;
 
   @override
   _CartState createState() => _CartState();
 }
 
 class _CartState extends State<Cart> {
-  String _message;
+  String? _message;
 
   void _updateMessage() {
     final Set<Atom> atoms = EditorDisposition.of(context).cart;
@@ -43,16 +43,16 @@ class _CartState extends State<Cart> {
     final Set<Atom> atoms = EditorDisposition.of(context).cart;
     String heading;
     if (atoms.length == 1)
-      heading = 'Adding ${atoms.single.identifier.identifier} to world';
+      heading = 'Adding ${atoms.single.identifier!.identifier} to world';
     else
       heading = 'Adding ${atoms.length} atoms to world';
     try {
-      final String reply = await widget.game.sendMessage(_message);
+      final String reply = await widget.game!.sendMessage(_message);
       if (mounted)
         await showMessage(context, heading, reply);
     } on ConnectionLostException {
       if (mounted)
-        await showMessage(context, heading, 'Conection lost');
+        await showMessage(context, heading, 'Connection lost');
     }
   }
 
@@ -143,8 +143,8 @@ class _CartState extends State<Cart> {
               padding: const EdgeInsets.all(8.0),
               child: ListBody(
                 children: <Widget>[
-                  Text('Command', style: Theme.of(context).textTheme.headline6.copyWith(color: Colors.grey.shade600)),
-                  SelectableText(_message, style: TextStyle(color: Colors.grey.shade600)),
+                  Text('Command', style: Theme.of(context).textTheme.titleLarge!.copyWith(color: Colors.grey.shade600)),
+                  SelectableText(_message!, style: TextStyle(color: Colors.grey.shade600)),
                 ],
               ),
             ),

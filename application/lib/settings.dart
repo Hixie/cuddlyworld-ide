@@ -6,14 +6,14 @@ import 'disposition.dart';
 const double kSettingsWidth = 400.0;
 
 class SettingsTab extends StatefulWidget {
-  const SettingsTab({Key key}) : super(key: key);
+  const SettingsTab({super.key});
   @override
   _SettingsTabState createState() => _SettingsTabState();
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  TextEditingController _username;
-  TextEditingController _password;
+  late final TextEditingController _username;
+  late final TextEditingController _password;
 
   @override
   void didChangeDependencies() {
@@ -49,7 +49,7 @@ class _SettingsTabState extends State<SettingsTab> {
           padding: const EdgeInsets.only(top: 12.0, left: 8.0, right: 8.0, bottom: 8.0),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: kSettingsWidth, minWidth: kSettingsWidth),
-            child: Text('Server configuration', style: Theme.of(context).textTheme.headline5),
+            child: Text('Server configuration', style: Theme.of(context).textTheme.headlineSmall),
           ),
         ),
         Padding(
@@ -92,6 +92,9 @@ class _SettingsTabState extends State<SettingsTab> {
               child: OutlinedButton(
                 onPressed: _isNew ? () async {
                   final String reply = await ServerDisposition.of(context).setLoginData(_username.text, _password.text);
+                  if (!mounted) {
+                    return;
+                  }
                   await showMessage(context, 'Login', reply);
                 } : null,
                 child: const Text('Login'),

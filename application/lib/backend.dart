@@ -5,8 +5,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class _PendingMessage {
-  _PendingMessage(this.message, this.completer) : assert(completer != null);
-  final String message;
+  _PendingMessage(this.message, this.completer);
+  final String? message;
   final Completer<String> completer;
 }
 
@@ -26,45 +26,45 @@ typedef LogCallback = void Function(String message);
 
 class CuddlyWorld extends ChangeNotifier {
   CuddlyWorld({
-    @required this.username,
-    @required this.password,
-    @required this.url,
+    required this.username,
+    required this.password,
+    required this.url,
     this.onLog,
   }) {
     _controller.add(null);
     _loop();
   }
 
-  final String url;
-  final String username;
-  final String password;
-  final LogCallback onLog;
+  final String? url;
+  final String? username;
+  final String? password;
+  final LogCallback? onLog;
 
   /// The message currently being sent to the server, if any
-  String get currentMessage => _currentMessage;
-  String _currentMessage;
+  String? get currentMessage => _currentMessage;
+  String? _currentMessage;
 
   Stream<String> get output => _outputController.stream;
   final StreamController<String> _outputController = StreamController<String>.broadcast();
 
-  final StreamController<_PendingMessage> _controller = StreamController<_PendingMessage>();
+  final StreamController<_PendingMessage?> _controller = StreamController<_PendingMessage?>();
   final Queue<Completer<String>> _pendingResponses = Queue<Completer<String>>();
 
   final Map<String, List<String>> _classesCache = <String, List<String>>{};
   final Map<String, List<String>> _enumValuesCache = <String, List<String>>{};
-  final Map<String, Map<String, String>> _propertiesCache = <String, Map<String, String>>{};
+  final Map<String?, Map<String, String>> _propertiesCache = <String?, Map<String, String>>{};
 
   bool _live = true;
-  Timer _autoLogout;
-  LogCallback _onNextLogin;
+  Timer? _autoLogout;
+  LogCallback? _onNextLogin;
 
   void reportNextLogin(LogCallback callback) {
     _onNextLogin = callback;
   }
 
   Future<void> _loop() async {
-    WebSocket socket, oldSocket;
-    StringBuffer currentResponse;
+    WebSocket? socket, oldSocket;
+    StringBuffer? currentResponse;
     void disconnect() {
       if (!_live)
         return;
@@ -80,10 +80,10 @@ class CuddlyWorld extends ChangeNotifier {
       currentResponse = null;
       notifyListeners();
     }
-    await for (final _PendingMessage message in _controller.stream) {
+    await for (final _PendingMessage? message in _controller.stream) {
       _autoLogout?.cancel();
       if (oldSocket != null) {
-        await oldSocket.close().timeout(const Duration(seconds: 1)).catchError((Object error) { });
+        await oldSocket!.close().timeout(const Duration(seconds: 1)).catchError((Object error) { });
         oldSocket = null;
       }
       Duration delay = const Duration(seconds: 2);
@@ -91,16 +91,16 @@ class CuddlyWorld extends ChangeNotifier {
         try {
           assert(_pendingResponses.isEmpty);
           _log('Connecting to $url...');
-          socket = await WebSocket.connect(url);
-          socket
+          socket = await WebSocket.connect(url!);
+          socket!
             ..add('$username $password')
             ..listen(
-                (Object response) {
+                (Object? response) {
                   if (!_live)
                     return;
                   if (response is String) {
                     if (_onNextLogin != null) {
-                      _onNextLogin(response);
+                      _onNextLogin!(response);
                       _onNextLogin = null;
                     }
                     _outputController.add(response);
@@ -111,7 +111,7 @@ class CuddlyWorld extends ChangeNotifier {
                       // TODO(ianh): could check that the echo is what we expect, too
                     } else if (currentResponse != null) {
                       if (response != '\x02') {
-                        currentResponse.writeln(response);
+                        currentResponse!.writeln(response);
                       } else {
                         _pendingResponses.removeFirst().complete(currentResponse.toString());
                         currentResponse = null;
@@ -119,9 +119,7 @@ class CuddlyWorld extends ChangeNotifier {
                     }
                   }
                 },
-                onDone: () {
-                  disconnect();
-                },
+                onDone: disconnect,
                 onError: (Object error) async {
                   _log('error: $error');
                   await socket?.close();
@@ -132,9 +130,9 @@ class CuddlyWorld extends ChangeNotifier {
           // catches errors on connect
           String message = error.message;
           if (message.isEmpty)
-            message = error.osError.message;
+            message = error.osError!.message;
           if (message.isEmpty)
-            message = 'error ${error.osError.errorCode}';
+            message = 'error ${error.osError!.errorCode}';
           _log(message);
           assert(_pendingResponses.isEmpty);
           await Future<void>.delayed(delay);
@@ -143,7 +141,7 @@ class CuddlyWorld extends ChangeNotifier {
         }
       }
       if (message != null) {
-        socket.add(message.message);
+        socket!.add(message.message);
         _pendingResponses.add(message.completer);
       }
       _autoLogout = Timer(const Duration(seconds: 20), () {
@@ -154,7 +152,7 @@ class CuddlyWorld extends ChangeNotifier {
     await socket?.close();
   }
 
-  Future<String> sendMessage(String message) {
+  Future<String> sendMessage(String? message) {
     final _PendingMessage pendingMessage = _PendingMessage(message, Completer<String>());
     _controller.add(pendingMessage);
     return pendingMessage.completer.future;
@@ -162,7 +160,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   Future<List<String>> fetchClassesOf(String subclass) {
     if (_classesCache.containsKey(subclass))
-      return SynchronousFuture<List<String>>(_classesCache[subclass]);
+      return SynchronousFuture<List<String>>(_classesCache[subclass]!);
     return () async {
       final String rawResult = await sendMessage('debug classes of $subclass');
       final List<String> lines = rawResult.split('\n');
@@ -181,7 +179,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   Future<List<String>> fetchEnumValuesOf(String enumName) {
     if (_enumValuesCache.containsKey(enumName))
-      return SynchronousFuture<List<String>>(_enumValuesCache[enumName]);
+      return SynchronousFuture<List<String>>(_enumValuesCache[enumName]!);
     return () async {
       final String rawResult = await sendMessage('debug describe enum $enumName');
       final List<String> lines = rawResult.split('\n');
@@ -198,9 +196,9 @@ class CuddlyWorld extends ChangeNotifier {
     }();
   }
 
-  Future<Map<String, String>> fetchPropertiesOf(String className) {
+  Future<Map<String, String>> fetchPropertiesOf(String? className) {
     if (_propertiesCache.containsKey(className))
-      return SynchronousFuture<Map<String, String>>(_propertiesCache[className]);
+      return SynchronousFuture<Map<String, String>>(_propertiesCache[className]!);
     return () async {
       final String rawResult = await sendMessage('debug describe class $className');
       final List<String> lines = rawResult.split('\n');
@@ -222,7 +220,7 @@ class CuddlyWorld extends ChangeNotifier {
 
   void _log(String message) {
     if (onLog != null)
-      onLog(message);
+      onLog!(message);
   }
 
   @override
