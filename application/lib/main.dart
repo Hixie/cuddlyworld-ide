@@ -52,7 +52,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
   CuddlyWorld? _game;
-  late final Terminal _terminal;
+  final Terminal _terminal = Terminal();
   StreamSubscription<String>? _gameStream;
   late final TabController _tabController;
 
@@ -61,7 +61,6 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _terminal = Terminal();
     _tabController = TabController(length: 6, vsync: this);
   }
 

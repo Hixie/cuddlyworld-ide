@@ -241,7 +241,7 @@ class _EditorState extends State<Editor> {
               value: widget.atom.identifier!.name,
               suffix: '_${widget.atom.identifier!.disambiguator}',
               filter: '[0-9A-Za-z_]+',
-              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context)!.getNewIdentifier(name: value, ignore: widget.atom); },
+              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(name: value, ignore: widget.atom); },
             ),
             ClassesField(
               label: 'Class',
@@ -290,7 +290,7 @@ class _EditorState extends State<Editor> {
   }
 }
 
-Widget _makeField(String label, FocusNode? focusNode, Widget field) {
+Widget _makeField(String label, FocusNode focusNode, Widget field) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8.0),
     child: IntrinsicHeight(
@@ -301,7 +301,7 @@ Widget _makeField(String label, FocusNode? focusNode, Widget field) {
             width: 200.0,
             child: InkWell(
               onTap: () {
-                focusNode!.requestFocus();
+                focusNode.requestFocus();
               },
               child: Align(
                 alignment: Alignment.centerRight,
@@ -329,7 +329,7 @@ Widget _makeDropdown(List<String> values, String? value, FocusNode? focusNode, V
     )).toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
-    onChanged: (String? x) => onChanged(x!),
+    onChanged: (String? value) => onChanged(value!),
   );
 }
 
@@ -384,13 +384,13 @@ Widget _makeAtomSlot(Set<String> classes, Atom? value, Atom parent, ValueSetter<
 
 class StringField extends StatefulWidget {
   const StringField({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     this.suffix,
     this.filter,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final String label;
   final String value;
@@ -403,27 +403,27 @@ class StringField extends StatefulWidget {
 }
 
 class _StringFieldState extends State<StringField> {
-  TextEditingController? _controller;
-  FocusNode? _focusNode;
+  late final TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.value);
-    _focusNode = FocusNode();
   }
 
   @override
   void didUpdateWidget(StringField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.value != _controller!.text) {
-      _controller!.text = widget.value;
+    if (widget.value != _controller.text) {
+      _controller.text = widget.value;
     }
   }
 
   @override
   void dispose() {
-    _focusNode!.dispose();
+    _focusNode.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -447,13 +447,13 @@ class _StringFieldState extends State<StringField> {
 
 class ClassesField extends StatefulWidget {
   const ClassesField({
-    Key? key,
+    super.key,
     required this.game,
     required this.rootClass,
     required this.label,
     required this.value,
     required this.onChanged,
-  }): super(key: key);
+  });
 
   final CuddlyWorld game;
   final String rootClass;
@@ -466,14 +466,13 @@ class ClassesField extends StatefulWidget {
 }
 
 class _ClassesFieldState extends State<ClassesField> {
-  FocusNode? _focusNode;
+  final FocusNode _focusNode = FocusNode();
 
   List<String> _classes = const <String>[];
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
     _updateClasses();
     widget.game.addListener(_updateClasses);
   }
@@ -504,7 +503,7 @@ class _ClassesFieldState extends State<ClassesField> {
   @override
   void dispose() {
     widget.game.removeListener(_updateClasses);
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -516,15 +515,15 @@ class _ClassesFieldState extends State<ClassesField> {
 
 class EnumField extends StatefulWidget {
   const EnumField({
-    Key? key,
+    super.key,
     required this.game,
     required this.enumName,
     required this.label,
     required this.value,
     required this.onChanged,
-  }): super(key: key);
+  });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String enumName;
   final String label;
   final String value;
@@ -535,7 +534,7 @@ class EnumField extends StatefulWidget {
 }
 
 class _EnumFieldState extends State<EnumField> {
-  FocusNode? _focusNode;
+  late final FocusNode _focusNode;
 
   List<String> _enumValues = const <String>[];
 
@@ -544,12 +543,12 @@ class _EnumFieldState extends State<EnumField> {
     super.initState();
     _focusNode = FocusNode();
     _updateEnumValues();
-    widget.game!.addListener(_updateEnumValues);
+    widget.game.addListener(_updateEnumValues);
   }
 
   void _updateEnumValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf(widget.enumName);
+      final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
       if (!mounted)
         return;
       setState(() { _enumValues = result; });
@@ -562,8 +561,8 @@ class _EnumFieldState extends State<EnumField> {
   void didUpdateWidget(EnumField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_updateEnumValues);
-      widget.game!.addListener(_updateEnumValues);
+      oldWidget.game.removeListener(_updateEnumValues);
+      widget.game.addListener(_updateEnumValues);
       _updateEnumValues();
     } else if (oldWidget.enumName != widget.enumName) {
       _updateEnumValues();
@@ -572,8 +571,8 @@ class _EnumFieldState extends State<EnumField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_updateEnumValues);
-    _focusNode!.dispose();
+    widget.game.removeListener(_updateEnumValues);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -585,11 +584,11 @@ class _EnumFieldState extends State<EnumField> {
 
 class CheckboxField extends StatefulWidget {
   const CheckboxField({
-    Key? key,
+    super.key,
     required this.label,
     required this.value,
     this.onChanged,
-  }): super(key: key);
+  });
 
   final String label;
   final bool? value;
@@ -600,17 +599,11 @@ class CheckboxField extends StatefulWidget {
 }
 
 class _CheckboxFieldState extends State<CheckboxField> {
-  FocusNode? _focusNode;
-
-  @override
-  void initState() {
-    super.initState();
-    _focusNode = FocusNode();
-  }
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -626,7 +619,7 @@ class _CheckboxFieldState extends State<CheckboxField> {
 
 class AtomField extends StatefulWidget {
   const AtomField({
-    Key? key,
+    super.key,
     required this.game,
     required this.rootClass,
     required this.label,
@@ -635,9 +628,9 @@ class AtomField extends StatefulWidget {
     this.needsTree = false,
     this.needsDifferent = false,
     required this.onChanged,
-  }): super(key: key);
+  });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final Atom? value;
@@ -651,21 +644,20 @@ class AtomField extends StatefulWidget {
 }
 
 class _AtomFieldState extends State<AtomField> {
-  FocusNode? _focusNode;
+  final FocusNode _focusNode = FocusNode();
 
   Set<String> _classes = const <String>{};
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
     _updateClasses();
-    widget.game!.addListener(_updateClasses);
+    widget.game.addListener(_updateClasses);
   }
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -678,8 +670,8 @@ class _AtomFieldState extends State<AtomField> {
   void didUpdateWidget(AtomField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_updateClasses);
-      widget.game!.addListener(_updateClasses);
+      oldWidget.game.removeListener(_updateClasses);
+      widget.game.addListener(_updateClasses);
       _updateClasses();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -688,8 +680,8 @@ class _AtomFieldState extends State<AtomField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_updateClasses);
-    _focusNode!.dispose();
+    widget.game.removeListener(_updateClasses);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -710,16 +702,16 @@ class _AtomFieldState extends State<AtomField> {
 
 class ChildrenField extends StatefulWidget {
   const ChildrenField({
-    Key? key,
+    super.key,
     required this.game,
     required this.rootClass,
     required this.label,
     required this.values,
     required this.parent,
     this.onChanged,
-  }): super(key: key);
+  });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<PositionedAtom> values;
@@ -738,7 +730,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
   void initState() {
     super.initState();
     _triggerUpdates();
-    widget.game!.addListener(_triggerUpdates);
+    widget.game.addListener(_triggerUpdates);
   }
 
   void _triggerUpdates() {
@@ -748,7 +740,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -759,7 +751,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TThingPosition');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TThingPosition');
       if (!mounted)
         return;
       setState(() { _thingPositionValues = result; });
@@ -772,8 +764,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
   void didUpdateWidget(ChildrenField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_triggerUpdates);
-      widget.game!.addListener(_triggerUpdates);
+      oldWidget.game.removeListener(_triggerUpdates);
+      widget.game.addListener(_triggerUpdates);
       _triggerUpdates();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -782,14 +774,14 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_triggerUpdates);
+    widget.game.removeListener(_triggerUpdates);
     super.dispose();
   }
 
   Widget _row(String? position, Atom? atom, Function(String? position, Atom? atom) onChanged, VoidCallback? onDelete) {
     return Row(
       children: <Widget>[
-        // TODO: this takes up a lot of horizontal space
+        // TODO: this takes up a lot of horizontal space (#74)
         _makeDropdown(_thingPositionValues, position, null, (String? position) { onChanged(position, atom); }),
         const SizedBox(
           width: 8.0,
@@ -867,16 +859,16 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
 class LandmarksField extends StatefulWidget {
   const LandmarksField({
-    Key? key,
+    super.key,
     required this.game,
     required this.rootClass,
     required this.label,
     required this.values,
     required this.parent,
     this.onChanged,
-  }): super(key: key);
+  });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<Landmark> values;
@@ -896,7 +888,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
   void initState() {
     super.initState();
     _triggerUpdates();
-    widget.game!.addListener(_triggerUpdates);
+    widget.game.addListener(_triggerUpdates);
   }
 
   void _triggerUpdates() {
@@ -907,7 +899,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -918,7 +910,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TCardinalDirection');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
       if (!mounted)
         return;
       setState(() { _cardinalDirectionValues = result; });
@@ -929,7 +921,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateLandmarkOptionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TLandmarkOption');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
       if (!mounted)
         return;
       setState(() { _landmarkOptionValues = result; });
@@ -942,8 +934,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
   void didUpdateWidget(LandmarksField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_triggerUpdates);
-      widget.game!.addListener(_triggerUpdates);
+      oldWidget.game.removeListener(_triggerUpdates);
+      widget.game.addListener(_triggerUpdates);
       _triggerUpdates();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -952,7 +944,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_triggerUpdates);
+    widget.game.removeListener(_triggerUpdates);
     super.dispose();
   }
 
