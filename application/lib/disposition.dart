@@ -63,8 +63,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   static const String unnamed = 'unnamed';
-
-  Identifier getNewIdentifier({ String name = unnamed, Atom? ignore }) {
+  Identifier getNewIdentifier({String name = unnamed, Atom? ignore}) {
     int index = 0;
     while (lookupAtom('${name}_$index', ignore: ignore) != null) {
       index += 1;
@@ -94,7 +93,8 @@ abstract class ChildDisposition extends ChangeNotifier {
 
   final RootDisposition parent;
 
-  @override void notifyListeners() {
+  @override
+  void notifyListeners() {
     super.notifyListeners();
     parent.didChange();
   }
@@ -137,7 +137,7 @@ class ServerDisposition extends ChildDisposition {
 
   Future<String> setLoginData(String username, String password) {
     if (username == _username && password == _password)
-      return Future<String>.value('egg');
+      return Future<String>.value('');
     _username = username;
     _password = password;
     _loginDataCompleter = Completer<String>();
@@ -167,7 +167,7 @@ class ServerDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context)!;
+  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
 class AtomsDisposition extends ChildDisposition implements AtomOwner {
@@ -223,8 +223,7 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   void decode(List<Object?> object) {
     _atoms = object.map<Atom>((Object? atom) {
       assert(atom is Map<String, Object?>);
-      return newAtom()
-        ..decode(atom as Map<String, Object?>);
+      return newAtom()..decode(atom as Map<String, Object?>);
     }).toSet();
     notifyListeners();
   }
@@ -238,13 +237,14 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   @override
   Identifier getNewIdentifier() => parent.getNewIdentifier();
 
-  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context)!;
+  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context);
 }
 
 class EditorDisposition extends ChildDisposition {
   EditorDisposition(RootDisposition parent) : super(parent);
 
-  @override void notifyListeners() {
+  @override
+  void notifyListeners() {
     super.notifyListeners();
     parent.didChange();
   }
@@ -252,8 +252,9 @@ class EditorDisposition extends ChildDisposition {
   Atom? get current => _current;
   Atom? _current;
   set current(Atom? value) {
-    if (value == _current)
+    if (value == _current) {
       return;
+    }
     _current = value;
     notifyListeners();
   }
@@ -280,7 +281,9 @@ class EditorDisposition extends ChildDisposition {
   Map<String, Object?> encode() {
     return <String, Object>{
       'current': (current != null) ? current!.identifier!.identifier : '',
-      'cart': _cart.map<String>((Atom? atom) => atom!.identifier!.identifier).toList(),
+      'cart': _cart
+          .map<String>((Atom atom) => atom.identifier!.identifier)
+          .toList(),
     };
   }
 
@@ -294,18 +297,30 @@ class EditorDisposition extends ChildDisposition {
       current = null;
     _cart
       ..clear()
-      ..addAll((object['cart'] as List<Object?>).cast<String>().map((String name) => lookupCallback(name)!));
+      ..addAll((object['cart'] as List<Object?>).cast<String>().map(
+        (String name) {
+          final Atom? atom = lookupCallback(name);
+          if(atom == null) {
+            throw FormatException('no such atom $name');
+          }
+          return atom;
+        },
+      ));
   }
 
-  static EditorDisposition of(BuildContext context) => _of<EditorDisposition>(context)!;
+  static EditorDisposition of(BuildContext context) =>
+      _of<EditorDisposition>(context);
 }
 
-T? _of<T extends Listenable>(BuildContext context) {
-  return context.dependOnInheritedWidgetOfExactType<_Disposition<T>>()!.notifier;
+T _of<T extends Listenable>(BuildContext context) {
+  return context
+      .dependOnInheritedWidgetOfExactType<_Disposition<T>>()!
+      .notifier!;
 }
 
 class _Disposition<T extends Listenable> extends InheritedNotifier<T> {
-  const _Disposition({Key? key, T? disposition, required Widget child}): super(key: key, notifier: disposition, child: child);
+  const _Disposition({super.key, required T disposition, required super.child})
+      : super(notifier: disposition);
 }
 
 class Dispositions extends StatelessWidget {

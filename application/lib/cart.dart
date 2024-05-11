@@ -43,7 +43,7 @@ class _CartState extends State<Cart> {
     final Set<Atom?> atoms = EditorDisposition.of(context).cart;
     String heading;
     if (atoms.length == 1)
-      heading = 'Adding ${atoms.single!.identifier!.identifier} to world';
+      heading = 'Adding ${atoms.single.identifier!.identifier} to world';
     else
       heading = 'Adding ${atoms.length} atoms to world';
     try {
@@ -52,7 +52,7 @@ class _CartState extends State<Cart> {
         await showMessage(context, heading, reply);
     } on ConnectionLostException {
       if (mounted)
-        await showMessage(context, heading, 'Conection lost');
+        await showMessage(context, heading, 'Connection lost');
     }
   }
 
