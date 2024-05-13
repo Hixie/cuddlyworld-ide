@@ -343,9 +343,9 @@ class Dispositions extends StatelessWidget {
         super(key: key);
 
   final RootDisposition rootDisposition;
-  final ServerDisposition? serverDisposition;
-  final AtomsDisposition? atomsDisposition;
-  final EditorDisposition? editorDisposition;
+  final ServerDisposition serverDisposition;
+  final AtomsDisposition atomsDisposition;
+  final EditorDisposition editorDisposition;
 
   final Widget child;
 

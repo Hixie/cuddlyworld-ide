@@ -13,7 +13,9 @@ Future<void> showMessage(BuildContext context, String caption, String body) {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: OutlinedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: const Text('Dismiss'),
             ),
           ),
@@ -40,7 +42,7 @@ class BoilerplateDialog extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(title),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
             ...children,
           ],
         ),

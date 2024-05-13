@@ -415,8 +415,8 @@ class _StringFieldState extends State<StringField> {
   @override
   void didUpdateWidget(StringField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.value != _controller!.text) {
-      _controller!.text = widget.value;
+    if (widget.value != _controller.text) {
+      _controller.text = widget.value;
     }
   }
 
@@ -503,7 +503,7 @@ class _ClassesFieldState extends State<ClassesField> {
   @override
   void dispose() {
     widget.game.removeListener(_updateClasses);
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -572,7 +572,7 @@ class _EnumFieldState extends State<EnumField> {
   @override
   void dispose() {
     widget.game!.removeListener(_updateEnumValues);
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -603,7 +603,7 @@ class _CheckboxFieldState extends State<CheckboxField> {
 
   @override
   void dispose() {
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -681,7 +681,7 @@ class _AtomFieldState extends State<AtomField> {
   @override
   void dispose() {
     widget.game!.removeListener(_updateClasses);
-    _focusNode!.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 

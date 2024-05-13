@@ -81,12 +81,58 @@ class _ConsoleState extends State<Console> {
       },
     );
   }
+  
+  void generateTeleportDialog() {
+    widget.game.sendMessage('debug locations').then((String result) {
+      final Iterable<String> locations = result
+          .split('\n')
+          .skip(1)
+          .takeWhile((String line) => line.isNotEmpty)
+          .map((String line) => line.substring(3));
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return BoilerplateDialog(
+            title: 'Teleport to:',
+            children: _addVerticalPadding(locations
+                .map(
+                  (String location) => ActionChip(
+                    label: Text(location),
+                    onPressed: () {
+                      widget.game
+                          .sendMessage('debug teleport $location')
+                          .catchError(
+                            (Object error) => '',
+                            test: (Object error) =>
+                                error is ConnectionLostException,
+                          );
+                      Navigator.pop(context);
+                    },
+                  ),
+                )
+            ).toList(),
+          );
+        },
+      );
+    });
+  }
 
-  Iterable<Widget> _addPadding(Iterable<Widget> widgets) sync* {
+  Iterable<Widget> _addHorizontalPadding(Iterable<Widget> widgets) sync* {
     bool first = true;
     for (final Widget widget in widgets) {
       if (!first) {
         yield const SizedBox(width: 12.0);
+      }
+      yield widget;
+      first = false;
+    }
+  }
+
+  Iterable<Widget> _addVerticalPadding(Iterable<Widget> widgets) sync* {
+    bool first = true;
+    for (final Widget widget in widgets) {
+      if (!first) {
+        yield const SizedBox(height: 4.0);
       }
       yield widget;
       first = false;
@@ -109,7 +155,7 @@ class _ConsoleState extends State<Console> {
           height: 32.0,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: _addPadding(<Widget>[
+            children: _addHorizontalPadding(<Widget>[
               _buildChip('look'),
               _buildChip('inventory'),
               _buildChip('north'),
@@ -119,44 +165,9 @@ class _ConsoleState extends State<Console> {
               _buildChip('take all'),
               _buildChip('drop all'),
               _buildChip('debug status'),
-              OutlinedButton(
-                child: const Text('Teleport'),
-                onPressed: () {
-                  widget.game
-                      .sendMessage('debug locations')
-                      .then((String result) {
-                    final Iterable<String> locations = result
-                        .split('\n')
-                        .skip(1)
-                        .takeWhile((String line) => line.isNotEmpty)
-                        .map((String line) => line.substring(3));
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return BoilerplateDialog(
-                          title: 'Teleport to:',
-                          children: locations
-                              .map(
-                                (String location) => ActionChip(
-                                  label: Text(location),
-                                  onPressed: () {
-                                    widget.game
-                                        .sendMessage('debug teleport $location')
-                                        .catchError(
-                                          (Object error) => '',
-                                          test: (Object error) =>
-                                              error is ConnectionLostException,
-                                        );
-                                    Navigator.pop(context);
-                                  },
-                                ),
-                              )
-                              .toList(),
-                        );
-                      },
-                    );
-                  });
-                },
+              ActionChip(
+                label: const Text('Teleport'),
+                onPressed: generateTeleportDialog,
               ),
               _buildChip('debug things'),
             ]).toList(),
