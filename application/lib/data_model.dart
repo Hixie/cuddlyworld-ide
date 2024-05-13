@@ -498,7 +498,7 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
 
   T? ensurePropertyIs<T>(String name) {
     if (_properties[name] is T)
-      return _properties[name] as T?;
+      return _properties[name] as T;
     return null;
   }
 

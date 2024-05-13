@@ -85,7 +85,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     editorDisposition.decode(map['editor'] as Map<String, Object?>, lookupAtom);
   }
 
-  static RootDisposition? of(BuildContext context) => _of<RootDisposition>(context);
+  static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
 }
 
 abstract class ChildDisposition extends ChangeNotifier {
@@ -271,7 +271,7 @@ class EditorDisposition extends ChildDisposition {
     }
   }
 
-  void removeFromCart(Atom? atom) {
+  void removeFromCart(Atom atom) {
     if (_cart.contains(atom)) {
       _cart.remove(atom);
       notifyListeners();

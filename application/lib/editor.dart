@@ -241,7 +241,7 @@ class _EditorState extends State<Editor> {
               value: widget.atom.identifier!.name,
               suffix: '_${widget.atom.identifier!.disambiguator}',
               filter: '[0-9A-Za-z_]+',
-              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context)!.getNewIdentifier(name: value, ignore: widget.atom); },
+              onChanged: (String value) { widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(name: value, ignore: widget.atom); },
             ),
             ClassesField(
               label: 'Class',
@@ -290,7 +290,7 @@ class _EditorState extends State<Editor> {
   }
 }
 
-Widget _makeField(String label, FocusNode? focusNode, Widget field) {
+Widget _makeField(String label, FocusNode focusNode, Widget field) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8.0),
     child: IntrinsicHeight(
@@ -301,7 +301,7 @@ Widget _makeField(String label, FocusNode? focusNode, Widget field) {
             width: 200.0,
             child: InkWell(
               onTap: () {
-                focusNode!.requestFocus();
+                focusNode.requestFocus();
               },
               child: Align(
                 alignment: Alignment.centerRight,
@@ -523,7 +523,7 @@ class EnumField extends StatefulWidget {
     required this.onChanged,
   });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String enumName;
   final String label;
   final String value;
@@ -543,12 +543,12 @@ class _EnumFieldState extends State<EnumField> {
     super.initState();
     _focusNode = FocusNode();
     _updateEnumValues();
-    widget.game!.addListener(_updateEnumValues);
+    widget.game.addListener(_updateEnumValues);
   }
 
   void _updateEnumValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf(widget.enumName);
+      final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
       if (!mounted)
         return;
       setState(() { _enumValues = result; });
@@ -561,8 +561,8 @@ class _EnumFieldState extends State<EnumField> {
   void didUpdateWidget(EnumField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_updateEnumValues);
-      widget.game!.addListener(_updateEnumValues);
+      oldWidget.game.removeListener(_updateEnumValues);
+      widget.game.addListener(_updateEnumValues);
       _updateEnumValues();
     } else if (oldWidget.enumName != widget.enumName) {
       _updateEnumValues();
@@ -571,7 +571,7 @@ class _EnumFieldState extends State<EnumField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_updateEnumValues);
+    widget.game.removeListener(_updateEnumValues);
     _focusNode.dispose();
     super.dispose();
   }
@@ -630,7 +630,7 @@ class AtomField extends StatefulWidget {
     required this.onChanged,
   });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final Atom? value;
@@ -652,12 +652,12 @@ class _AtomFieldState extends State<AtomField> {
   void initState() {
     super.initState();
     _updateClasses();
-    widget.game!.addListener(_updateClasses);
+    widget.game.addListener(_updateClasses);
   }
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -670,8 +670,8 @@ class _AtomFieldState extends State<AtomField> {
   void didUpdateWidget(AtomField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_updateClasses);
-      widget.game!.addListener(_updateClasses);
+      oldWidget.game.removeListener(_updateClasses);
+      widget.game.addListener(_updateClasses);
       _updateClasses();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -680,7 +680,7 @@ class _AtomFieldState extends State<AtomField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_updateClasses);
+    widget.game.removeListener(_updateClasses);
     _focusNode.dispose();
     super.dispose();
   }
@@ -711,7 +711,7 @@ class ChildrenField extends StatefulWidget {
     this.onChanged,
   });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<PositionedAtom> values;
@@ -730,7 +730,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
   void initState() {
     super.initState();
     _triggerUpdates();
-    widget.game!.addListener(_triggerUpdates);
+    widget.game.addListener(_triggerUpdates);
   }
 
   void _triggerUpdates() {
@@ -740,7 +740,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -751,7 +751,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TThingPosition');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TThingPosition');
       if (!mounted)
         return;
       setState(() { _thingPositionValues = result; });
@@ -764,8 +764,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
   void didUpdateWidget(ChildrenField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_triggerUpdates);
-      widget.game!.addListener(_triggerUpdates);
+      oldWidget.game.removeListener(_triggerUpdates);
+      widget.game.addListener(_triggerUpdates);
       _triggerUpdates();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -774,7 +774,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_triggerUpdates);
+    widget.game.removeListener(_triggerUpdates);
     super.dispose();
   }
 
@@ -868,7 +868,7 @@ class LandmarksField extends StatefulWidget {
     this.onChanged,
   });
 
-  final CuddlyWorld? game;
+  final CuddlyWorld game;
   final String rootClass;
   final String label;
   final List<Landmark> values;
@@ -888,7 +888,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
   void initState() {
     super.initState();
     _triggerUpdates();
-    widget.game!.addListener(_triggerUpdates);
+    widget.game.addListener(_triggerUpdates);
   }
 
   void _triggerUpdates() {
@@ -899,7 +899,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game!.fetchClassesOf(widget.rootClass);
+      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted)
         return;
       setState(() { _classes = result.toSet(); });
@@ -910,7 +910,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TCardinalDirection');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
       if (!mounted)
         return;
       setState(() { _cardinalDirectionValues = result; });
@@ -921,7 +921,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateLandmarkOptionValues() async {
     try {
-      final List<String> result = await widget.game!.fetchEnumValuesOf('TLandmarkOption');
+      final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
       if (!mounted)
         return;
       setState(() { _landmarkOptionValues = result; });
@@ -934,8 +934,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
   void didUpdateWidget(LandmarksField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.game != widget.game) {
-      oldWidget.game!.removeListener(_triggerUpdates);
-      widget.game!.addListener(_triggerUpdates);
+      oldWidget.game.removeListener(_triggerUpdates);
+      widget.game.addListener(_triggerUpdates);
       _triggerUpdates();
     } else if (oldWidget.rootClass != widget.rootClass) {
       _updateClasses();
@@ -944,7 +944,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   @override
   void dispose() {
-    widget.game!.removeListener(_triggerUpdates);
+    widget.game.removeListener(_triggerUpdates);
     super.dispose();
   }
 
