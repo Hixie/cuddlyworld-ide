@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:xterm/xterm.dart';
 
 import 'backend.dart';
-import 'dialogs.dart';
 
 class Console extends StatefulWidget {
   const Console({
@@ -81,39 +80,55 @@ class _ConsoleState extends State<Console> {
       },
     );
   }
-  
+
+  bool openingTeleportDialog = false;
+
   void generateTeleportDialog() {
+    setState(() {
+      openingTeleportDialog = true;
+    });
     widget.game.sendMessage('debug locations').then((String result) {
+      setState(() {
+        openingTeleportDialog = false;
+      });
       final Iterable<String> locations = result
           .split('\n')
           .skip(1)
           .takeWhile((String line) => line.isNotEmpty)
           .map((String line) => line.substring(3));
-      showDialog(
+      showDialog<String>(
         context: context,
         builder: (BuildContext context) {
-          return BoilerplateDialog(
-            title: 'Teleport to:',
-            children: _addVerticalPadding(locations
-                .map(
-                  (String location) => ActionChip(
-                    label: Text(location),
-                    onPressed: () {
-                      widget.game
-                          .sendMessage('debug teleport $location')
-                          .catchError(
-                            (Object error) => '',
-                            test: (Object error) =>
-                                error is ConnectionLostException,
-                          );
-                      Navigator.pop(context);
-                    },
-                  ),
-                )
-            ).toList(),
+          return Dialog(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView(
+                children: <Widget>[
+                  const Text('Teleport to:'),
+                  const SizedBox(height: 16),
+                  ..._addVerticalPadding(
+                    locations.map(
+                      (String location) => ActionChip(
+                        label: Text(location),
+                        onPressed: () {
+                          Navigator.pop(context, location);
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           );
         },
-      );
+      ).then((String? location) {
+        if (location != null) {
+          widget.game.sendMessage('debug teleport $location').catchError(
+                (Object error) => '',
+                test: (Object error) => error is ConnectionLostException,
+              );
+        }
+      });
     });
   }
 
@@ -166,8 +181,11 @@ class _ConsoleState extends State<Console> {
               _buildChip('drop all'),
               _buildChip('debug status'),
               ActionChip(
-                label: const Text('Teleport'),
-                onPressed: generateTeleportDialog,
+                label: openingTeleportDialog
+                    ? const CircularProgressIndicator()
+                    : const Text('Teleport'),
+                onPressed:
+                    openingTeleportDialog ? null : generateTeleportDialog,
               ),
               _buildChip('debug things'),
             ]).toList(),
