@@ -106,16 +106,17 @@ class _ConsoleState extends State<Console> {
                 children: <Widget>[
                   const Text('Teleport to:'),
                   const SizedBox(height: 16),
-                  ..._addVerticalPadding(
-                    locations.map(
-                      (String location) => ActionChip(
+                  ...locations.map(
+                    (String location) => Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: ActionChip(
                         label: Text(location),
                         onPressed: () {
                           Navigator.pop(context, location);
                         },
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -137,17 +138,6 @@ class _ConsoleState extends State<Console> {
     for (final Widget widget in widgets) {
       if (!first) {
         yield const SizedBox(width: 12.0);
-      }
-      yield widget;
-      first = false;
-    }
-  }
-
-  Iterable<Widget> _addVerticalPadding(Iterable<Widget> widgets) sync* {
-    bool first = true;
-    for (final Widget widget in widgets) {
-      if (!first) {
-        yield const SizedBox(height: 4.0);
       }
       yield widget;
       first = false;
