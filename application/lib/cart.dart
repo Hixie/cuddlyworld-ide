@@ -27,9 +27,9 @@ class _CartState extends State<Cart> {
     final String command = <String> [
        ...atoms.map((Atom atom) => atom.encodeForServerMake(history)),
        ...atoms.map((Atom atom) => atom.encodeForServerConnect()),
-    ].join('; ');
+    ].where((String command) => command.isNotEmpty).join('; ');
     setState(() {
-      _message = 'debug make \'${escapeSingleQuotes(command)}\'';
+      _message = 'debug make \'${escapeSingleQuotes(command)};\'';
     });
   }
 

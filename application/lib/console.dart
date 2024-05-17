@@ -93,45 +93,93 @@ class _ConsoleState extends State<Console> {
     setState(() {
       openingTeleportDialog = true;
     });
-    widget.game.sendMessage('debug locations').then((String result) {
-      setState(() {
-        openingTeleportDialog = false;
-      });
-      final Iterable<String> locations = result.split('\n').skip(1).takeWhile((String line) => line.isNotEmpty).map((String line) => line.substring(3));
-      showDialog<String>(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView(
+    final Future<String> response = widget.game.sendMessage('debug locations');
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 400.0,
+                maxHeight: 400.0,
+              ),
+              child: Column(
                 children: <Widget>[
-                  const Text('Teleport to:'),
-                  const SizedBox(height: 16),
-                  ...locations.map(
-                    (String location) => Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: ActionChip(
-                        label: Text(location),
-                        onPressed: () {
-                          Navigator.pop(context, location);
-                        },
-                      ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(child: Text('Teleport to:', style: Theme.of(context).textTheme.titleMedium)),
+                        ActionChip(
+                          label: const Text('Cancel'),
+                          onPressed: () { Navigator.pop(context); },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: FutureBuilder<String>(
+                      future: response,
+                      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                        if (snapshot.connectionState != ConnectionState.done) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+                        if (!snapshot.hasData) {
+                          return const Center(child: Text('Error.'));
+                        }
+                        assert(snapshot.data!.startsWith('Locations:\n'));
+                        final List<String> locations = snapshot.data!
+                          .split('\n')
+                          .skip(1)
+                          .takeWhile((String line) => line.isNotEmpty)
+                          .map((String line) {
+                            assert(line.startsWith(' - '));
+                            return line.substring(3);
+                          })
+                          .toList()
+                          ..sort();
+                        return GridView.builder(
+                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 150.0,
+                            mainAxisSpacing: 8.0,
+                            crossAxisSpacing: 8.0,
+                            mainAxisExtent: 32.0,
+                          ),
+                          itemCount: locations.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final String location = locations[index];
+                            return SizedBox.expand(
+                              child: ActionChip(
+                                label: Text(location, overflow: TextOverflow.ellipsis),
+                                tooltip: location,
+                                onPressed: () {
+                                  Navigator.pop(context, location);
+                                },
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-          );
-        },
-      ).then((String? location) {
-        if (location != null) {
-          widget.game.sendMessage('debug teleport $location').catchError(
-                (Object error) => '',
-                test: (Object error) => error is ConnectionLostException,
-              );
-        }
+          ),
+        );
+      },
+    ).then((String? location) {
+      setState(() {
+        openingTeleportDialog = false;
       });
+      if (location != null) {
+        widget.game.sendMessage('debug teleport $location').catchError(
+              (Object error) => '',
+              test: (Object error) => error is ConnectionLostException,
+            );
+      }
     });
   }
 
@@ -172,11 +220,11 @@ class _ConsoleState extends State<Console> {
               _buildChip('take all'),
               _buildChip('drop all'),
               _buildChip('debug status'),
+              _buildChip('debug things'),
               ActionChip(
-                label: openingTeleportDialog ? const CircularProgressIndicator() : const Text('Teleport'),
+                label: const Text('debug teleport...'),
                 onPressed: openingTeleportDialog ? null : generateTeleportDialog,
               ),
-              _buildChip('debug things'),
             ]).toList(),
           ),
         ),

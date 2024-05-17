@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'data_model.dart';
 import 'dialogs.dart';
 import 'disposition.dart';
 
@@ -98,6 +99,29 @@ class _SettingsTabState extends State<SettingsTab> {
                   await showMessage(context, 'Login', reply);
                 } : null,
                 child: const Text('Login'),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth),
+            child: Align(
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  final AtomsDisposition atomsDisposition = AtomsDisposition.of(context);
+                  final EditorDisposition editor = EditorDisposition.of(context)
+                    ..current = null;
+                  final List<Atom> atoms = atomsDisposition.atoms.toList();
+                  for (final Atom atom in atoms) {
+                    if (editor.cartHolds(atom))
+                      editor.removeFromCart(atom);
+                    atomsDisposition.remove(atom);
+                  }
+                },
+                icon: const Icon(Icons.delete),
+                label: const Text('Delete all locations and things'),
               ),
             ),
           ),

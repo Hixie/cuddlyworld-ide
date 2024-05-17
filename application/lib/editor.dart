@@ -295,9 +295,7 @@ class _EditorState extends State<Editor> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  onPressed: () {
-                    EditorDisposition.of(context).current = parent;
-                  },
+                  onPressed: () { editor.current = parent; },
                   icon: const Icon(Icons.arrow_upward),
                   label: makeTextForIdentifier(context, parent.identifier!, parent.className),
                 ),
@@ -326,15 +324,16 @@ class _EditorState extends State<Editor> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  OutlinedButton(
+                  OutlinedButton.icon(
                     onPressed: () {
                       if (editor.cartHolds(widget.atom)) {
                         editor.removeFromCart(widget.atom);
                       }
-                      EditorDisposition.of(context).current = null;
+                      editor.current = null;
                       AtomsDisposition.of(context).remove(widget.atom);
                     },
-                    child: const Text('Delete'),
+                    icon: const Icon(Icons.delete),
+                    label: const Text('Delete'),
                   ),
                   const SizedBox(width: 24.0),
                   if (editor.cartHolds(widget.atom))

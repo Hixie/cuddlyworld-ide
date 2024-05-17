@@ -402,7 +402,7 @@ class LandmarkPlaceholder {
   final Set<String> options;
 
   Landmark resolve(AtomLookupCallback lookupCallback) {
-    return Landmark(direction, lookupCallback(identifier!), options);
+    return Landmark(direction, identifier != null ? lookupCallback(identifier!) : null, options);
   }
 }
 

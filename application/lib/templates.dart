@@ -31,20 +31,24 @@ class TemplateLibrary extends StatelessWidget {
       maxCrossAxisExtent: 350.0,
       children: const <Widget>[
         Blueprint(
-          header: 'Outdoor room',
+          header: 'Outdoor area',
           atoms: <AtomDescription>[
             AtomDescription(
-              identifier: 'room',
+              identifier: 'area',
               className: 'TGroundLocation',
               properties: <String, PropertyValue>{
-                'name': StringPropertyValue('room'),
-                'definiteName': StringPropertyValue('the room'),
-                'indefiniteName': StringPropertyValue('a room'),
-                'ground': AtomPropertyValuePlaceholder('room_ground'),
+                'name': StringPropertyValue('area'),
+                'definiteName': StringPropertyValue('the area'),
+                'indefiniteName': StringPropertyValue('an area'),
+                'description': StringPropertyValue('The area is non-descript.'),
+                'ground': AtomPropertyValuePlaceholder('ground'),
+                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder('cdUp', 'sky', <String>{ 'loVisibleFromFarAway' }),
+                ]),
               },
             ),
             AtomDescription(
-              identifier: 'room_ground',
+              identifier: 'ground',
               className: 'TEarthGround',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('ground'),
@@ -123,17 +127,143 @@ class TemplateLibrary extends StatelessWidget {
             ),
           ],
           icon: Icon(Icons.cloud),
-        ),/*
+        ),
         Blueprint(
           header: 'Indoor room',
-          atoms: <AtomDescription>[],
+          atoms: <AtomDescription>[
+            AtomDescription(
+              identifier: 'room',
+              className: 'TGroundLocation',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('room'),
+                'definiteName': StringPropertyValue('the room'),
+                'indefiniteName': StringPropertyValue('a room'),
+                'ground': AtomPropertyValuePlaceholder('room_floor'),
+                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder('cdNorth', 'wall', <String>{ }),
+                  LandmarkPlaceholder('cdSouth', 'wall', <String>{ }),
+                  LandmarkPlaceholder('cdEast', 'wall', <String>{ }),
+                  LandmarkPlaceholder('cdWest', 'wall', <String>{ }),
+                  LandmarkPlaceholder('cdUp', 'ceiling', <String>{ }),
+                ]),
+                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                  PositionedAtomPlaceholder('tpPartOfImplicit', 'wall'),
+                  PositionedAtomPlaceholder('tpPartOfImplicit', 'ceiling'),
+                ]),
+              },
+            ),
+            AtomDescription(
+              identifier: 'room_floor',
+              className: 'TSurface',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('floor'),
+                'pattern': StringPropertyValue('flat? (ground/grounds surface/surfaces floor/floors)@'),
+                'description': StringPropertyValue('The floor is flat.'),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsLudicrous'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'wall',
+              className: 'TStructure',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('wall'),
+                'pattern': StringPropertyValue('wall/walls'),
+                'description': StringPropertyValue('The wall is all around you.'),
+                'cannotMoveExcuse': StringPropertyValue('It would be impractical to move the wall.'),
+                'cannotPlaceExcuse': StringPropertyValue('There does not seem to be a good way to place things on the wall.'),
+                'opened': BooleanPropertyValue(false),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsMassive'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'ceiling',
+              className: 'TStructure',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('ceiling'),
+                'pattern': StringPropertyValue('ceiling/ceilings'),
+                'description': StringPropertyValue('The ceiling is. It just... is.'),
+                'cannotMoveExcuse': StringPropertyValue('You can\'t reach the ceiling.'),
+                'cannotPlaceExcuse': StringPropertyValue('You can\'t reach the ceiling.'),
+                'opened': BooleanPropertyValue(false),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsMassive'),
+              },
+            ),
+          ],
           icon: Icon(Icons.insert_photo),
         ),
         Blueprint(
           header: 'Door threshold',
-          atoms: <AtomDescription>[],
+          atoms: <AtomDescription>[
+            AtomDescription(
+              identifier: 'threshold',
+              className: 'TThresholdLocation',
+              properties: <String, PropertyValue>{
+                'passageWay': AtomPropertyValuePlaceholder('doorway'),
+                'surface': AtomPropertyValuePlaceholder('threshold_floor'),
+                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder('cdNorth', null, <String>{ 'loAutoDescribe', 'loPermissibleNavigationTarget', 'loNotVisibleFromBehind' }),
+                  LandmarkPlaceholder('cdSouth', null, <String>{ 'loAutoDescribe', 'loPermissibleNavigationTarget', 'loNotVisibleFromBehind' }),
+                ]),
+              },
+            ),
+            AtomDescription(
+              identifier: 'doorway',
+              className: 'TDoorWay',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('doorway'),
+                'pattern': StringPropertyValue('doorway/doorways'),
+                'description': StringPropertyValue('The doorway is a hole in a wall.'),
+                'frontDirection': LiteralPropertyValue('cdSouth'),
+                'door': AtomPropertyValuePlaceholder('door'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'door',
+              className: 'TDoor',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('door'),
+                'pattern': StringPropertyValue('(open:1 closed:2)* door/doors'),
+                'frontSide': AtomPropertyValuePlaceholder('door_front'),
+                'backSide': AtomPropertyValuePlaceholder('door_back'),
+                'mass': LiteralPropertyValue('tmPonderous'),
+                'size': LiteralPropertyValue('tsMassive'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'door_front',
+              className: 'TDoorSide',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('side'),
+                'pattern': StringPropertyValue('flat? (front:1)? side/sides'),
+                'description': StringPropertyValue('the door is flat.'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'door_back',
+              className: 'TDoorSide',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('side'),
+                'pattern': StringPropertyValue('flat? (back:1)? side/sides'),
+                'description': StringPropertyValue('the door is flat.'),
+              },
+            ),
+            AtomDescription(
+              identifier: 'threshold_floor',
+              className: 'TThresholdSurface',
+              properties: <String, PropertyValue>{
+                'name': StringPropertyValue('floor'),
+                'pattern': StringPropertyValue('flat? (ground/grounds surface/surfaces floor/floors)@'),
+                'description': StringPropertyValue('The floor is flat.'),
+                'mass': LiteralPropertyValue('tmLudicrous'),
+                'size': LiteralPropertyValue('tsLudicrous'),
+              },
+            ),
+          ],
           icon: Icon(Icons.sensor_door),
-        ),*/
+        ),
       ],
     );
   }
