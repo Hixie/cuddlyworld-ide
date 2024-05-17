@@ -13,7 +13,9 @@ Future<void> showMessage(BuildContext context, String caption, String body) {
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: OutlinedButton(
-              onPressed: () { Navigator.pop(context); },
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: const Text('Dismiss'),
             ),
           ),

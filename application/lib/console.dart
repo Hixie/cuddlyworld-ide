@@ -32,8 +32,9 @@ class _ConsoleState extends State<Console> {
       HistoryUpIntent:
           CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
         index ??= history.length;
-        if (index! > 1) 
+        if (index! > 1) {
           index = index! - 1;
+        }
         setState(() {
           _input.text = history[index!];
         });
@@ -59,7 +60,10 @@ class _ConsoleState extends State<Console> {
   }
 
   void _send() {
-    widget.game.sendMessage(_input.text).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
+    widget.game.sendMessage(_input.text).catchError(
+          (Object error) => '',
+          test: (Object error) => error is ConnectionLostException,
+        );
     history.add(_input.text);
     _input.clear();
     index = null;
@@ -69,12 +73,67 @@ class _ConsoleState extends State<Console> {
     return ActionChip(
       label: Text(command),
       onPressed: () {
-        widget.game.sendMessage(command).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
+        widget.game.sendMessage(command).catchError(
+              (Object error) => '',
+              test: (Object error) => error is ConnectionLostException,
+            );
       },
     );
   }
 
-  Iterable<Widget> _addPadding(Iterable<Widget> widgets) sync* {
+  bool openingTeleportDialog = false;
+
+  void generateTeleportDialog() {
+    setState(() {
+      openingTeleportDialog = true;
+    });
+    widget.game.sendMessage('debug locations').then((String result) {
+      setState(() {
+        openingTeleportDialog = false;
+      });
+      final Iterable<String> locations = result
+          .split('\n')
+          .skip(1)
+          .takeWhile((String line) => line.isNotEmpty)
+          .map((String line) => line.substring(3));
+      showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView(
+                children: <Widget>[
+                  const Text('Teleport to:'),
+                  const SizedBox(height: 16),
+                  ...locations.map(
+                    (String location) => Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: ActionChip(
+                        label: Text(location),
+                        onPressed: () {
+                          Navigator.pop(context, location);
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ).then((String? location) {
+        if (location != null) {
+          widget.game.sendMessage('debug teleport $location').catchError(
+                (Object error) => '',
+                test: (Object error) => error is ConnectionLostException,
+              );
+        }
+      });
+    });
+  }
+
+  Iterable<Widget> _addHorizontalPadding(Iterable<Widget> widgets) sync* {
     bool first = true;
     for (final Widget widget in widgets) {
       if (!first) {
@@ -101,7 +160,7 @@ class _ConsoleState extends State<Console> {
           height: 32.0,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            children: _addPadding(<Widget>[
+            children: _addHorizontalPadding(<Widget>[
               _buildChip('look'),
               _buildChip('inventory'),
               _buildChip('north'),
@@ -111,7 +170,13 @@ class _ConsoleState extends State<Console> {
               _buildChip('take all'),
               _buildChip('drop all'),
               _buildChip('debug status'),
-              _buildChip('debug locations'),
+              ActionChip(
+                label: openingTeleportDialog
+                    ? const CircularProgressIndicator()
+                    : const Text('Teleport'),
+                onPressed:
+                    openingTeleportDialog ? null : generateTeleportDialog,
+              ),
               _buildChip('debug things'),
             ]).toList(),
           ),

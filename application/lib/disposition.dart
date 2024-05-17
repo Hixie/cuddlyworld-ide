@@ -53,9 +53,8 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   Atom? lookupAtom(String? identifier, {Atom? ignore}) {
     final List<Atom> matches = atomsDisposition.atoms
-        .where((Atom atom) =>
-            atom != ignore && atom.identifier!.identifier == identifier)
-        .toList();
+      .where((Atom atom) => atom != ignore && atom.identifier!.identifier == identifier)
+      .toList();
     if (matches.isEmpty) {
       return null;
     }
@@ -64,7 +63,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   }
 
   static const String unnamed = 'unnamed';
-
   Identifier getNewIdentifier({String name = unnamed, Atom? ignore}) {
     int index = 0;
     while (lookupAtom('${name}_$index', ignore: ignore) != null) {
@@ -87,8 +85,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     editorDisposition.decode(map['editor'] as Map<String, Object?>, lookupAtom);
   }
 
-  static RootDisposition of(BuildContext context) =>
-      _of<RootDisposition>(context);
+  static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
 }
 
 abstract class ChildDisposition extends ChangeNotifier {
@@ -170,8 +167,7 @@ class ServerDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  static ServerDisposition of(BuildContext context) =>
-      _of<ServerDisposition>(context);
+  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
 }
 
 class AtomsDisposition extends ChildDisposition implements AtomOwner {
@@ -197,8 +193,7 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
 
   void addAll(List<Atom> atoms) {
     for (final Atom atom in atoms) {
-      atom.identifier =
-          parent.getNewIdentifier(name: atom.identifier!.name, ignore: atom);
+      atom.identifier = parent.getNewIdentifier(name: atom.identifier!.name, ignore: atom);
       _atoms.add(atom);
     }
     notifyListeners();
@@ -242,8 +237,7 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   @override
   Identifier getNewIdentifier() => parent.getNewIdentifier();
 
-  static AtomsDisposition of(BuildContext context) =>
-      _of<AtomsDisposition>(context);
+  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context);
 }
 
 class EditorDisposition extends ChildDisposition {
