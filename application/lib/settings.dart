@@ -13,33 +13,39 @@ class SettingsTab extends StatefulWidget {
 }
 
 class _SettingsTabState extends State<SettingsTab> {
-  late final TextEditingController _username;
-  late final TextEditingController _password;
+  TextEditingController? _username;
+  TextEditingController? _password;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _username = TextEditingController(text: ServerDisposition.of(context).username)
-      ..addListener(_rebuild);
-    _password = TextEditingController(text: ServerDisposition.of(context).password)
-      ..addListener(_rebuild);
+    print('moo');
+    _username?.dispose();
+    _password?.dispose();
+    _username =
+        TextEditingController(text: ServerDisposition.of(context).username)
+          ..addListener(_rebuild);
+    _password =
+        TextEditingController(text: ServerDisposition.of(context).password)
+          ..addListener(_rebuild);
+    _rebuild();
   }
 
   void _rebuild() {
-    setState(() { /* text editing controllers changed */ });
+    setState(() {/* text editing controllers changed */});
   }
 
   @override
   void dispose() {
-    _username.dispose();
-    _password.dispose();
+    _username?.dispose();
+    _password?.dispose();
     super.dispose();
   }
 
   bool get _isNew {
     final ServerDisposition serverDisposition = ServerDisposition.of(context);
-    return serverDisposition.username != _username.text
-        || serverDisposition.password != _password.text;
+    return serverDisposition.username != _username!.text ||
+        serverDisposition.password != _password!.text;
   }
 
   @override
@@ -47,10 +53,21 @@ class _SettingsTabState extends State<SettingsTab> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(top: 12.0, left: 8.0, right: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.only(
+            top: 12.0,
+            left: 8.0,
+            right: 8.0,
+            bottom: 8.0,
+          ),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: kSettingsWidth, minWidth: kSettingsWidth),
-            child: Text('Server configuration', style: Theme.of(context).textTheme.headlineSmall),
+            constraints: const BoxConstraints(
+              maxWidth: kSettingsWidth,
+              minWidth: kSettingsWidth,
+            ),
+            child: Text(
+              'Server configuration',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
           ),
         ),
         Padding(
@@ -79,7 +96,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 labelText: 'Password',
               ),
               enableSuggestions: false,
-              autocorrect: false, 
+              autocorrect: false,
               obscureText: true,
             ),
           ),
@@ -91,17 +108,32 @@ class _SettingsTabState extends State<SettingsTab> {
             child: Align(
               alignment: Alignment.centerRight,
               child: OutlinedButton(
-                onPressed: _isNew ? () async {
-                  final String reply = await ServerDisposition.of(context).setLoginData(_username.text, _password.text);
-                  if (!mounted) {
-                    return;
-                  }
-                  await showMessage(context, 'Login', reply);
-                } : null,
+                onPressed: _isNew
+                    ? () async {
+                        final String reply = await ServerDisposition.of(context)
+                            .setLoginData(_username!.text, _password!.text);
+                        if (!mounted) {
+                          return;
+                        }
+                        await showMessage(context, 'Login', reply);
+                      }
+                    : null,
                 child: const Text('Login'),
               ),
             ),
           ),
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const Text('Dark Mode:'),
+            Checkbox(
+              value: RootDisposition.of(context).darkMode,
+              onChanged: (bool? value) {
+                RootDisposition.of(context).darkMode = value!;
+              },
+            )
+          ],
         ),
         Padding(
           padding: const EdgeInsets.all(12.0),
