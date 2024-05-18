@@ -8,10 +8,11 @@ import 'disposition.dart';
 
 Color _fade(Color color) {
   final HSVColor hsv = HSVColor.fromColor(color);
-  return hsv.withValue(hsv.value + 0.5).toColor();
+  return hsv.withValue((hsv.value + 0.5) % 1).toColor();
 }
 
-Widget makeTextForIdentifier(BuildContext context, Identifier identifier, [ String className = '' ]) {
+Widget makeTextForIdentifier(BuildContext context, Identifier identifier,
+    [String className = '']) {
   return Text.rich(
     TextSpan(
       text: identifier.name,
@@ -48,7 +49,7 @@ class AtomWidget extends StatefulWidget {
     this.duration = const Duration(milliseconds: 200),
     this.onDelete,
     this.onTap,
-  }): assert((label == null) != (atom == null));
+  }) : assert((label == null) != (atom == null));
 
   final Atom? atom;
   final Widget? icon;
@@ -65,7 +66,8 @@ class AtomWidget extends StatefulWidget {
   State<AtomWidget> createState() => _AtomWidgetState();
 }
 
-class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateMixin {
+class _AtomWidgetState extends State<AtomWidget>
+    with SingleTickerProviderStateMixin {
   Timer? _timer;
   bool _chip = true;
 
@@ -74,7 +76,11 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
     super.initState();
     if (widget.startFromCatalog) {
       _chip = false;
-      _timer = Timer(const Duration(milliseconds: 50), () { setState(() { _chip = true; }); });
+      _timer = Timer(const Duration(milliseconds: 50), () {
+        setState(() {
+          _chip = true;
+        });
+      });
     }
   }
 
@@ -83,12 +89,18 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
     _timer?.cancel();
     super.dispose();
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
-      color: widget.color ?? (widget.atom != null && widget.atom == EditorDisposition.of(context).current ? Colors.yellow : null),
+      color: widget.color ??
+          (widget.atom != null &&
+                  widget.atom == EditorDisposition.of(context).current
+              ? RootDisposition.of(context).darkMode
+                  ? Colors.purple
+                  : Colors.yellow
+              : null),
       shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -100,7 +112,11 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
           child: SizedBox(
             width: _chip ? null : kCatalogWidth,
             child: Padding(
-              padding: EdgeInsets.only(left: 8.0, top: 4.0, bottom: 4.0, right: widget.onDelete != null ? 4.0 : 8.0),
+              padding: EdgeInsets.only(
+                  left: 8.0,
+                  top: 4.0,
+                  bottom: 4.0,
+                  right: widget.onDelete != null ? 4.0 : 8.0),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
@@ -109,12 +125,14 @@ class _AtomWidgetState extends State<AtomWidget> with SingleTickerProviderStateM
                       padding: const EdgeInsets.only(right: 8.0),
                       child: widget.icon,
                     ),
-                  widget.label ?? AnimatedBuilder(
-                    animation: widget.atom!,
-                    builder: (BuildContext context, Widget? child) {
-                      return makeTextForIdentifier(context, widget.atom!.identifier!);
-                    },
-                  ),
+                  widget.label ??
+                      AnimatedBuilder(
+                        animation: widget.atom!,
+                        builder: (BuildContext context, Widget? child) {
+                          return makeTextForIdentifier(
+                              context, widget.atom!.identifier!);
+                        },
+                      ),
                   if (widget.onDelete != null)
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),

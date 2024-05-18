@@ -8,11 +8,13 @@ import 'disposition.dart';
 
 const Map<String, String> _enumDescriptions = <String, String>{
   'tpPartOfImplicit': "Part of; isn't mentioned when looking at its parent",
-  'tpAmbiguousPartOfImplicit': "Part of; placement is made explicit in the name; isn't mentioned when looking at its parent",
+  'tpAmbiguousPartOfImplicit':
+      "Part of; placement is made explicit in the name; isn't mentioned when looking at its parent",
   'tpAroundImplicit': "Around; isn't mentioned when looking at its parent",
   'tpAtImplicit': "At; isn't mentioned when looking at its parent",
   'tpOnImplicit': "On; isn't mentioned when looking at its parent",
-  'tpPlantedInImplicit': "Planted in; isn't mentioned when looking at its parent",
+  'tpPlantedInImplicit':
+      "Planted in; isn't mentioned when looking at its parent",
   'tpDirectionalOpening': 'Opening; directional',
   'tpDirectionalPath': 'Path; directional',
   'tpSurfaceOpening': 'Opening; on surface',
@@ -110,7 +112,8 @@ class _EditorState extends State<Editor> {
       return;
     }
     try {
-      final Map<String, String> properties = await widget.game.fetchPropertiesOf(widget.atom.className);
+      final Map<String, String> properties =
+          await widget.game.fetchPropertiesOf(widget.atom.className);
       if (mounted) {
         setState(() {
           _properties = properties;
@@ -198,20 +201,24 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: parts[1],
-          value: widget.atom.ensurePropertyIs<AtomPropertyValue>(property)?.value,
+          value:
+              widget.atom.ensurePropertyIs<AtomPropertyValue>(property)?.value,
           parent: widget.atom,
           needsTree: true,
           needsDifferent: true,
           game: widget.game,
           onChanged: (Atom? value) {
-            widget.atom[property] = value != null ? AtomPropertyValue(value) : null;
+            widget.atom[property] =
+                value != null ? AtomPropertyValue(value) : null;
           },
         );
       case 'boolean':
         return CheckboxField(
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
-          value: widget.atom.ensurePropertyIs<BooleanPropertyValue>(property)?.value,
+          value: widget.atom
+              .ensurePropertyIs<BooleanPropertyValue>(property)
+              ?.value,
           onChanged: (bool? value) {
             widget.atom[property] = BooleanPropertyValue(value!);
           },
@@ -221,7 +228,10 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: 'TThing',
-          values: widget.atom.ensurePropertyIs<ChildrenPropertyValue>(property)?.value ?? const <PositionedAtom>[],
+          values: widget.atom
+                  .ensurePropertyIs<ChildrenPropertyValue>(property)
+                  ?.value ??
+              const <PositionedAtom>[],
           parent: widget.atom,
           game: widget.game,
           onChanged: (List<PositionedAtom> value) {
@@ -233,7 +243,10 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: parts[1],
-          value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
+          value: widget.atom
+                  .ensurePropertyIs<LiteralPropertyValue>(property)
+                  ?.value ??
+              '',
           game: widget.game,
           onChanged: (String? value) {
             widget.atom[property] = LiteralPropertyValue(value!);
@@ -244,7 +257,10 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           enumName: parts[1],
-          value: widget.atom.ensurePropertyIs<LiteralPropertyValue>(property)?.value ?? '',
+          value: widget.atom
+                  .ensurePropertyIs<LiteralPropertyValue>(property)
+                  ?.value ??
+              '',
           game: widget.game,
           onChanged: (String? value) {
             widget.atom[property] = LiteralPropertyValue(value!);
@@ -255,7 +271,10 @@ class _EditorState extends State<Editor> {
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
           rootClass: 'TAtom',
-          values: widget.atom.ensurePropertyIs<LandmarksPropertyValue>(property)?.value ?? const <Landmark>[],
+          values: widget.atom
+                  .ensurePropertyIs<LandmarksPropertyValue>(property)
+                  ?.value ??
+              const <Landmark>[],
           parent: widget.atom,
           game: widget.game,
           onChanged: (List<Landmark> value) {
@@ -266,7 +285,10 @@ class _EditorState extends State<Editor> {
         return StringField(
           key: ValueKey<String>(property),
           label: _prettyName(property, propertyType),
-          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          value: widget.atom
+                  .ensurePropertyIs<StringPropertyValue>(property)
+                  ?.value ??
+              '',
           onChanged: (String value) {
             widget.atom[property] = StringPropertyValue(value);
           },
@@ -275,7 +297,10 @@ class _EditorState extends State<Editor> {
         return StringField(
           key: ValueKey<String>(property),
           label: '${_prettyName(property, propertyType)} ($propertyType)',
-          value: widget.atom.ensurePropertyIs<StringPropertyValue>(property)?.value ?? '',
+          value: widget.atom
+                  .ensurePropertyIs<StringPropertyValue>(property)
+                  ?.value ??
+              '',
           onChanged: (String value) {
             widget.atom[property] = StringPropertyValue(value);
           },
@@ -295,9 +320,12 @@ class _EditorState extends State<Editor> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton.icon(
-                  onPressed: () { editor.current = parent; },
+                  onPressed: () {
+                    editor.current = parent;
+                  },
                   icon: const Icon(Icons.arrow_upward),
-                  label: makeTextForIdentifier(context, parent.identifier!, parent.className),
+                  label: makeTextForIdentifier(
+                      context, parent.identifier!, parent.className),
                 ),
               ),
             StringField(
@@ -306,7 +334,8 @@ class _EditorState extends State<Editor> {
               suffix: '_${widget.atom.identifier!.disambiguator}',
               filter: '[0-9A-Za-z_]+',
               onChanged: (String value) {
-                widget.atom.identifier = RootDisposition.of(context).getNewIdentifier(name: value, ignore: widget.atom);
+                widget.atom.identifier = RootDisposition.of(context)
+                    .getNewIdentifier(name: value, ignore: widget.atom);
               },
             ),
             ClassesField(
@@ -318,7 +347,8 @@ class _EditorState extends State<Editor> {
                 widget.atom.className = value;
               },
             ),
-            for (final String property in _properties.keys) _addField(property, _properties[property]!),
+            for (final String property in _properties.keys)
+              _addField(property, _properties[property]!),
             Padding(
               padding: const EdgeInsets.all(48.0),
               child: Row(
@@ -391,16 +421,19 @@ Widget _makeField(String label, FocusNode focusNode, Widget field) {
   );
 }
 
-Widget _makeDropdown(List<String> values, String? value, FocusNode? focusNode, ValueSetter<String> onChanged) {
+Widget _makeDropdown(List<String> values, String? value, FocusNode? focusNode,
+    ValueSetter<String> onChanged) {
   if (values.isEmpty) {
-    return const Text('Not connected...', style: TextStyle(fontStyle: FontStyle.italic));
+    return const Text('Not connected...',
+        style: TextStyle(fontStyle: FontStyle.italic));
   }
   return DropdownButton<String>(
     items: values
-        .map<DropdownMenuItem<String>>((String value) => DropdownMenuItem<String>(
-              value: value,
-              child: Text(_enumDescriptions[value] ?? value),
-            ))
+        .map<DropdownMenuItem<String>>(
+            (String value) => DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(_enumDescriptions[value] ?? value),
+                ))
         .toList(),
     value: values.contains(value) ? value : null,
     focusNode: focusNode,
@@ -421,15 +454,19 @@ Widget _makeAtomSlot(
   required bool needsTree,
   required bool needsDifferent,
 }) {
-  bool _ok(Atom atom) => (!needsTree || parent.canAddToTree(atom)) && (!needsDifferent || parent != atom);
+  bool _ok(Atom atom) =>
+      (!needsTree || parent.canAddToTree(atom)) &&
+      (!needsDifferent || parent != atom);
   return DragTarget<Atom>(
-    onWillAcceptWithDetails: (DragTargetDetails<Atom>? details) => classes.contains(details!.data.className) && _ok(details.data),
+    onWillAcceptWithDetails: (DragTargetDetails<Atom>? details) =>
+        classes.contains(details!.data.className) && _ok(details.data),
     onAcceptWithDetails: (DragTargetDetails<Atom> details) {
       if (_ok(details.data)) {
         onChanged(details.data);
       }
     },
-    builder: (BuildContext context, List<Atom?> candidateData, List<Object?> rejectedData) {
+    builder: (BuildContext context, List<Atom?> candidateData,
+        List<Object?> rejectedData) {
       return Material(
         color: const Color(0x0A000000),
         child: Wrap(
@@ -444,8 +481,10 @@ Widget _makeAtomSlot(
                   EditorDisposition.of(context).current = value;
                 },
               )),
-            ...candidateData.map<Widget>((Atom? atom) => _pad(AtomWidget(atom: atom))),
-            ...rejectedData.whereType<Atom>().map<Widget>((Atom atom) => _pad(AtomWidget(atom: atom, color: Colors.red))),
+            ...candidateData
+                .map<Widget>((Atom? atom) => _pad(AtomWidget(atom: atom))),
+            ...rejectedData.whereType<Atom>().map<Widget>(
+                (Atom atom) => _pad(AtomWidget(atom: atom, color: Colors.red))),
             if (value == null && candidateData.isEmpty && rejectedData.isEmpty)
               _pad(AtomWidget(
                 elevation: 0.0,
@@ -454,7 +493,9 @@ Widget _makeAtomSlot(
                 onTap: (classes.isEmpty)
                     ? null
                     : () {
-                        final Atom newAtom = AtomsDisposition.of(context).add()..className = _bestDefaultClassOf(classes.map((String value) => value).toSet());
+                        final Atom newAtom = AtomsDisposition.of(context).add()
+                          ..className = _bestDefaultClassOf(
+                              classes.map((String value) => value).toSet());
                         onChanged(newAtom);
                         EditorDisposition.of(context).current = newAtom;
                       },
@@ -525,7 +566,10 @@ class _StringFieldState extends State<StringField> {
               border: InputBorder.none,
               suffix: widget.suffix != null ? Text(widget.suffix!) : null,
             ),
-            inputFormatters: <TextInputFormatter>[if (widget.filter != null) FilteringTextInputFormatter.allow(RegExp(widget.filter!))],
+            inputFormatters: <TextInputFormatter>[
+              if (widget.filter != null)
+                FilteringTextInputFormatter.allow(RegExp(widget.filter!))
+            ],
             onChanged: widget.onChanged,
           ),
         ));
@@ -566,7 +610,8 @@ class _ClassesFieldState extends State<ClassesField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      final List<String> result =
+          await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted) {
         return;
       }
@@ -599,7 +644,8 @@ class _ClassesFieldState extends State<ClassesField> {
 
   @override
   Widget build(BuildContext context) {
-    return _makeField(widget.label, _focusNode, _makeDropdown(_classes, widget.value, _focusNode, widget.onChanged));
+    return _makeField(widget.label, _focusNode,
+        _makeDropdown(_classes, widget.value, _focusNode, widget.onChanged));
   }
 }
 
@@ -638,7 +684,8 @@ class _EnumFieldState extends State<EnumField> {
 
   void _updateEnumValues() async {
     try {
-      final List<String> result = await widget.game.fetchEnumValuesOf(widget.enumName);
+      final List<String> result =
+          await widget.game.fetchEnumValuesOf(widget.enumName);
       if (!mounted) {
         return;
       }
@@ -671,7 +718,8 @@ class _EnumFieldState extends State<EnumField> {
 
   @override
   Widget build(BuildContext context) {
-    return _makeField(widget.label, _focusNode, _makeDropdown(_enumValues, widget.value, _focusNode, widget.onChanged));
+    return _makeField(widget.label, _focusNode,
+        _makeDropdown(_enumValues, widget.value, _focusNode, widget.onChanged));
   }
 }
 
@@ -753,7 +801,8 @@ class _AtomFieldState extends State<AtomField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      final List<String> result =
+          await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted) {
         return;
       }
@@ -842,7 +891,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      final List<String> result =
+          await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted) {
         return;
       }
@@ -856,7 +906,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game.fetchEnumValuesOf('TThingPosition');
+      final List<String> result =
+          await widget.game.fetchEnumValuesOf('TThingPosition');
       if (!mounted) {
         return;
       }
@@ -886,11 +937,17 @@ class _ChildrenFieldState extends State<ChildrenField> {
     super.dispose();
   }
 
-  Widget _row(String? position, Atom? atom, Function(String? position, Atom? atom) onChanged, VoidCallback? onDelete) {
+  Widget _row(
+      String? position,
+      Atom? atom,
+      Function(String? position, Atom? atom) onChanged,
+      VoidCallback? onDelete) {
     return Row(
       children: <Widget>[
         // TODO(ianh): this takes up a lot of horizontal space (#74)
-        _makeDropdown(_thingPositionValues, position, null, (String? position) { onChanged(position, atom); }),
+        _makeDropdown(_thingPositionValues, position, null, (String? position) {
+          onChanged(position, atom);
+        }),
         const SizedBox(
           width: 8.0,
         ),
@@ -922,7 +979,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
           widget.onChanged!(newValues);
         },
         () {
-          final List<PositionedAtom> newValues = widget.values.toList()..removeAt(index);
+          final List<PositionedAtom> newValues = widget.values.toList()
+            ..removeAt(index);
           widget.onChanged!(newValues);
         },
       ));
@@ -931,7 +989,8 @@ class _ChildrenFieldState extends State<ChildrenField> {
       '',
       null,
       (String? position, Atom? atom) {
-        final List<PositionedAtom> newValues = widget.values.toList()..add(PositionedAtom(position, atom));
+        final List<PositionedAtom> newValues = widget.values.toList()
+          ..add(PositionedAtom(position, atom));
         widget.onChanged!(newValues);
       },
       null,
@@ -1007,7 +1066,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateClasses() async {
     try {
-      final List<String> result = await widget.game.fetchClassesOf(widget.rootClass);
+      final List<String> result =
+          await widget.game.fetchClassesOf(widget.rootClass);
       if (!mounted) {
         return;
       }
@@ -1021,7 +1081,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateThingPositionValues() async {
     try {
-      final List<String> result = await widget.game.fetchEnumValuesOf('TCardinalDirection');
+      final List<String> result =
+          await widget.game.fetchEnumValuesOf('TCardinalDirection');
       if (!mounted) {
         return;
       }
@@ -1035,7 +1096,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _updateLandmarkOptionValues() async {
     try {
-      final List<String> result = await widget.game.fetchEnumValuesOf('TLandmarkOption');
+      final List<String> result =
+          await widget.game.fetchEnumValuesOf('TLandmarkOption');
       if (!mounted) {
         return;
       }
@@ -1066,19 +1128,25 @@ class _LandmarksFieldState extends State<LandmarksField> {
   }
 
   Widget _row(
-      String? direction, Atom? atom, Set<String> options, Function(String? direction, Atom? atom, Set<String> options) onChanged, VoidCallback? onDelete) {
+      String? direction,
+      Atom? atom,
+      Set<String> options,
+      Function(String? direction, Atom? atom, Set<String> options) onChanged,
+      VoidCallback? onDelete) {
     return ListBody(
       children: <Widget>[
         Row(
           children: <Widget>[
-            _makeDropdown(_cardinalDirectionValues, direction, null, (String? direction) {
+            _makeDropdown(_cardinalDirectionValues, direction, null,
+                (String? direction) {
               onChanged(direction, atom, options);
             }),
             const SizedBox(
               width: 8.0,
             ),
             Expanded(
-              child: _makeAtomSlot(_classes, atom, widget.parent!, (Atom? atom) {
+              child:
+                  _makeAtomSlot(_classes, atom, widget.parent!, (Atom? atom) {
                 onChanged(direction, atom, options);
               }, needsTree: false, needsDifferent: true),
             ),
@@ -1100,7 +1168,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
                     if (selected)
                       onChanged(direction, atom, options.toSet()..add(option));
                     else
-                      onChanged(direction, atom, options.toSet()..remove(option));
+                      onChanged(
+                          direction, atom, options.toSet()..remove(option));
                   },
                 ),
               ),
@@ -1126,7 +1195,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
           widget.onChanged!(newValues);
         },
         () {
-          final List<Landmark> newValues = widget.values.toList()..removeAt(index);
+          final List<Landmark> newValues = widget.values.toList()
+            ..removeAt(index);
           widget.onChanged!(newValues);
         },
       ));
@@ -1136,7 +1206,8 @@ class _LandmarksFieldState extends State<LandmarksField> {
       null,
       <String>{},
       (String? direction, Atom? atom, Set<String> options) {
-        final List<Landmark> newValues = widget.values.toList()..add(Landmark(direction, atom, options));
+        final List<Landmark> newValues = widget.values.toList()
+          ..add(Landmark(direction, atom, options));
         widget.onChanged!(newValues);
       },
       null,

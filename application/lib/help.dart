@@ -26,8 +26,7 @@ class _HelpTabState extends State<HelpTab> {
             '- children field, which has dropdown and atom fields\n'
             '- landmark field, which has dropdown and atom fields\n'),
         Text('Patterns', style: Theme.of(context).textTheme.headlineMedium),
-        const Text(
-            """Nested lists are marked by round brackets (...).
+        const Text("""Nested lists are marked by round brackets (...).
    Tokens can have a "+" suffix indicating that the token can be repeated.
    Tokens can have a "?" suffix indicating that the token can be omitted.
    Nested lists can have suffixes to indicate what kind of list it is:

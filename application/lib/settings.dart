@@ -141,13 +141,15 @@ class _SettingsTabState extends State<SettingsTab> {
             child: Align(
               child: OutlinedButton.icon(
                 onPressed: () {
-                  final AtomsDisposition atomsDisposition = AtomsDisposition.of(context);
+                  final AtomsDisposition atomsDisposition =
+                      AtomsDisposition.of(context);
                   final EditorDisposition editor = EditorDisposition.of(context)
                     ..current = null;
                   final List<Atom> atoms = atomsDisposition.atoms.toList();
                   for (final Atom atom in atoms) {
-                    if (editor.cartHolds(atom))
+                    if (editor.cartHolds(atom)) {
                       editor.removeFromCart(atom);
+                    }
                     atomsDisposition.remove(atom);
                   }
                 },

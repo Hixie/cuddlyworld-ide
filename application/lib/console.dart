@@ -34,9 +34,11 @@ class _ConsoleState extends State<Console> {
       }
     });
     actions = <Type, Action<Intent>>{
-      HistoryUpIntent: CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
+      HistoryUpIntent:
+          CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
         if (index >= history.length) {
-          if ((history.isEmpty || history.last != _input.text) && (_input.text.isNotEmpty)) {
+          if ((history.isEmpty || history.last != _input.text) &&
+              (_input.text.isNotEmpty)) {
             history.add(_input.text);
           }
         }
@@ -48,7 +50,8 @@ class _ConsoleState extends State<Console> {
         });
         return null;
       }),
-      HistoryDownIntent: CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
+      HistoryDownIntent:
+          CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
         if (index < history.length) {
           index = index + 1;
           setState(() {
@@ -67,8 +70,10 @@ class _ConsoleState extends State<Console> {
   }
 
   void _send() {
-    widget.game.sendMessage(_input.text).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
-    if ((history.isEmpty || history.last != _input.text) && (_input.text.isNotEmpty)) {
+    widget.game.sendMessage(_input.text).catchError((Object error) => '',
+        test: (Object error) => error is ConnectionLostException);
+    if ((history.isEmpty || history.last != _input.text) &&
+        (_input.text.isNotEmpty)) {
       history.add(_input.text);
       _input.clear();
       index = history.length;
@@ -111,10 +116,15 @@ class _ConsoleState extends State<Console> {
                     padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
                     child: Row(
                       children: <Widget>[
-                        Expanded(child: Text('Teleport to:', style: Theme.of(context).textTheme.titleMedium)),
+                        Expanded(
+                            child: Text('Teleport to:',
+                                style:
+                                    Theme.of(context).textTheme.titleMedium)),
                         ActionChip(
                           label: const Text('Cancel'),
-                          onPressed: () { Navigator.pop(context); },
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
                         ),
                       ],
                     ),
@@ -122,26 +132,28 @@ class _ConsoleState extends State<Console> {
                   Expanded(
                     child: FutureBuilder<String>(
                       future: response,
-                      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      builder: (BuildContext context,
+                          AsyncSnapshot<String> snapshot) {
                         if (snapshot.connectionState != ConnectionState.done) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
                         if (!snapshot.hasData) {
                           return const Center(child: Text('Error.'));
                         }
                         assert(snapshot.data!.startsWith('Locations:\n'));
                         final List<String> locations = snapshot.data!
-                          .split('\n')
-                          .skip(1)
-                          .takeWhile((String line) => line.isNotEmpty)
-                          .map((String line) {
-                            assert(line.startsWith(' - '));
-                            return line.substring(3);
-                          })
-                          .toList()
+                            .split('\n')
+                            .skip(1)
+                            .takeWhile((String line) => line.isNotEmpty)
+                            .map((String line) {
+                          assert(line.startsWith(' - '));
+                          return line.substring(3);
+                        }).toList()
                           ..sort();
                         return GridView.builder(
-                          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
                             maxCrossAxisExtent: 150.0,
                             mainAxisSpacing: 8.0,
                             crossAxisSpacing: 8.0,
@@ -152,7 +164,8 @@ class _ConsoleState extends State<Console> {
                             final String location = locations[index];
                             return SizedBox.expand(
                               child: ActionChip(
-                                label: Text(location, overflow: TextOverflow.ellipsis),
+                                label: Text(location,
+                                    overflow: TextOverflow.ellipsis),
                                 tooltip: location,
                                 onPressed: () {
                                   Navigator.pop(context, location);
@@ -223,7 +236,8 @@ class _ConsoleState extends State<Console> {
               _buildChip('debug things'),
               ActionChip(
                 label: const Text('debug teleport...'),
-                onPressed: openingTeleportDialog ? null : generateTeleportDialog,
+                onPressed:
+                    openingTeleportDialog ? null : generateTeleportDialog,
               ),
             ]).toList(),
           ),

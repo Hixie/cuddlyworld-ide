@@ -7,7 +7,8 @@ import 'data_model.dart';
 import 'saver.dart';
 
 class RootDisposition extends ChangeNotifier implements JsonEncodable {
-  RootDisposition(this.saveFile, { required bool darkMode }) : _darkMode = darkMode {
+  RootDisposition(this.saveFile, {required bool darkMode})
+      : _darkMode = darkMode {
     _serverDisposition = ServerDisposition(this);
     _atomsDisposition = AtomsDisposition(this);
     _editorDisposition = EditorDisposition(this);
@@ -39,8 +40,10 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     notifyListeners();
   }
 
-  static Future<RootDisposition> load(SaveFile saveFile) async {
-    final RootDisposition result = RootDisposition(saveFile);
+  static Future<RootDisposition> load(SaveFile saveFile,
+      {required bool darkMode}) async {
+    final RootDisposition result =
+        RootDisposition(saveFile, darkMode: darkMode);
     await saveFile.load(result);
     return result;
   }
@@ -64,8 +67,9 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   Atom? lookupAtom(String? identifier, {Atom? ignore}) {
     final List<Atom> matches = atomsDisposition.atoms
-      .where((Atom atom) => atom != ignore && atom.identifier!.identifier == identifier)
-      .toList();
+        .where((Atom atom) =>
+            atom != ignore && atom.identifier!.identifier == identifier)
+        .toList();
     if (matches.isEmpty) {
       return null;
     }
@@ -101,7 +105,8 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     }
   }
 
-  static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);
+  static RootDisposition of(BuildContext context) =>
+      _of<RootDisposition>(context);
 }
 
 abstract class ChildDisposition extends ChangeNotifier {
@@ -183,7 +188,8 @@ class ServerDisposition extends ChildDisposition {
     notifyListeners();
   }
 
-  static ServerDisposition of(BuildContext context) => _of<ServerDisposition>(context);
+  static ServerDisposition of(BuildContext context) =>
+      _of<ServerDisposition>(context);
 }
 
 class AtomsDisposition extends ChildDisposition implements AtomOwner {
@@ -209,7 +215,8 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
 
   void addAll(List<Atom> atoms) {
     for (final Atom atom in atoms) {
-      atom.identifier = parent.getNewIdentifier(name: atom.identifier!.name, ignore: atom);
+      atom.identifier =
+          parent.getNewIdentifier(name: atom.identifier!.name, ignore: atom);
       _atoms.add(atom);
     }
     notifyListeners();
@@ -253,7 +260,8 @@ class AtomsDisposition extends ChildDisposition implements AtomOwner {
   @override
   Identifier getNewIdentifier() => parent.getNewIdentifier();
 
-  static AtomsDisposition of(BuildContext context) => _of<AtomsDisposition>(context);
+  static AtomsDisposition of(BuildContext context) =>
+      _of<AtomsDisposition>(context);
 }
 
 class EditorDisposition extends ChildDisposition {
@@ -316,7 +324,7 @@ class EditorDisposition extends ChildDisposition {
       ..addAll((object['cart'] as List<Object?>).cast<String>().map(
         (String name) {
           final Atom? atom = lookupCallback(name);
-          if(atom == null) {
+          if (atom == null) {
             throw FormatException('no such atom $name');
           }
           return atom;
