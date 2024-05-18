@@ -38,6 +38,21 @@ const Map<String, String> _enumDescriptions = <String, String>{
   'tsLudicrous': 'more than 100 meters',
 };
 
+const Map<String, String> _directionOpposites = <String, String>{
+  'cdNorth': 'cdSouth',
+  'cdSouth': 'cdNorth',
+  'cdEast': 'cdWest',
+  'cdWest': 'cdEast',
+  'cdSouthWest': 'cdNorthEast',
+  'cdNorthEast': 'cdSouthWest',
+  'cdSouthEast': 'cdNorthWest',
+  'cdNorthWest': 'cdSouthEast',
+  'cdUp': 'cdDown',
+  'cdDown': 'cdUp',
+  'cdIn': 'cdOut',
+  'cdOut': 'cdIn',
+};
+
 const List<String> _bestDefaultClasses = <String>[
   'TDescribedPhysicalThing',
   'TGroundLocation',
@@ -99,7 +114,7 @@ class _EditorState extends State<Editor> {
   }
 
   void _handleAtomUpdate() {
-    // TODO(elih): check if Atom.deleted
+    // TODO(treeplate): check if Atom.deleted
     setState(() {/* atom changed */});
     _updateProperties();
   }
@@ -132,6 +147,8 @@ class _EditorState extends State<Editor> {
         return 'Reverse side';
       case 'cannotMoveExcuse':
         return 'Cannot move excuse';
+      case 'cannotPlaceExcuse':
+        return 'Cannot place excuse';
       case 'child':
         return type == 'child*' ? 'Children' : 'Child';
       case 'definiteName':
@@ -152,6 +169,8 @@ class _EditorState extends State<Editor> {
         return 'Front side';
       case 'ground':
         return 'Ground';
+      case 'hole':
+        return 'Hole';
       case 'indefiniteName':
         return 'Name (indefinite)';
       case 'ingredients':
@@ -1048,6 +1067,7 @@ class LandmarksField extends StatefulWidget {
 
 class _LandmarksFieldState extends State<LandmarksField> {
   Set<String> _classes = const <String>{};
+  Set<String> _locationTypes = const <String>{};
   List<String> _cardinalDirectionValues = const <String>[];
   List<String> _landmarkOptionValues = const <String>[];
 
@@ -1060,6 +1080,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
 
   void _triggerUpdates() {
     _updateClasses();
+    _updateLocationTypes();
     _updateThingPositionValues();
     _updateLandmarkOptionValues();
   }
@@ -1073,6 +1094,20 @@ class _LandmarksFieldState extends State<LandmarksField> {
       }
       setState(() {
         _classes = result.toSet();
+      });
+    } on ConnectionLostException {
+      // ignore
+    }
+  }
+
+  void _updateLocationTypes() async {
+    try {
+      final List<String> result = await widget.game.fetchClassesOf('TLocation');
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _locationTypes = result.toSet();
       });
     } on ConnectionLostException {
       // ignore
@@ -1150,6 +1185,19 @@ class _LandmarksFieldState extends State<LandmarksField> {
                 onChanged(direction, atom, options);
               }, needsTree: false, needsDifferent: true),
             ),
+            if (direction != null &&
+                atom != null &&
+                _locationTypes.contains(atom.className))
+              ActionChip(
+                label: const Text('Add reverse connection'),
+                onPressed: () {
+                  final LandmarksPropertyValue landmarks = (atom['landmark'] ??= const LandmarksPropertyValue(<Landmark>[])) as LandmarksPropertyValue;
+                  final Landmark landmark = Landmark(_directionOpposites[direction], widget.parent, options);
+                  landmarks.value.add(landmark);
+                  widget.parent!.registerFriend(atom);
+                  atom.registerFriend(widget.parent!);
+                },
+              ),
             if (onDelete != null)
               IconButton(
                 icon: const Icon(Icons.cancel),
