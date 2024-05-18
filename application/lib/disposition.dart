@@ -29,6 +29,16 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
   EditorDisposition get editorDisposition => _editorDisposition;
   late final EditorDisposition _editorDisposition;
 
+  bool get darkMode => _darkMode;
+  bool _darkMode = true; // TODO(treeplate): this should be [View.of(context).platformDispatcher.platformBrightness == Brightness.dark] but we don't have a context here
+  set darkMode(bool value) {
+    if (value == _darkMode) {
+      return;
+    }
+    _darkMode = value;
+    notifyListeners();
+  }
+
   static Future<RootDisposition> load(SaveFile saveFile) async {
     final RootDisposition result = RootDisposition(saveFile);
     await saveFile.load(result);
@@ -41,6 +51,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       'server': serverDisposition.encode(),
       'atoms': atomsDisposition.encode(),
       'editor': editorDisposition.encode(),
+      'darkMode': darkMode,
     };
   }
 
@@ -73,6 +84,7 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   @override
   void decode(Object? object) {
+    // TODO(treeplate): these are just crashing the ide when reading an invalid savefile - maybe we should throw FormatException (which is caught by SaveFile.load) instead of AssertionError?
     assert(object is Map<String, Object?>);
     final Map<String, Object?> map = object as Map<String, Object?>;
     assert(map['server'] is Map<String, Object?>);
@@ -83,6 +95,8 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
       ..resolveIdentifiers(lookupAtom);
     assert(map['editor'] is Map<String, Object?>);
     editorDisposition.decode(map['editor'] as Map<String, Object?>, lookupAtom);
+    assert(map['darkMode'] is bool);
+    darkMode = map['darkMode'] as bool;
   }
 
   static RootDisposition of(BuildContext context) => _of<RootDisposition>(context);

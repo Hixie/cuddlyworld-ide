@@ -27,30 +27,35 @@ Future<void> main() async {
 }
 
 class CuddlyWorldIDE extends StatelessWidget {
-  const CuddlyWorldIDE({ super.key });
-  
+  const CuddlyWorldIDE({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cuddly World IDE',
+      themeMode: RootDisposition.of(context).darkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
       theme: ThemeData.light().copyWith(
         tabBarTheme: const TabBarTheme(
           labelColor: Colors.black,
         ),
       ),
+      darkTheme: ThemeData.dark(),
       home: const MainScreen(),
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({ super.key }) ;
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   CuddlyWorld? _game;
   final Terminal _terminal = Terminal();
   StreamSubscription<String>? _gameStream;
@@ -78,8 +83,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         username: server.username,
         password: server.password,
         onLog: _handleLog,
-      )
-        ..reportNextLogin(_reportLogin);
+      )..reportNextLogin(_reportLogin);
       _gameStream?.cancel();
       _gameStream = _game!.output.listen(_handleOutput);
     }
@@ -144,23 +148,32 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 builder: (BuildContext context, Widget? child) {
                   switch (_tabController.index) {
                     case 0:
-                      final Atom? currentAtom = EditorDisposition.of(context).current;
+                      final Atom? currentAtom =
+                          EditorDisposition.of(context).current;
                       if (currentAtom != null) {
-                        body = Editor(key: ValueKey<Atom>(currentAtom), game: _game!, atom: currentAtom);
+                        body = Editor(
+                          key: ValueKey<Atom>(currentAtom),
+                          game: _game!,
+                          atom: currentAtom,
+                        );
                       } else {
                         body = Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              Text('Nothing selected.', style: Theme.of(context).textTheme.displaySmall),
+                              Text(
+                                'Nothing selected.',
+                                style: Theme.of(context).textTheme.displaySmall,
+                              ),
                               const SizedBox(height: 28.0),
                               OutlinedButton(
                                 onPressed: () {
-                                  EditorDisposition.of(context).current = AtomsDisposition.of(context).add();
+                                  EditorDisposition.of(context).current =
+                                      AtomsDisposition.of(context).add();
                                 },
                                 child: const Text('Create Item'),
                               ),
-                            ]
+                            ],
                           ),
                         );
                       }
@@ -198,7 +211,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                     duration: const Duration(milliseconds: 150),
                     child: body,
                   );
-                }
+                },
               ),
             ),
           ),

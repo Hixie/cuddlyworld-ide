@@ -781,7 +781,7 @@ class _ChildrenFieldState extends State<ChildrenField> {
   Widget _row(String? position, Atom? atom, Function(String? position, Atom? atom) onChanged, VoidCallback? onDelete) {
     return Row(
       children: <Widget>[
-        // TODO: this takes up a lot of horizontal space (#74)
+        // TODO(hixie): this takes up a lot of horizontal space (#74)
         _makeDropdown(_thingPositionValues, position, null, (String? position) { onChanged(position, atom); }),
         const SizedBox(
           width: 8.0,
