@@ -27,24 +27,20 @@ Future<void> main() async {
 }
 
 class CuddlyWorldIDE extends StatelessWidget {
-  const CuddlyWorldIDE({ super.key });
-  
+  const CuddlyWorldIDE({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cuddly World IDE',
-      theme: ThemeData.light().copyWith(
-        tabBarTheme: const TabBarTheme(
-          labelColor: Colors.black,
-        ),
-      ),
+      theme: ThemeData.light(),
       home: const MainScreen(),
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({ super.key }) ;
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -68,18 +64,14 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void didChangeDependencies() {
     super.didChangeDependencies();
     final ServerDisposition server = ServerDisposition.of(context);
-    if (_game == null ||
-        server.server != _game!.url ||
-        server.username != _game!.username ||
-        server.password != _game!.password) {
+    if (_game == null || server.server != _game!.url || server.username != _game!.username || server.password != _game!.password) {
       _game?.dispose();
       _game = CuddlyWorld(
         url: server.server,
         username: server.username,
         password: server.password,
         onLog: _handleLog,
-      )
-        ..reportNextLogin(_reportLogin);
+      )..reportNextLogin(_reportLogin);
       _gameStream?.cancel();
       _gameStream = _game!.output.listen(_handleOutput);
     }
@@ -140,18 +132,16 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: AnimatedBuilder(
-                animation: _tabController,
-                builder: (BuildContext context, Widget? child) {
-                  switch (_tabController.index) {
-                    case 0:
-                      final Atom? currentAtom = EditorDisposition.of(context).current;
-                      if (currentAtom != null) {
-                        body = Editor(key: ValueKey<Atom>(currentAtom), game: _game!, atom: currentAtom);
-                      } else {
-                        body = Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
+                  animation: _tabController,
+                  builder: (BuildContext context, Widget? child) {
+                    switch (_tabController.index) {
+                      case 0:
+                        final Atom? currentAtom = EditorDisposition.of(context).current;
+                        if (currentAtom != null) {
+                          body = Editor(key: ValueKey<Atom>(currentAtom), game: _game!, atom: currentAtom);
+                        } else {
+                          body = Center(
+                            child: Column(mainAxisSize: MainAxisSize.min, children: <Widget>[
                               Text('Nothing selected.', style: Theme.of(context).textTheme.displaySmall),
                               const SizedBox(height: 28.0),
                               OutlinedButton(
@@ -160,46 +150,44 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                                 },
                                 child: const Text('Create Item'),
                               ),
-                            ]
-                          ),
-                        );
-                      }
-                      body = Row(
-                        children: <Widget>[
-                          const SizedBox(
-                            width: kCatalogWidth,
-                            child: Catalog(),
-                          ),
-                          Expanded(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 150),
-                              child: body,
+                            ]),
+                          );
+                        }
+                        body = Row(
+                          children: <Widget>[
+                            const SizedBox(
+                              width: kCatalogWidth,
+                              child: Catalog(),
                             ),
-                          ),
-                        ],
-                      );
-                      break;
-                    case 1:
-                      body = const TemplateLibrary();
-                      break;
-                    case 2:
-                      body = Cart(game: _game);
-                      break;
-                    case 3:
-                      body = Console(game: _game!, terminal: _terminal);
-                      break;
-                    case 4:
-                      body = const SettingsTab();
-                      break;
-                    case 5:
-                      body = const HelpTab();
-                  }
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 150),
-                    child: body,
-                  );
-                }
-              ),
+                            Expanded(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 150),
+                                child: body,
+                              ),
+                            ),
+                          ],
+                        );
+                        break;
+                      case 1:
+                        body = const TemplateLibrary();
+                        break;
+                      case 2:
+                        body = Cart(game: _game);
+                        break;
+                      case 3:
+                        body = Console(game: _game!, terminal: _terminal);
+                        break;
+                      case 4:
+                        body = const SettingsTab();
+                        break;
+                      case 5:
+                        body = const HelpTab();
+                    }
+                    return AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: body,
+                    );
+                  }),
             ),
           ),
         ],
