@@ -19,6 +19,15 @@ class _SettingsTabState extends State<SettingsTab> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _username?.dispose();
+    _password?.dispose();
+    _username =
+        TextEditingController(text: ServerDisposition.of(context).username)
+          ..addListener(_rebuild);
+    _password =
+        TextEditingController(text: ServerDisposition.of(context).password)
+          ..addListener(_rebuild);
+    _rebuild();
     print('moo');
     _username?.dispose();
     _password?.dispose();
