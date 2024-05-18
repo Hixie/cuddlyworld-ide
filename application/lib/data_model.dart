@@ -60,9 +60,11 @@ abstract class PropertyValue {
           for (final Object? child in object['children'] as List<Object?>) {
             child as Map<String, Object?>;
             assert(child['direction'] is String);
-            assert(!child.containsKey('identifier') || child['identifier'] is String);
+            assert(!child.containsKey('identifier') ||
+                child['identifier'] is String);
             assert(child['options'] is List<Object?>);
-            assert(!(child['options'] as List<Object?>).any((Object? value) => value is! String));
+            assert(!(child['options'] as List<Object?>)
+                .any((Object? value) => value is! String));
           }
           return true;
         }());
@@ -153,7 +155,7 @@ class AtomPropertyValue extends PropertyValue {
 
   @override
   String encodeForServerMake(String key, Set<Atom> serialized) =>
-      '$key: ${value.encodeForServerMake(serialized)}; ';
+      '$key: ${value.encodeForServerMake(serialized, isReference: true)}; ';
 
   @override
   void registerChildren(Atom parent) {
@@ -306,7 +308,7 @@ class PositionedAtom {
       };
 
   String encodeForServerMake(Set<Atom> serialized) {
-    return '$position, ${atom!.encodeForServerMake(serialized)}';
+    return '$position, ${atom!.encodeForServerMake(serialized, isReference: true)}';
   }
 
   static bool hasChild(PositionedAtom candidate) => candidate.atom != null;
@@ -433,8 +435,8 @@ class Landmark {
       };
 
   String encodeForServerConnect() {
-    assert(atom !=
-        null); // TODO(ianh): we should inform the user that the landmark isn't ready
+    // TODO(ianh): we should inform the user that the landmark isn't ready
+    assert(atom != null);
     return '$direction, ${atom!.identifier!.identifier}, ${options.join(" ")}';
   }
 
@@ -632,9 +634,13 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
     notifyListeners();
   }
 
-  String encodeForServerMake(Set<Atom> serialized) {
+  String encodeForServerMake(Set<Atom> serialized,
+      {required bool isReference}) {
     if (serialized.contains(this)) {
-      return identifier!.identifier;
+      if (isReference) {
+        return identifier!.identifier;
+      }
+      return '';
     }
     serialized.add(this);
     final StringBuffer buffer = StringBuffer();

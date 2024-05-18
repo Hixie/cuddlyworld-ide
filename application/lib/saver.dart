@@ -21,8 +21,9 @@ class SaveFile {
       final String jsonFile = await _file.readAsString();
       try {
         root.decode(json.decode(jsonFile));
-      } catch (e, stack) { // ignore: avoid_catches_without_on_clauses
-        await _file.rename('${_file.path}.broken.${DateTime.timestamp().microsecondsSinceEpoch}');
+      } on Object catch (e, stack) {
+        await _file.rename(
+            '${_file.path}.broken.${DateTime.timestamp().microsecondsSinceEpoch}');
         print('$e\n$stack'); // ignore: avoid_print
       }
     }

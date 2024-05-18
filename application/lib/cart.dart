@@ -19,35 +19,20 @@ class Cart extends StatefulWidget {
 }
 
 class _CartState extends State<Cart> {
-  String? _message;
-
-  void _updateMessage() {
-    final Set<Atom> atoms = EditorDisposition.of(context).cart;
+  static String _generateMessage(Set<Atom> atoms) {
     final Set<Atom> history = <Atom>{};
     final String command = <String>[
-      ...atoms.map((Atom atom) => atom.encodeForServerMake(history)),
+      ...atoms.map(
+          (Atom atom) => atom.encodeForServerMake(history, isReference: false)),
       ...atoms.map((Atom atom) => atom.encodeForServerConnect()),
     ].where((String command) => command.isNotEmpty).join('; ');
-    setState(() {
-      _message = 'debug make \'${escapeSingleQuotes(command)};\'';
-    });
+    return 'debug make \'${escapeSingleQuotes(command)};\'';
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _updateMessage();
-  }
-
-  void _sendToServer() async {
-    final Set<Atom> atoms = EditorDisposition.of(context).cart;
-    String heading;
-    if (atoms.length == 1)
-      heading = 'Adding ${atoms.single.identifier!.identifier} to world';
-    else
-      heading = 'Adding ${atoms.length} atoms to world';
+  void _sendToServer(String count, String message) async {
+    final String heading = 'Adding $count to world';
     try {
-      final String reply = await widget.game!.sendMessage(_message);
+      final String reply = await widget.game!.sendMessage(message);
       if (mounted) {
         await showMessage(context, heading, reply);
       }
@@ -58,7 +43,7 @@ class _CartState extends State<Cart> {
     }
   }
 
-  Set<Atom> expand(Set<Atom> cart) {
+  static Set<Atom> expand(Set<Atom> cart) {
     final Set<Atom> pending = cart.toSet();
     final Set<Atom> results = <Atom>{};
     while (pending.isNotEmpty) {
@@ -75,8 +60,15 @@ class _CartState extends State<Cart> {
   @override
   Widget build(BuildContext context) {
     final Set<Atom> cart = EditorDisposition.of(context).cart;
-    final List<Atom> atoms = expand(cart).toList()..sort();
-    return EditorDisposition.of(context).cart.isEmpty
+    final Set<Atom> atoms = expand(cart);
+    final List<Atom> sortedAtoms = atoms.toList()..sort();
+    String heading;
+    if (atoms.length == 1)
+      heading = atoms.single.identifier!.identifier;
+    else
+      heading = '${atoms.length} atoms';
+    final String message = _generateMessage(atoms);
+    return cart.isEmpty
         ? const Text('The cart is empty.')
         : SizedBox.expand(
             child: SingleChildScrollView(
@@ -114,7 +106,7 @@ class _CartState extends State<Cart> {
                           horizontal: 24.0, vertical: 12.0),
                       child: ListBody(
                         children: <Widget>[
-                          for (final Atom atom in atoms)
+                          for (final Atom atom in sortedAtoms)
                             Padding(
                               padding: EdgeInsets.only(
                                 top: atom.parent != null ? 4.0 : 16.0,
@@ -141,8 +133,10 @@ class _CartState extends State<Cart> {
                                 const EdgeInsets.only(top: 48.0, bottom: 8.0),
                             child: Center(
                               child: OutlinedButton(
-                                onPressed: _sendToServer,
-                                child: const Text('Send to server'),
+                                onPressed: () {
+                                  _sendToServer(heading, message);
+                                },
+                                child: Text('Send $heading to server'),
                               ),
                             ),
                           ),
@@ -160,7 +154,7 @@ class _CartState extends State<Cart> {
                                 .textTheme
                                 .titleLarge!
                                 .copyWith(color: Colors.grey.shade600)),
-                        SelectableText(_message!,
+                        SelectableText(message,
                             style: TextStyle(color: Colors.grey.shade600)),
                       ],
                     ),

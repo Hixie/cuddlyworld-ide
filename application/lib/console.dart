@@ -217,7 +217,7 @@ class _ConsoleState extends State<Console> {
     };
     return Column(
       children: <Widget>[
-        Expanded(child: TerminalView(widget.terminal)),
+        Expanded(child: ClipRect(child: TerminalView(widget.terminal))),
         const SizedBox(height: 8.0),
         SizedBox(
           height: 32.0,

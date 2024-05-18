@@ -37,8 +37,7 @@ Widget makeTextForIdentifier(BuildContext context, Identifier identifier,
 }
 
 class AtomWidget extends StatefulWidget {
-  const AtomWidget({
-    super.key,
+  AtomWidget({
     this.atom,
     this.icon,
     this.label,
@@ -49,7 +48,8 @@ class AtomWidget extends StatefulWidget {
     this.duration = const Duration(milliseconds: 200),
     this.onDelete,
     this.onTap,
-  }) : assert((label == null) != (atom == null));
+  })  : assert((label == null) != (atom == null)),
+        super(key: atom != null ? ValueKey<Atom>(atom) : null);
 
   final Atom? atom;
   final Widget? icon;

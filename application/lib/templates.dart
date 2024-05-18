@@ -42,11 +42,12 @@ class TemplateLibrary extends StatelessWidget {
                 'indefiniteName': StringPropertyValue('an area'),
                 'description': StringPropertyValue('The area is non-descript.'),
                 'ground': AtomPropertyValuePlaceholder('ground'),
-                'landmark':
-                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder(
-                      'cdUp', 'sky', <String>{'loVisibleFromFarAway'}),
-                ]),
+                'landmark': LandmarksPropertyValuePlaceholder(
+                  <LandmarkPlaceholder>[
+                    LandmarkPlaceholder(
+                        'cdUp', 'sky', <String>{'loVisibleFromFarAway'}),
+                  ],
+                ),
               },
             ),
             AtomDescription(
@@ -90,11 +91,12 @@ class TemplateLibrary extends StatelessWidget {
                 'opened': BooleanPropertyValue(true),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
-                'child':
-                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
-                  PositionedAtomPlaceholder('tpEmbedded', 'clouds'),
-                  PositionedAtomPlaceholder('tpEmbedded', 'sun'),
-                ]),
+                'child': ChildrenPropertyValuePlaceholder(
+                  <PositionedAtomPlaceholder>[
+                    PositionedAtomPlaceholder('tpEmbedded', 'clouds'),
+                    PositionedAtomPlaceholder('tpEmbedded', 'sun'),
+                  ],
+                ),
               },
             ),
             AtomDescription(
@@ -124,10 +126,11 @@ class TemplateLibrary extends StatelessWidget {
                 'opened': BooleanPropertyValue(false),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
-                'child':
-                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
-                  PositionedAtomPlaceholder('tpPartOfImplicit', 'plasma'),
-                ]),
+                'child': ChildrenPropertyValuePlaceholder(
+                  <PositionedAtomPlaceholder>[
+                    PositionedAtomPlaceholder('tpPartOfImplicit', 'plasma'),
+                  ],
+                ),
               },
             ),
             AtomDescription(
@@ -154,19 +157,22 @@ class TemplateLibrary extends StatelessWidget {
                 'definiteName': StringPropertyValue('the room'),
                 'indefiniteName': StringPropertyValue('a room'),
                 'ground': AtomPropertyValuePlaceholder('room_floor'),
-                'landmark':
-                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder('cdNorth', 'wall', <String>{}),
-                  LandmarkPlaceholder('cdSouth', 'wall', <String>{}),
-                  LandmarkPlaceholder('cdEast', 'wall', <String>{}),
-                  LandmarkPlaceholder('cdWest', 'wall', <String>{}),
-                  LandmarkPlaceholder('cdUp', 'ceiling', <String>{}),
-                ]),
-                'child':
-                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
-                  PositionedAtomPlaceholder('tpPartOfImplicit', 'wall'),
-                  PositionedAtomPlaceholder('tpPartOfImplicit', 'ceiling'),
-                ]),
+                'description': StringPropertyValue('The room is non-descript.'),
+                'landmark': LandmarksPropertyValuePlaceholder(
+                  <LandmarkPlaceholder>[
+                    LandmarkPlaceholder('cdNorth', 'wall', <String>{}),
+                    LandmarkPlaceholder('cdSouth', 'wall', <String>{}),
+                    LandmarkPlaceholder('cdEast', 'wall', <String>{}),
+                    LandmarkPlaceholder('cdWest', 'wall', <String>{}),
+                    LandmarkPlaceholder('cdUp', 'ceiling', <String>{}),
+                  ],
+                ),
+                'child': ChildrenPropertyValuePlaceholder(
+                  <PositionedAtomPlaceholder>[
+                    PositionedAtomPlaceholder('tpPartOfImplicit', 'wall'),
+                    PositionedAtomPlaceholder('tpPartOfImplicit', 'ceiling'),
+                  ],
+                ),
               },
             ),
             AtomDescription(
@@ -227,19 +233,20 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'passageWay': AtomPropertyValuePlaceholder('doorway'),
                 'surface': AtomPropertyValuePlaceholder('threshold_floor'),
-                'landmark':
-                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder('cdNorth', null, <String>{
-                    'loAutoDescribe',
-                    'loPermissibleNavigationTarget',
-                    'loNotVisibleFromBehind'
-                  }),
-                  LandmarkPlaceholder('cdSouth', null, <String>{
-                    'loAutoDescribe',
-                    'loPermissibleNavigationTarget',
-                    'loNotVisibleFromBehind'
-                  }),
-                ]),
+                'landmark': LandmarksPropertyValuePlaceholder(
+                  <LandmarkPlaceholder>[
+                    LandmarkPlaceholder('cdNorth', null, <String>{
+                      'loAutoDescribe',
+                      'loPermissibleNavigationTarget',
+                      'loNotVisibleFromBehind'
+                    }),
+                    LandmarkPlaceholder('cdSouth', null, <String>{
+                      'loAutoDescribe',
+                      'loPermissibleNavigationTarget',
+                      'loNotVisibleFromBehind'
+                    }),
+                  ],
+                ),
               },
             ),
             AtomDescription(
