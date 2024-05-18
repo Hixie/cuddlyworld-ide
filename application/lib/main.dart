@@ -36,11 +36,7 @@ class CuddlyWorldIDE extends StatelessWidget {
       themeMode: RootDisposition.of(context).darkMode
           ? ThemeMode.dark
           : ThemeMode.light,
-      theme: ThemeData.light().copyWith(
-        tabBarTheme: const TabBarTheme(
-          labelColor: Colors.black,
-        ),
-      ),
+      theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       home: const MainScreen(),
     );
@@ -73,10 +69,7 @@ class _MainScreenState extends State<MainScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     final ServerDisposition server = ServerDisposition.of(context);
-    if (_game == null ||
-        server.server != _game!.url ||
-        server.username != _game!.username ||
-        server.password != _game!.password) {
+    if (_game == null || server.server != _game!.url || server.username != _game!.username || server.password != _game!.password) {
       _game?.dispose();
       _game = CuddlyWorld(
         url: server.server,
@@ -148,8 +141,7 @@ class _MainScreenState extends State<MainScreen>
                 builder: (BuildContext context, Widget? child) {
                   switch (_tabController.index) {
                     case 0:
-                      final Atom? currentAtom =
-                          EditorDisposition.of(context).current;
+                      final Atom? currentAtom = EditorDisposition.of(context).current;
                       if (currentAtom != null) {
                         body = Editor(
                           key: ValueKey<Atom>(currentAtom),

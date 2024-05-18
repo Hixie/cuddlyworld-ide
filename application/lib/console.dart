@@ -22,30 +22,37 @@ class _ConsoleState extends State<Console> {
   late final TextEditingController _input;
 
   List<String> history = <String>[];
-  int? index;
+  int index = 0;
 
   @override
   void initState() {
     super.initState();
     _input = TextEditingController();
+    _input.addListener(() {
+      if (index < history.length && _input.text != history[index]) {
+        index = history.length;
+      }
+    });
     actions = <Type, Action<Intent>>{
-      HistoryUpIntent:
-          CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
-        index ??= history.length;
-        if (index! > 1) {
-          index = index! - 1;
+      HistoryUpIntent: CallbackAction<HistoryUpIntent>(onInvoke: (HistoryUpIntent _) {
+        if (index >= history.length) {
+          if ((history.isEmpty || history.last != _input.text) && (_input.text.isNotEmpty)) {
+            history.add(_input.text);
+          }
+        }
+        if (index > 0) {
+          index = index - 1;
         }
         setState(() {
-          _input.text = history[index!];
+          _input.text = history[index];
         });
         return null;
       }),
-      HistoryDownIntent:
-          CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
-        if (index != null && index! < history.length - 1) {
-          index = index! + 1;
+      HistoryDownIntent: CallbackAction<HistoryDownIntent>(onInvoke: (HistoryDownIntent _) {
+        if (index < history.length) {
+          index = index + 1;
           setState(() {
-            _input.text = history[index!];
+            _input.text = index < history.length ? history[index] : '';
           });
         }
         return null;
@@ -60,13 +67,12 @@ class _ConsoleState extends State<Console> {
   }
 
   void _send() {
-    widget.game.sendMessage(_input.text).catchError(
-          (Object error) => '',
-          test: (Object error) => error is ConnectionLostException,
-        );
-    history.add(_input.text);
-    _input.clear();
-    index = null;
+    widget.game.sendMessage(_input.text).catchError((Object error) => '', test: (Object error) => error is ConnectionLostException);
+    if ((history.isEmpty || history.last != _input.text) && (_input.text.isNotEmpty)) {
+      history.add(_input.text);
+      _input.clear();
+      index = history.length;
+    }
   }
 
   Widget _buildChip(String command) {
@@ -91,11 +97,7 @@ class _ConsoleState extends State<Console> {
       setState(() {
         openingTeleportDialog = false;
       });
-      final Iterable<String> locations = result
-          .split('\n')
-          .skip(1)
-          .takeWhile((String line) => line.isNotEmpty)
-          .map((String line) => line.substring(3));
+      final Iterable<String> locations = result.split('\n').skip(1).takeWhile((String line) => line.isNotEmpty).map((String line) => line.substring(3));
       showDialog<String>(
         context: context,
         builder: (BuildContext context) {
@@ -171,11 +173,8 @@ class _ConsoleState extends State<Console> {
               _buildChip('drop all'),
               _buildChip('debug status'),
               ActionChip(
-                label: openingTeleportDialog
-                    ? const CircularProgressIndicator()
-                    : const Text('Teleport'),
-                onPressed:
-                    openingTeleportDialog ? null : generateTeleportDialog,
+                label: openingTeleportDialog ? const CircularProgressIndicator() : const Text('Teleport'),
+                onPressed: openingTeleportDialog ? null : generateTeleportDialog,
               ),
               _buildChip('debug things'),
             ]).toList(),
