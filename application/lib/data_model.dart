@@ -56,23 +56,24 @@ abstract class PropertyValue {
       }
       if (object['type'] == 'landmark*') {
         assert(object['children'] is List<Object?>, 'not a list: $object');
-        assert(!(object['children'] as List<Object?>).any((Object? child) {
-          return !(child is Map<String, Object?> &&
-              child['direction'] is String &&
-              (!child.containsKey('identifier') ||
-                  child['identifier'] is String) &&
-              child['options'] is List<Object> &&
-              !(child['options'] as List<Object>)
-                  .any((Object value) => value is! String));
-        }));
+        assert(() {
+          for (final Object? child in object['children'] as List<Object?>) {
+            child as Map<String, Object?>;
+            assert(child['direction'] is String);
+            assert(!child.containsKey('identifier') || child['identifier'] is String);
+            assert(child['options'] is List<Object?>);
+            assert(!(child['options'] as List<Object?>).any((Object? value) => value is! String));
+          }
+          return true;
+        }());
         return LandmarksPropertyValuePlaceholder(
-          (object['children'] as List<Object>)
-              .map<LandmarkPlaceholder>((Object child) {
+          (object['children'] as List<Object?>)
+              .map<LandmarkPlaceholder>((Object? child) {
             final Map<String, Object?> map = child as Map<String, Object?>;
             return LandmarkPlaceholder(
                 map['direction'] as String?,
                 map['identifier'] as String?,
-                (map['options'] as List<Object>).cast<String>().toSet());
+                (map['options'] as List<Object?>).cast<String>().toSet());
           }).toList(),
         );
       }
