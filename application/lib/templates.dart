@@ -23,7 +23,7 @@ class AtomDescription {
 }
 
 class TemplateLibrary extends StatelessWidget {
-  const TemplateLibrary({ super.key }) ;
+  const TemplateLibrary({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +42,10 @@ class TemplateLibrary extends StatelessWidget {
                 'indefiniteName': StringPropertyValue('an area'),
                 'description': StringPropertyValue('The area is non-descript.'),
                 'ground': AtomPropertyValuePlaceholder('ground'),
-                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder('cdUp', 'sky', <String>{ 'loVisibleFromFarAway' }),
+                'landmark':
+                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder(
+                      'cdUp', 'sky', <String>{'loVisibleFromFarAway'}),
                 ]),
               },
             ),
@@ -52,8 +54,10 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TEarthGround',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('ground'),
-                'pattern': StringPropertyValue('((flat? ground/grounds) (flat? (surface/surfaces of)? earth))@'),
-                'description': StringPropertyValue('The ground is a flat surface of earth.'),
+                'pattern': StringPropertyValue(
+                    '((flat? ground/grounds) (flat? (surface/surfaces of)? earth))@'),
+                'description': StringPropertyValue(
+                    'The ground is a flat surface of earth.'),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
               },
@@ -77,13 +81,17 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TScenery',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('sky'),
-                'pattern': StringPropertyValue('((blue cloudy sunny)* sky/skies)'),
-                'description': StringPropertyValue('The sky is mostly blue, with a few clouds and the sun.'),
-                'cannotMoveExcuse': StringPropertyValue('You can\'t reach the sky.'),
+                'pattern':
+                    StringPropertyValue('((blue cloudy sunny)* sky/skies)'),
+                'description': StringPropertyValue(
+                    'The sky is mostly blue, with a few clouds and the sun.'),
+                'cannotMoveExcuse':
+                    StringPropertyValue('You can\'t reach the sky.'),
                 'opened': BooleanPropertyValue(true),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
-                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                'child':
+                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
                   PositionedAtomPlaceholder('tpEmbedded', 'clouds'),
                   PositionedAtomPlaceholder('tpEmbedded', 'sun'),
                 ]),
@@ -94,8 +102,10 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TDescribedPhysicalThing',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('clouds'),
-                'pattern': StringPropertyValue('(fluffy white)* (cloud/clouds (water vapor/vapors)%)@'),
-                'description': StringPropertyValue('The clouds appear to be made of cotton, but are actually made of water vapor.'),
+                'pattern': StringPropertyValue(
+                    '(fluffy white)* (cloud/clouds (water vapor/vapors)%)@'),
+                'description': StringPropertyValue(
+                    'The clouds appear to be made of cotton, but are actually made of water vapor.'),
                 'mass': LiteralPropertyValue('tmPonderous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
               },
@@ -105,13 +115,17 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TScenery',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('sun'),
-                'pattern': StringPropertyValue('(((bright yellow)% (sun/suns star/stars)@) ((nearly? perfect)? sphere/spheres) ((nearly? perfect)? sphere/spheres of hot? plasma))@'),
-                'description': StringPropertyValue('The sun is a nearly perfect sphere of hot plasma, heated to incandescence by nuclear fusion reactions in its core.'),
-                'cannotMoveExcuse': StringPropertyValue('Aside from not being able to reach the star, there is the issue that even approaching it would likely vaporize you.'),
+                'pattern': StringPropertyValue(
+                    '(((bright yellow)% (sun/suns star/stars)@) ((nearly? perfect)? sphere/spheres) ((nearly? perfect)? sphere/spheres of hot? plasma))@'),
+                'description': StringPropertyValue(
+                    'The sun is a nearly perfect sphere of hot plasma, heated to incandescence by nuclear fusion reactions in its core.'),
+                'cannotMoveExcuse': StringPropertyValue(
+                    'Aside from not being able to reach the star, there is the issue that even approaching it would likely vaporize you.'),
                 'opened': BooleanPropertyValue(false),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
-                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                'child':
+                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
                   PositionedAtomPlaceholder('tpPartOfImplicit', 'plasma'),
                 ]),
               },
@@ -122,7 +136,8 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('plasma'),
                 'pattern': StringPropertyValue('hot? plasma/plasmas'),
-                'description': StringPropertyValue('The sun\'s plasma is its blood.'),
+                'description':
+                    StringPropertyValue('The sun\'s plasma is its blood.'),
               },
             ),
           ],
@@ -139,14 +154,16 @@ class TemplateLibrary extends StatelessWidget {
                 'definiteName': StringPropertyValue('the room'),
                 'indefiniteName': StringPropertyValue('a room'),
                 'ground': AtomPropertyValuePlaceholder('room_floor'),
-                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder('cdNorth', 'wall', <String>{ }),
-                  LandmarkPlaceholder('cdSouth', 'wall', <String>{ }),
-                  LandmarkPlaceholder('cdEast', 'wall', <String>{ }),
-                  LandmarkPlaceholder('cdWest', 'wall', <String>{ }),
-                  LandmarkPlaceholder('cdUp', 'ceiling', <String>{ }),
+                'landmark':
+                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder('cdNorth', 'wall', <String>{}),
+                  LandmarkPlaceholder('cdSouth', 'wall', <String>{}),
+                  LandmarkPlaceholder('cdEast', 'wall', <String>{}),
+                  LandmarkPlaceholder('cdWest', 'wall', <String>{}),
+                  LandmarkPlaceholder('cdUp', 'ceiling', <String>{}),
                 ]),
-                'child': ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
+                'child':
+                    ChildrenPropertyValuePlaceholder(<PositionedAtomPlaceholder>[
                   PositionedAtomPlaceholder('tpPartOfImplicit', 'wall'),
                   PositionedAtomPlaceholder('tpPartOfImplicit', 'ceiling'),
                 ]),
@@ -157,7 +174,8 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TSurface',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('floor'),
-                'pattern': StringPropertyValue('flat? (ground/grounds surface/surfaces floor/floors)@'),
+                'pattern': StringPropertyValue(
+                    'flat? (ground/grounds surface/surfaces floor/floors)@'),
                 'description': StringPropertyValue('The floor is flat.'),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
@@ -169,9 +187,12 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('wall'),
                 'pattern': StringPropertyValue('wall/walls'),
-                'description': StringPropertyValue('The wall is all around you.'),
-                'cannotMoveExcuse': StringPropertyValue('It would be impractical to move the wall.'),
-                'cannotPlaceExcuse': StringPropertyValue('There does not seem to be a good way to place things on the wall.'),
+                'description':
+                    StringPropertyValue('The wall is all around you.'),
+                'cannotMoveExcuse': StringPropertyValue(
+                    'It would be impractical to move the wall.'),
+                'cannotPlaceExcuse': StringPropertyValue(
+                    'There does not seem to be a good way to place things on the wall.'),
                 'opened': BooleanPropertyValue(false),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsMassive'),
@@ -183,9 +204,12 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('ceiling'),
                 'pattern': StringPropertyValue('ceiling/ceilings'),
-                'description': StringPropertyValue('The ceiling is. It just... is.'),
-                'cannotMoveExcuse': StringPropertyValue('You can\'t reach the ceiling.'),
-                'cannotPlaceExcuse': StringPropertyValue('You can\'t reach the ceiling.'),
+                'description':
+                    StringPropertyValue('The ceiling is. It just... is.'),
+                'cannotMoveExcuse':
+                    StringPropertyValue('You can\'t reach the ceiling.'),
+                'cannotPlaceExcuse':
+                    StringPropertyValue('You can\'t reach the ceiling.'),
                 'opened': BooleanPropertyValue(false),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsMassive'),
@@ -203,9 +227,18 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'passageWay': AtomPropertyValuePlaceholder('doorway'),
                 'surface': AtomPropertyValuePlaceholder('threshold_floor'),
-                'landmark': LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
-                  LandmarkPlaceholder('cdNorth', null, <String>{ 'loAutoDescribe', 'loPermissibleNavigationTarget', 'loNotVisibleFromBehind' }),
-                  LandmarkPlaceholder('cdSouth', null, <String>{ 'loAutoDescribe', 'loPermissibleNavigationTarget', 'loNotVisibleFromBehind' }),
+                'landmark':
+                    LandmarksPropertyValuePlaceholder(<LandmarkPlaceholder>[
+                  LandmarkPlaceholder('cdNorth', null, <String>{
+                    'loAutoDescribe',
+                    'loPermissibleNavigationTarget',
+                    'loNotVisibleFromBehind'
+                  }),
+                  LandmarkPlaceholder('cdSouth', null, <String>{
+                    'loAutoDescribe',
+                    'loPermissibleNavigationTarget',
+                    'loNotVisibleFromBehind'
+                  }),
                 ]),
               },
             ),
@@ -215,7 +248,8 @@ class TemplateLibrary extends StatelessWidget {
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('doorway'),
                 'pattern': StringPropertyValue('doorway/doorways'),
-                'description': StringPropertyValue('The doorway is a hole in a wall.'),
+                'description':
+                    StringPropertyValue('The doorway is a hole in a wall.'),
                 'frontDirection': LiteralPropertyValue('cdSouth'),
                 'door': AtomPropertyValuePlaceholder('door'),
               },
@@ -255,7 +289,8 @@ class TemplateLibrary extends StatelessWidget {
               className: 'TThresholdSurface',
               properties: <String, PropertyValue>{
                 'name': StringPropertyValue('floor'),
-                'pattern': StringPropertyValue('flat? (ground/grounds surface/surfaces floor/floors)@'),
+                'pattern': StringPropertyValue(
+                    'flat? (ground/grounds surface/surfaces floor/floors)@'),
                 'description': StringPropertyValue('The floor is flat.'),
                 'mass': LiteralPropertyValue('tmLudicrous'),
                 'size': LiteralPropertyValue('tsLudicrous'),
@@ -283,16 +318,24 @@ class Blueprint extends StatelessWidget {
 
   void _handleCreate(BuildContext context) {
     assert(this.atoms.isNotEmpty);
-    final List<Atom> atoms = this.atoms.map<Atom>((AtomDescription description) => description.create(AtomsDisposition.of(context))).toList();
-    Atom _lookupAtom(String identifier, { Atom? ignore }) {
-      final List<Atom> matches = atoms
-        .where((Atom atom) => atom != ignore && atom.identifier!.matches(identifier))
+    final List<Atom> atoms = this
+        .atoms
+        .map<Atom>((AtomDescription description) =>
+            description.create(AtomsDisposition.of(context)))
         .toList();
-      assert(matches.length == 1, 'could not find unique $identifier; found $matches in $atoms');
+    Atom _lookupAtom(String identifier, {Atom? ignore}) {
+      final List<Atom> matches = atoms
+          .where((Atom atom) =>
+              atom != ignore && atom.identifier!.matches(identifier))
+          .toList();
+      assert(matches.length == 1,
+          'could not find unique $identifier; found $matches in $atoms');
       return matches.single;
     }
-    for (final Atom atom in atoms)
+
+    for (final Atom atom in atoms) {
       atom.resolveIdentifiers(_lookupAtom);
+    }
     AtomsDisposition.of(context).addAll(atoms);
     EditorDisposition.of(context).current = atoms.first;
   }
@@ -310,7 +353,9 @@ class Blueprint extends StatelessWidget {
         elevation: 1.0,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () { _handleCreate(context); },
+          onTap: () {
+            _handleCreate(context);
+          },
           child: GridTile(
             header: DecoratedBox(
               decoration: BoxDecoration(

@@ -80,17 +80,17 @@ class DraggableText extends StatefulWidget {
 
 class _DraggableTextState extends State<DraggableText> {
   Timer? _timer;
-  
+
   void _trigger() {
     EditorDisposition.of(context).current = widget.atom;
   }
-  
+
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final EditorDisposition editor = EditorDisposition.of(context);
@@ -121,7 +121,11 @@ class _DraggableTextState extends State<DraggableText> {
         child: Padding(
           padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
           child: TextButton(
-            style: widget.atom == editor.current ? ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.yellow)) : null,
+            style: widget.atom == editor.current
+                ? ButtonStyle(
+                    backgroundColor: WidgetStateProperty.all<Color>(
+                        editor.parent.darkMode ? Colors.purple : Colors.yellow))
+                : null,
             onPressed: () {
               setState(() {
                 EditorDisposition.of(context).current = widget.atom;
@@ -129,9 +133,11 @@ class _DraggableTextState extends State<DraggableText> {
             },
             child: Row(
               children: <Widget>[
-                Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null, size: 16.0),
+                Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null,
+                    size: 16.0),
                 SizedBox(width: 16.0 * widget.atom.depth + 12.0),
-                makeTextForIdentifier(context, widget.atom.identifier!, widget.atom.className),
+                makeTextForIdentifier(
+                    context, widget.atom.identifier!, widget.atom.className),
               ],
             ),
           ),
