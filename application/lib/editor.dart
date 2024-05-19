@@ -1191,10 +1191,12 @@ class _LandmarksFieldState extends State<LandmarksField> {
               ActionChip(
                 label: const Text('Add reverse connection'),
                 onPressed: () {
-                  final LandmarksPropertyValue landmarks = (atom['landmark'] ??= const LandmarksPropertyValue(<Landmark>[])) as LandmarksPropertyValue;
                   final Landmark landmark = Landmark(_directionOpposites[direction], widget.parent, options);
-                  landmarks.value.add(landmark);
-                  widget.parent!.registerFriend(atom);
+                  if (atom['landmark'] == null) {
+                    atom['landmark'] = LandmarksPropertyValue(<Landmark>[landmark]);
+                  } else {
+                    atom['landmark'] = LandmarksPropertyValue((atom['landmark'] as LandmarksPropertyValue).value + <Landmark>[landmark]);
+                  }
                   atom.registerFriend(widget.parent!);
                 },
               ),
