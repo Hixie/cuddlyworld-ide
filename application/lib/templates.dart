@@ -45,7 +45,10 @@ class TemplateLibrary extends StatelessWidget {
                 'landmark': LandmarksPropertyValuePlaceholder(
                   <LandmarkPlaceholder>[
                     LandmarkPlaceholder(
-                        'cdUp', 'sky', <String>{'loVisibleFromFarAway'}),
+                      'cdUp',
+                      null,
+                      <String>{'loVisibleFromFarAway'},
+                    ),
                   ],
                 ),
               },
