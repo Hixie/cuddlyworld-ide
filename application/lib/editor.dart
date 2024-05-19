@@ -446,17 +446,21 @@ Widget _makeDropdown(List<String> values, String? value, FocusNode? focusNode,
     return const Text('Not connected...',
         style: TextStyle(fontStyle: FontStyle.italic));
   }
-  return DropdownButton<String>(
-    items: values
-        .map<DropdownMenuItem<String>>(
-            (String value) => DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(_enumDescriptions[value] ?? value),
-                ))
-        .toList(),
-    value: values.contains(value) ? value : null,
-    focusNode: focusNode,
-    onChanged: (String? value) => onChanged(value!),
+  return ConstrainedBox(
+    constraints: const BoxConstraints(maxWidth: 200),
+    child: DropdownMenu<String>(
+      dropdownMenuEntries: values
+          .map<DropdownMenuEntry<String>>(
+            (String value) => DropdownMenuEntry<String>(
+              value: value,
+              label: _enumDescriptions[value] ?? value,
+            ),
+          )
+          .toList(),
+      initialSelection: values.contains(value) ? value : null,
+      focusNode: focusNode,
+      onSelected: (String? value) => onChanged(value ?? ''),
+    ),
   );
 }
 
@@ -1191,11 +1195,19 @@ class _LandmarksFieldState extends State<LandmarksField> {
               ActionChip(
                 label: const Text('Add reverse connection'),
                 onPressed: () {
-                  final Landmark landmark = Landmark(_directionOpposites[direction], widget.parent, options);
+                  final Landmark landmark = Landmark(
+                    _directionOpposites[direction],
+                    widget.parent,
+                    options,
+                  );
                   if (atom['landmark'] == null) {
-                    atom['landmark'] = LandmarksPropertyValue(<Landmark>[landmark]);
+                    atom['landmark'] =
+                        LandmarksPropertyValue(<Landmark>[landmark]);
                   } else {
-                    atom['landmark'] = LandmarksPropertyValue((atom['landmark'] as LandmarksPropertyValue).value + <Landmark>[landmark]);
+                    atom['landmark'] = LandmarksPropertyValue(
+                      (atom['landmark'] as LandmarksPropertyValue).value +
+                          <Landmark>[landmark],
+                    );
                   }
                   atom.registerFriend(widget.parent!);
                 },
