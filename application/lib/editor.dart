@@ -5,6 +5,7 @@ import 'atom_widget.dart';
 import 'backend.dart';
 import 'data_model.dart';
 import 'disposition.dart';
+import 'field_updater.dart';
 
 const Map<String, String> _enumDescriptions = <String, String>{
   'tpPartOfImplicit': "Part of; isn't mentioned when looking at its parent",
@@ -210,6 +211,17 @@ class _EditorState extends State<Editor> {
     }
   }
 
+  void _updateProperty(String property, PropertyValue? newValue) {
+    final PropertyValue? oldValue = widget.atom[property];
+    widget.atom[property] = newValue;
+    final Map<String, PropertyValue?> updates =
+        updateFields(widget.atom, property, oldValue, newValue, _properties);
+    assert(!updates.containsKey(property));
+    updates.forEach((String property, PropertyValue? value) {
+      widget.atom[property] = value;
+    });
+  }
+
   Widget _addField(String property, String propertyType) {
     final List<String> parts = propertyType.split(':');
     assert(parts.isNotEmpty);
@@ -227,8 +239,8 @@ class _EditorState extends State<Editor> {
           needsDifferent: true,
           game: widget.game,
           onChanged: (Atom? value) {
-            widget.atom[property] =
-                value != null ? AtomPropertyValue(value) : null;
+            _updateProperty(
+                property, value != null ? AtomPropertyValue(value) : null);
           },
         );
       case 'boolean':
@@ -239,7 +251,7 @@ class _EditorState extends State<Editor> {
               .ensurePropertyIs<BooleanPropertyValue>(property)
               ?.value,
           onChanged: (bool? value) {
-            widget.atom[property] = BooleanPropertyValue(value!);
+            _updateProperty(property, BooleanPropertyValue(value!));
           },
         );
       case 'child*':
@@ -254,7 +266,7 @@ class _EditorState extends State<Editor> {
           parent: widget.atom,
           game: widget.game,
           onChanged: (List<PositionedAtom> value) {
-            widget.atom[property] = ChildrenPropertyValue(value);
+            _updateProperty(property, ChildrenPropertyValue(value));
           },
         );
       case 'class':
@@ -268,7 +280,7 @@ class _EditorState extends State<Editor> {
               '',
           game: widget.game,
           onChanged: (String? value) {
-            widget.atom[property] = LiteralPropertyValue(value!);
+            _updateProperty(property, LiteralPropertyValue(value!));
           },
         );
       case 'enum':
@@ -282,7 +294,7 @@ class _EditorState extends State<Editor> {
               '',
           game: widget.game,
           onChanged: (String? value) {
-            widget.atom[property] = LiteralPropertyValue(value!);
+            _updateProperty(property, LiteralPropertyValue(value!));
           },
         );
       case 'landmark*':
@@ -297,7 +309,7 @@ class _EditorState extends State<Editor> {
           parent: widget.atom,
           game: widget.game,
           onChanged: (List<Landmark> value) {
-            widget.atom[property] = LandmarksPropertyValue(value);
+            _updateProperty(property, LandmarksPropertyValue(value));
           },
         );
       case 'string':
@@ -309,7 +321,7 @@ class _EditorState extends State<Editor> {
                   ?.value ??
               '',
           onChanged: (String value) {
-            widget.atom[property] = StringPropertyValue(value);
+            _updateProperty(property, StringPropertyValue(value));
           },
         );
       default:
@@ -321,7 +333,7 @@ class _EditorState extends State<Editor> {
                   ?.value ??
               '',
           onChanged: (String value) {
-            widget.atom[property] = StringPropertyValue(value);
+            _updateProperty(property, StringPropertyValue(value));
           },
         );
     }
@@ -1191,11 +1203,15 @@ class _LandmarksFieldState extends State<LandmarksField> {
               ActionChip(
                 label: const Text('Add reverse connection'),
                 onPressed: () {
-                  final Landmark landmark = Landmark(_directionOpposites[direction], widget.parent, options);
+                  final Landmark landmark = Landmark(
+                      _directionOpposites[direction], widget.parent, options);
                   if (atom['landmark'] == null) {
-                    atom['landmark'] = LandmarksPropertyValue(<Landmark>[landmark]);
+                    atom['landmark'] =
+                        LandmarksPropertyValue(<Landmark>[landmark]);
                   } else {
-                    atom['landmark'] = LandmarksPropertyValue((atom['landmark'] as LandmarksPropertyValue).value + <Landmark>[landmark]);
+                    atom['landmark'] = LandmarksPropertyValue(
+                        (atom['landmark'] as LandmarksPropertyValue).value +
+                            <Landmark>[landmark]);
                   }
                   atom.registerFriend(widget.parent!);
                 },

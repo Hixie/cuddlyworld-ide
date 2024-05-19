@@ -129,8 +129,8 @@ class LiteralPropertyValue extends PropertyValue {
 }
 
 class BooleanPropertyValue extends PropertyValue {
-  const BooleanPropertyValue(
-      this.value); // ignore: avoid_positional_boolean_parameters
+  // ignore: avoid_positional_boolean_parameters
+  const BooleanPropertyValue(this.value);
 
   final bool value;
 

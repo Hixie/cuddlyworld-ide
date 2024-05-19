@@ -40,10 +40,14 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
     notifyListeners();
   }
 
-  static Future<RootDisposition> load(SaveFile saveFile,
-      {required bool darkMode}) async {
-    final RootDisposition result =
-        RootDisposition(saveFile, darkMode: darkMode);
+  static Future<RootDisposition> load(
+    SaveFile saveFile, {
+    required bool darkMode,
+  }) async {
+    final RootDisposition result = RootDisposition(
+      saveFile,
+      darkMode: darkMode,
+    );
     await saveFile.load(result);
     return result;
   }
@@ -88,7 +92,6 @@ class RootDisposition extends ChangeNotifier implements JsonEncodable {
 
   @override
   void decode(Object? object) {
-    // TODO(treeplate): these are just crashing the ide when reading an invalid savefile - maybe we should throw FormatException (which is caught by SaveFile.load) instead of AssertionError?
     assert(object is Map<String, Object?>);
     final Map<String, Object?> map = object as Map<String, Object?>;
     assert(map['server'] is Map<String, Object?>);
@@ -193,7 +196,7 @@ class ServerDisposition extends ChildDisposition {
 }
 
 class AtomsDisposition extends ChildDisposition implements AtomOwner {
-  AtomsDisposition(RootDisposition parent) : super(parent);
+  AtomsDisposition(super.parent);
 
   Set<Atom> get atoms => _atoms.toSet();
   Set<Atom> _atoms = <Atom>{};
