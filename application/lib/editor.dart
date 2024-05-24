@@ -6,6 +6,7 @@ import 'backend.dart';
 import 'data_model.dart';
 import 'disposition.dart';
 import 'field_updater.dart';
+import 'templates.dart';
 
 const Map<String, String> _enumDescriptions = <String, String>{
   'tpPartOfImplicit': "Part of; isn't mentioned when looking at its parent",
@@ -1174,12 +1175,136 @@ class _LandmarksFieldState extends State<LandmarksField> {
     super.dispose();
   }
 
+  void putBetweenRooms(Atom start, Landmark landmark, Atom middle) {
+    final String reverseDirection = _directionOpposites[landmark.direction!]!;
+    final Atom end = landmark.atom!;
+    final List<Landmark> startLandmarks =
+        (start['landmark'] as LandmarksPropertyValue).value;
+    final List<Landmark> middleLandmarks =
+        (middle['landmark'] as LandmarksPropertyValue?)?.value ?? <Landmark>[];
+    final List<Landmark> endLandmarks =
+        (end['landmark'] as LandmarksPropertyValue).value;
+    final Landmark reverseLandmark = endLandmarks.firstWhere(
+        (Landmark landmark) =>
+            landmark.direction == reverseDirection && landmark.atom == start);
+    middle['landmark'] = LandmarksPropertyValue(
+      middleLandmarks +
+          <Landmark>[
+            Landmark(landmark.direction, end, landmark.options),
+            Landmark(reverseDirection, start, reverseLandmark.options),
+          ],
+    );
+    start['landmark'] = LandmarksPropertyValue(
+      startLandmarks
+          .where((Landmark landmark2) => landmark2 != landmark)
+          .followedBy(
+        <Landmark>[
+          Landmark(landmark.direction, middle, landmark.options),
+        ],
+      ).toList(),
+    );
+    end['landmark'] = LandmarksPropertyValue(
+      endLandmarks
+          .where((Landmark landmark2) => landmark2 != reverseLandmark)
+          .followedBy(
+        <Landmark>[
+          Landmark(reverseDirection, middle, reverseLandmark.options),
+        ],
+      ).toList(),
+    );
+    start.registerFriend(middle);
+    middle
+      ..registerFriend(start)
+      ..registerFriend(end);
+    end.registerFriend(middle);
+  }
+
+  void generateConnectionAugmentationDialog(Atom start, Landmark landmark) {
+    final Iterable<Atom> locations = AtomsDisposition.of(context)
+        .atoms
+        .where((Atom atom) => _locationTypes.contains(atom.className));
+    showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 400.0,
+                maxHeight: 400.0,
+              ),
+              child: Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Text(
+                            'Augment room with:',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                        ActionChip(
+                          label: const Text('Cancel'),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      children: <Widget>[
+                        ...templates.map(
+                          (Blueprint blueprint) => ActionChip(
+                            label: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                blueprint.icon,
+                                Text(blueprint.header),
+                              ],
+                            ),
+                            onPressed: () {
+                              putBetweenRooms(
+                                start,
+                                landmark,
+                                createFromTemplate(context, blueprint.atoms),
+                              );
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                        ...locations.map(
+                          (Atom atom) => ActionChip(
+                            label: Text('${atom.identifier}'),
+                            onPressed: () {
+                              putBetweenRooms(start, landmark, atom);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _row(
-      String? direction,
-      Atom? atom,
-      Set<String> options,
+      Landmark? landmark,
       Function(String? direction, Atom? atom, Set<String> options) onChanged,
       VoidCallback? onDelete) {
+    final Atom? atom = landmark?.atom;
+    final String? direction = landmark?.direction;
+    final Set<String> options = landmark?.options ?? <String>{};
     return ListBody(
       children: <Widget>[
         Row(
@@ -1200,22 +1325,35 @@ class _LandmarksFieldState extends State<LandmarksField> {
             if (direction != null &&
                 atom != null &&
                 _locationTypes.contains(atom.className))
-              ActionChip(
-                label: const Text('Add reverse connection'),
-                onPressed: () {
-                  final Landmark landmark = Landmark(
-                      _directionOpposites[direction], widget.parent, options);
-                  if (atom['landmark'] == null) {
-                    atom['landmark'] =
-                        LandmarksPropertyValue(<Landmark>[landmark]);
-                  } else {
-                    atom['landmark'] = LandmarksPropertyValue(
-                        (atom['landmark'] as LandmarksPropertyValue).value +
-                            <Landmark>[landmark]);
-                  }
-                  atom.registerFriend(widget.parent!);
-                },
-              ),
+              if ((atom['landmark'] as LandmarksPropertyValue?)?.value.any(
+                      (Landmark e) =>
+                          e.direction == _directionOpposites[direction] &&
+                          e.atom == widget.parent) ??
+                  false)
+                ActionChip(
+                  label: const Text('Augment connection'),
+                  onPressed: () {
+                    generateConnectionAugmentationDialog(
+                        widget.parent!, landmark!);
+                  },
+                )
+              else
+                ActionChip(
+                  label: const Text('Add reverse connection'),
+                  onPressed: () {
+                    final Landmark landmark = Landmark(
+                        _directionOpposites[direction], widget.parent, options);
+                    if (atom['landmark'] == null) {
+                      atom['landmark'] =
+                          LandmarksPropertyValue(<Landmark>[landmark]);
+                    } else {
+                      atom['landmark'] = LandmarksPropertyValue(
+                          (atom['landmark'] as LandmarksPropertyValue).value +
+                              <Landmark>[landmark]);
+                    }
+                    atom.registerFriend(widget.parent!);
+                  },
+                ),
             if (onDelete != null)
               IconButton(
                 icon: const Icon(Icons.cancel),
@@ -1252,9 +1390,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
     for (int index = 0; index < widget.values.length; index += 1) {
       final Landmark entry = widget.values[index];
       rows.add(_row(
-        entry.direction,
-        entry.atom,
-        entry.options,
+        entry,
         (String? direction, Atom? atom, Set<String> options) {
           final List<Landmark> newValues = widget.values.toList();
           newValues[index] = Landmark(direction, atom, options);
@@ -1268,9 +1404,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
       ));
     }
     rows.add(_row(
-      '',
       null,
-      <String>{},
       (String? direction, Atom? atom, Set<String> options) {
         final List<Landmark> newValues = widget.values.toList()
           ..add(Landmark(direction, atom, options));
