@@ -96,25 +96,26 @@ class _AtomWidgetState extends State<AtomWidget>
     bool directionlessLandmark = false;
     bool duplicateLandmark = false;
     final Set<String> directions = <String>{};
-    for (final Landmark landmark
-        in (widget.atom?['landmark'] as LandmarksPropertyValue?)?.value ??
-            <Landmark>[]) {
-      if (landmark.direction == '' || landmark.direction == null) {
-        directionlessLandmark = true;
+    if ((widget.atom?['landmark'] as LandmarksPropertyValue?)?.value != null) {
+      for (final Landmark landmark
+          in (widget.atom!['landmark'] as LandmarksPropertyValue).value) {
+        if (landmark.direction == '' || landmark.direction == null) {
+          directionlessLandmark = true;
+          if (landmark.atom == null) {
+            atomlessLandmark = true;
+          }
+          continue;
+        }
         if (landmark.atom == null) {
           atomlessLandmark = true;
+          continue;
         }
-        continue;
+        if (directions.contains(landmark.direction)) {
+          duplicateLandmark = true;
+          continue;
+        }
+        directions.add(landmark.direction!);
       }
-      if (landmark.atom == null) {
-        atomlessLandmark = true;
-        continue;
-      }
-      if (directions.contains(landmark.direction)) {
-        duplicateLandmark = true;
-        continue;
-      }
-      directions.add(landmark.direction!);
     }
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
@@ -159,8 +160,7 @@ class _AtomWidgetState extends State<AtomWidget>
                     ),
                   if (directionlessLandmark)
                     const Tooltip(
-                      message:
-                          'This atom has a landmark with no direction.',
+                      message: 'This atom has a landmark with no direction.',
                       child: Padding(
                         padding: EdgeInsets.only(right: 8.0),
                         child: Icon(Icons.warning),
