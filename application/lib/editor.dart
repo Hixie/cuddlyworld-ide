@@ -1057,12 +1057,16 @@ class _ChildrenFieldState extends State<ChildrenField> {
 }
 
 // returns true if [source] has a landmark in [direction] going to [destination]
-bool hasSymmetricLandmark(Atom source, String direction, Atom destination) =>
-    (source['landmark'] as LandmarksPropertyValue?)?.value.any(
+bool hasSymmetricLandmark(Atom source, String direction, Atom destination) {
+  if (source['landmark'] == null) {
+    return false;
+  }
+  return (source['landmark'] as LandmarksPropertyValue).value.any(
         (Landmark landmark) =>
             landmark.direction == _directionOpposites[direction] &&
-            landmark.atom == destination) ??
-    false;
+            landmark.atom == destination,
+      );
+}
 
 class LandmarksField extends StatefulWidget {
   const LandmarksField({
@@ -1214,6 +1218,15 @@ class _LandmarksFieldState extends State<LandmarksField> {
       (Landmark landmark) =>
           landmark.direction == reverseDirection && landmark.atom == start,
     );
+    start['landmark'] = LandmarksPropertyValue(
+      startLandmarks
+          .map(
+            (Landmark landmark2) => landmark2 == landmark
+                ? Landmark(landmark.direction, middle, landmark.options)
+                : landmark2,
+          )
+          .toList(),
+    );
     middle['landmark'] = LandmarksPropertyValue(
       middleLandmarks +
           <Landmark>[
@@ -1221,23 +1234,15 @@ class _LandmarksFieldState extends State<LandmarksField> {
             Landmark(reverseDirection, start, reverseLandmark.options),
           ],
     );
-    start['landmark'] = LandmarksPropertyValue(
-      startLandmarks
-          .where((Landmark landmark2) => landmark2 != landmark)
-          .followedBy(
-        <Landmark>[
-          Landmark(landmark.direction, middle, landmark.options),
-        ],
-      ).toList(),
-    );
     end['landmark'] = LandmarksPropertyValue(
-      endLandmarks
-          .where((Landmark landmark2) => landmark2 != reverseLandmark)
-          .followedBy(
-        <Landmark>[
-          Landmark(reverseDirection, middle, reverseLandmark.options),
-        ],
-      ).toList(),
+      startLandmarks
+          .map(
+            (Landmark landmark2) => landmark2 == reverseLandmark
+                ? Landmark(
+                    reverseLandmark.direction, middle, reverseLandmark.options)
+                : landmark2,
+          )
+          .toList(),
     );
     start.registerFriend(middle);
     middle
@@ -1353,8 +1358,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
               width: 8.0,
             ),
             Expanded(
-              child:
-                  _makeAtomSlot(_classes, atom, widget.parent, (Atom? atom) {
+              child: _makeAtomSlot(_classes, atom, widget.parent, (Atom? atom) {
                 onChanged(direction, atom, options);
               }, needsTree: false, needsDifferent: true),
             ),

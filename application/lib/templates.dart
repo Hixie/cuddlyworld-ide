@@ -306,16 +306,19 @@ class TemplateLibrary extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.extent(
       maxCrossAxisExtent: 350.0,
-      children: templates.map((Blueprint blueprint) => BlueprintWidget(blueprint: blueprint)).toList(),
+      children: templates
+          .map((Blueprint blueprint) => BlueprintWidget(blueprint: blueprint))
+          .toList(),
     );
   }
 }
 
-Atom createFromTemplate(AtomsDisposition atomsDisposition, List<AtomDescription> template) {
+Atom createFromTemplate(
+    AtomsDisposition atomsDisposition, List<AtomDescription> template) {
   assert(template.isNotEmpty);
   final List<Atom> atoms = template
-      .map<Atom>((AtomDescription description) =>
-          description.create(atomsDisposition))
+      .map<Atom>(
+          (AtomDescription description) => description.create(atomsDisposition))
       .toList();
   Atom _lookupAtom(String identifier, {Atom? ignore}) {
     final List<Atom> matches = atoms
@@ -333,7 +336,9 @@ Atom createFromTemplate(AtomsDisposition atomsDisposition, List<AtomDescription>
   atomsDisposition.addAll(atoms);
   return atoms.first;
 }
+
 typedef Blueprint = ({String header, Widget icon, List<AtomDescription> atoms});
+
 class BlueprintWidget extends StatelessWidget {
   const BlueprintWidget({
     Key? key,
@@ -356,7 +361,8 @@ class BlueprintWidget extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
-            final Atom atom = createFromTemplate(AtomsDisposition.of(context), blueprint.atoms);
+            final Atom atom = createFromTemplate(
+                AtomsDisposition.of(context), blueprint.atoms);
             EditorDisposition.of(context).current = atom;
           },
           child: GridTile(
