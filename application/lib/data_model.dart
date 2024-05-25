@@ -87,7 +87,7 @@ abstract class PropertyValue {
   String encodeForServerConnect(String from) => '';
 
   PropertyValue? resolve(AtomLookupCallback lookupCallback, Atom parent) =>
-      this; // ignore: avoid_returning_this
+      this;
 
   void registerChildren(Atom parent) {}
   void unregisterChildren(Atom parent) {}
@@ -328,7 +328,7 @@ class PositionedAtomPlaceholder {
   final String? identifier;
 
   PositionedAtom resolve(AtomLookupCallback lookupCallback) {
-    return PositionedAtom(position, lookupCallback(identifier!));
+    return PositionedAtom(position, identifier == null ? null : lookupCallback(identifier!));
   }
 }
 
