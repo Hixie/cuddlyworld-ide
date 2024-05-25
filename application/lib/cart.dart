@@ -115,7 +115,15 @@ class _CartState extends State<Cart> {
                               ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
-                                child: createAtomWidget(cart, atom),
+                                child: AtomWidget(
+      icon: cart.contains(atom)
+          ? const Icon(Icons.shopping_cart, size: 18.0)
+          : null,
+      atom: atom,
+      onTap: () {
+        EditorDisposition.of(context).current = atom;
+      },
+    ),
                               ),
                             ),
                           Padding(
@@ -153,17 +161,5 @@ class _CartState extends State<Cart> {
               ),
             ),
           );
-  }
-
-  AtomWidget createAtomWidget(Set<Atom> cart, Atom atom) {
-    return AtomWidget(
-      icon: cart.contains(atom)
-          ? const Icon(Icons.shopping_cart, size: 18.0)
-          : null,
-      atom: atom,
-      onTap: () {
-        EditorDisposition.of(context).current = atom;
-      },
-    );
   }
 }
