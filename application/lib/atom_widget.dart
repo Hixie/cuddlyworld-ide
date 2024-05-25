@@ -110,11 +110,14 @@ class _AtomWidgetState extends State<AtomWidget>
           atomlessLandmark = true;
           continue;
         }
-        if (directions.contains(landmark.direction)) {
+        if (directions.contains(landmark.direction) &&
+            landmark.options.contains('loNavigationTarget')) {
           duplicateLandmark = true;
           continue;
         }
-        directions.add(landmark.direction!);
+        if (landmark.options.contains('loNavigationTarget')) {
+          directions.add(landmark.direction!);
+        }
       }
     }
     return Material(
@@ -169,7 +172,7 @@ class _AtomWidgetState extends State<AtomWidget>
                   if (duplicateLandmark)
                     const Tooltip(
                       message:
-                          'This atom has multiple landmarks with the same direction.',
+                          'This atom has multiple navigatable landmarks with the same direction.',
                       child: Padding(
                         padding: EdgeInsets.only(right: 8.0),
                         child: Icon(Icons.warning),

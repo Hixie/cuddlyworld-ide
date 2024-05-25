@@ -115,7 +115,7 @@ class _CartState extends State<Cart> {
                               ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
-                                child: createAtomWidget(cart, atom, context),
+                                child: createAtomWidget(cart, atom),
                               ),
                             ),
                           Padding(
@@ -155,7 +155,7 @@ class _CartState extends State<Cart> {
           );
   }
 
-  AtomWidget createAtomWidget(Set<Atom> cart, Atom atom, BuildContext context) {
+  AtomWidget createAtomWidget(Set<Atom> cart, Atom atom) {
     return AtomWidget(
       icon: cart.contains(atom)
           ? const Icon(Icons.shopping_cart, size: 18.0)
