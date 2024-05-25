@@ -74,6 +74,8 @@ class _AtomWidgetState extends State<AtomWidget>
   @override
   void initState() {
     super.initState();
+    updateWarnings();
+    widget.atom?.addListener(updateWarnings);
     if (widget.startFromCatalog) {
       _chip = false;
       _timer = Timer(const Duration(milliseconds: 50), () {
@@ -89,6 +91,10 @@ class _AtomWidgetState extends State<AtomWidget>
     _timer?.cancel();
     super.dispose();
   }
+
+  bool atomlessLandmark = false;
+  bool directionlessLandmark = false;
+  bool duplicateLandmark = false;
 
   @override
   Widget build(BuildContext context) {
@@ -125,6 +131,31 @@ class _AtomWidgetState extends State<AtomWidget>
                       padding: const EdgeInsets.only(right: 8.0),
                       child: widget.icon,
                     ),
+                  if (atomlessLandmark)
+                    const Tooltip(
+                      message: 'This atom has a landmark with no atom.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
+                    ),
+                  if (directionlessLandmark)
+                    const Tooltip(
+                      message: 'This atom has a landmark with no direction.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
+                    ),
+                  if (duplicateLandmark)
+                    const Tooltip(
+                      message:
+                          'This atom has multiple navigatable landmarks with the same direction.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
+                    ),
                   widget.label ??
                       AnimatedBuilder(
                         animation: widget.atom!,
@@ -149,5 +180,36 @@ class _AtomWidgetState extends State<AtomWidget>
         ),
       ),
     );
+  }
+
+  void updateWarnings() {
+    atomlessLandmark = false;
+    directionlessLandmark = false;
+    duplicateLandmark = false;
+    final Set<String> directions = <String>{};
+    if ((widget.atom?['landmark'] as LandmarksPropertyValue?)?.value != null) {
+      for (final Landmark landmark
+          in (widget.atom!['landmark'] as LandmarksPropertyValue).value) {
+        if (landmark.direction == '' || landmark.direction == null) {
+          directionlessLandmark = true;
+          if (landmark.atom == null) {
+            atomlessLandmark = true;
+          }
+          continue;
+        }
+        if (landmark.atom == null) {
+          atomlessLandmark = true;
+          continue;
+        }
+        if (directions.contains(landmark.direction) &&
+            landmark.options.contains('loPermissibleNavigationTarget')) {
+          duplicateLandmark = true;
+          continue;
+        }
+        if (landmark.options.contains('loPermissibleNavigationTarget')) {
+          directions.add(landmark.direction!);
+        }
+      }
+    }
   }
 }
