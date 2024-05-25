@@ -74,6 +74,8 @@ class _AtomWidgetState extends State<AtomWidget>
   @override
   void initState() {
     super.initState();
+    updateWarnings();
+    widget.atom?.addListener(updateWarnings);
     if (widget.startFromCatalog) {
       _chip = false;
       _timer = Timer(const Duration(milliseconds: 50), () {
@@ -90,36 +92,12 @@ class _AtomWidgetState extends State<AtomWidget>
     super.dispose();
   }
 
+  bool atomlessLandmark = false;
+  bool directionlessLandmark = false;
+  bool duplicateLandmark = false;
+
   @override
   Widget build(BuildContext context) {
-    bool atomlessLandmark = false;
-    bool directionlessLandmark = false;
-    bool duplicateLandmark = false;
-    final Set<String> directions = <String>{};
-    if ((widget.atom?['landmark'] as LandmarksPropertyValue?)?.value != null) {
-      for (final Landmark landmark
-          in (widget.atom!['landmark'] as LandmarksPropertyValue).value) {
-        if (landmark.direction == '' || landmark.direction == null) {
-          directionlessLandmark = true;
-          if (landmark.atom == null) {
-            atomlessLandmark = true;
-          }
-          continue;
-        }
-        if (landmark.atom == null) {
-          atomlessLandmark = true;
-          continue;
-        }
-        if (directions.contains(landmark.direction) &&
-            landmark.options.contains('loNavigationTarget')) {
-          duplicateLandmark = true;
-          continue;
-        }
-        if (landmark.options.contains('loNavigationTarget')) {
-          directions.add(landmark.direction!);
-        }
-      }
-    }
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
       color: widget.color ??
@@ -202,5 +180,36 @@ class _AtomWidgetState extends State<AtomWidget>
         ),
       ),
     );
+  }
+
+  void updateWarnings() {
+    atomlessLandmark = false;
+    directionlessLandmark = false;
+    duplicateLandmark = false;
+    final Set<String> directions = <String>{};
+    if ((widget.atom?['landmark'] as LandmarksPropertyValue?)?.value != null) {
+      for (final Landmark landmark
+          in (widget.atom!['landmark'] as LandmarksPropertyValue).value) {
+        if (landmark.direction == '' || landmark.direction == null) {
+          directionlessLandmark = true;
+          if (landmark.atom == null) {
+            atomlessLandmark = true;
+          }
+          continue;
+        }
+        if (landmark.atom == null) {
+          atomlessLandmark = true;
+          continue;
+        }
+        if (directions.contains(landmark.direction) &&
+            landmark.options.contains('loNavigationTarget')) {
+          duplicateLandmark = true;
+          continue;
+        }
+        if (landmark.options.contains('loNavigationTarget')) {
+          directions.add(landmark.direction!);
+        }
+      }
+    }
   }
 }
