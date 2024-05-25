@@ -1244,11 +1244,6 @@ class _LandmarksFieldState extends State<LandmarksField> {
           )
           .toList(),
     );
-    start.registerFriend(middle);
-    middle
-      ..registerFriend(start)
-      ..registerFriend(end);
-    end.registerFriend(middle);
   }
 
   void generateConnectionAugmentationDialog(Atom start, Landmark landmark) {
@@ -1387,7 +1382,6 @@ class _LandmarksFieldState extends State<LandmarksField> {
                           (atom['landmark'] as LandmarksPropertyValue).value +
                               <Landmark>[landmark]);
                     }
-                    atom.registerFriend(widget.parent);
                   },
                 ),
             if (onDelete != null)
