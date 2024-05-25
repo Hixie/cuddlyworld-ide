@@ -58,7 +58,7 @@ class _HelpTabState extends State<HelpTab> {
 
      'the? burning:0 bush' - returns a matcher that matches either:
        'the burning bush' and 'burning bush' when flag 0 is set
-       just 'the bush' and 'bush' when flag 0 is not set                       """),
+       just 'the bush' and 'bush' when flag 0 is not set"""),
       ],
     );
   }
