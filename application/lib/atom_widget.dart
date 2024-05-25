@@ -202,11 +202,11 @@ class _AtomWidgetState extends State<AtomWidget>
           continue;
         }
         if (directions.contains(landmark.direction) &&
-            landmark.options.contains('loNavigationTarget')) {
+            landmark.options.contains('loPermissibleNavigationTarget')) {
           duplicateLandmark = true;
           continue;
         }
-        if (landmark.options.contains('loNavigationTarget')) {
+        if (landmark.options.contains('loPermissibleNavigationTarget')) {
           directions.add(landmark.direction!);
         }
       }
