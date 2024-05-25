@@ -1056,6 +1056,14 @@ class _ChildrenFieldState extends State<ChildrenField> {
   }
 }
 
+// returns true if [source] has a landmark in [direction] going to [destination]
+bool hasSymmetricLandmark(Atom source, String direction, Atom destination) =>
+    (source['landmark'] as LandmarksPropertyValue?)?.value.any(
+        (Landmark landmark) =>
+            landmark.direction == _directionOpposites[direction] &&
+            landmark.atom == destination) ??
+    false;
+
 class LandmarksField extends StatefulWidget {
   const LandmarksField({
     super.key,
@@ -1071,7 +1079,7 @@ class LandmarksField extends StatefulWidget {
   final String rootClass;
   final String label;
   final List<Landmark> values;
-  final Atom? parent;
+  final Atom parent;
   final ValueSetter<List<Landmark>>? onChanged;
 
   @override
@@ -1176,17 +1184,36 @@ class _LandmarksFieldState extends State<LandmarksField> {
   }
 
   void putBetweenRooms(Atom start, Landmark landmark, Atom middle) {
-    final String reverseDirection = _directionOpposites[landmark.direction!]!;
+    assert(landmark.atom != null,
+        'contract violation for putBetweenRooms: landmark has no atom');
+    assert(start['landmark'] is LandmarksPropertyValue,
+        'contract violation for putBetweenRooms: start has no landmarks');
+    assert(_locationTypes.contains(start.className),
+        'contract violation for putBetweenRooms: start is not a location');
+    assert(_locationTypes.contains(middle.className),
+        'contract violation for putBetweenRooms: middle is not a location');
     final Atom end = landmark.atom!;
+    assert(end['landmark'] is LandmarksPropertyValue,
+        'contract violation for putBetweenRooms: end has no landmarks');
+    assert(_locationTypes.contains(end.className),
+        'contract violation for putBetweenRooms: end is not a location');
+    final String reverseDirection = _directionOpposites[landmark.direction!]!;
     final List<Landmark> startLandmarks =
         (start['landmark'] as LandmarksPropertyValue).value;
+    assert(startLandmarks.contains(landmark),
+        'contract violation for putBetweenRooms: landmark not in start\'s landmarks');
     final List<Landmark> middleLandmarks =
         (middle['landmark'] as LandmarksPropertyValue?)?.value ?? <Landmark>[];
     final List<Landmark> endLandmarks =
         (end['landmark'] as LandmarksPropertyValue).value;
+    assert(endLandmarks.any(
+      (Landmark landmark) =>
+          landmark.direction == reverseDirection && landmark.atom == start,
+    ));
     final Landmark reverseLandmark = endLandmarks.firstWhere(
-        (Landmark landmark) =>
-            landmark.direction == reverseDirection && landmark.atom == start);
+      (Landmark landmark) =>
+          landmark.direction == reverseDirection && landmark.atom == start,
+    );
     middle['landmark'] = LandmarksPropertyValue(
       middleLandmarks +
           <Landmark>[
@@ -1236,54 +1263,63 @@ class _LandmarksFieldState extends State<LandmarksField> {
               ),
               child: Column(
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 16.0),
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            'Augment room with:',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: Text(
+                          'Augment room with:',
+                          style: Theme.of(context).textTheme.titleMedium,
                         ),
-                        ActionChip(
-                          label: const Text('Cancel'),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                      ActionChip(
+                        label: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
                   ),
                   Expanded(
                     child: ListView(
                       children: <Widget>[
-                        ...templates.map(
-                          (Blueprint blueprint) => ActionChip(
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                blueprint.icon,
-                                Text(blueprint.header),
-                              ],
+                        ...templates
+                            .where((Blueprint template) => _locationTypes
+                                .contains(template.atoms.first.className))
+                            .map(
+                              (Blueprint blueprint) => Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: ActionChip(
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: <Widget>[
+                                      blueprint.icon,
+                                      const SizedBox(width: 4),
+                                      Text(blueprint.header),
+                                    ],
+                                  ),
+                                  onPressed: () {
+                                    putBetweenRooms(
+                                      start,
+                                      landmark,
+                                      createFromTemplate(
+                                          AtomsDisposition.of(context),
+                                          blueprint.atoms),
+                                    );
+                                    Navigator.pop(context);
+                                  },
+                                ),
+                              ),
                             ),
-                            onPressed: () {
-                              putBetweenRooms(
-                                start,
-                                landmark,
-                                createFromTemplate(context, blueprint.atoms),
-                              );
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ),
                         ...locations.map(
-                          (Atom atom) => ActionChip(
-                            label: Text('${atom.identifier}'),
-                            onPressed: () {
-                              putBetweenRooms(start, landmark, atom);
-                              Navigator.pop(context);
-                            },
+                          (Atom atom) => Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: ActionChip(
+                              label: Text('${atom.identifier}'),
+                              onPressed: () {
+                                putBetweenRooms(start, landmark, atom);
+                                Navigator.pop(context);
+                              },
+                            ),
                           ),
                         ),
                       ],
@@ -1318,23 +1354,19 @@ class _LandmarksFieldState extends State<LandmarksField> {
             ),
             Expanded(
               child:
-                  _makeAtomSlot(_classes, atom, widget.parent!, (Atom? atom) {
+                  _makeAtomSlot(_classes, atom, widget.parent, (Atom? atom) {
                 onChanged(direction, atom, options);
               }, needsTree: false, needsDifferent: true),
             ),
             if (direction != null &&
                 atom != null &&
                 _locationTypes.contains(atom.className))
-              if ((atom['landmark'] as LandmarksPropertyValue?)?.value.any(
-                      (Landmark e) =>
-                          e.direction == _directionOpposites[direction] &&
-                          e.atom == widget.parent) ??
-                  false)
+              if (hasSymmetricLandmark(atom, direction, widget.parent))
                 ActionChip(
                   label: const Text('Augment connection'),
                   onPressed: () {
                     generateConnectionAugmentationDialog(
-                        widget.parent!, landmark!);
+                        widget.parent, landmark!);
                   },
                 )
               else
@@ -1351,7 +1383,7 @@ class _LandmarksFieldState extends State<LandmarksField> {
                           (atom['landmark'] as LandmarksPropertyValue).value +
                               <Landmark>[landmark]);
                     }
-                    atom.registerFriend(widget.parent!);
+                    atom.registerFriend(widget.parent);
                   },
                 ),
             if (onDelete != null)

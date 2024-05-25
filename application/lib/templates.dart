@@ -4,7 +4,7 @@ import 'data_model.dart';
 import 'disposition.dart';
 
 const List<Blueprint> templates = <Blueprint>[
-  Blueprint(
+  (
     header: 'Outdoor area',
     atoms: <AtomDescription>[
       AtomDescription(
@@ -43,7 +43,7 @@ const List<Blueprint> templates = <Blueprint>[
     ],
     icon: Icon(Icons.landscape),
   ),
-  Blueprint(
+  (
     header: 'Sky backdrop',
     atoms: <AtomDescription>[
       AtomDescription(
@@ -120,7 +120,7 @@ const List<Blueprint> templates = <Blueprint>[
     ],
     icon: Icon(Icons.cloud),
   ),
-  Blueprint(
+  (
     header: 'Indoor room',
     atoms: <AtomDescription>[
       AtomDescription(
@@ -196,7 +196,7 @@ const List<Blueprint> templates = <Blueprint>[
     ],
     icon: Icon(Icons.insert_photo),
   ),
-  Blueprint(
+  (
     header: 'Door threshold',
     atoms: <AtomDescription>[
       AtomDescription(
@@ -306,16 +306,16 @@ class TemplateLibrary extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.extent(
       maxCrossAxisExtent: 350.0,
-      children: templates,
+      children: templates.map((Blueprint blueprint) => BlueprintWidget(blueprint: blueprint)).toList(),
     );
   }
 }
 
-Atom createFromTemplate(BuildContext context, List<AtomDescription> template) {
+Atom createFromTemplate(AtomsDisposition atomsDisposition, List<AtomDescription> template) {
   assert(template.isNotEmpty);
   final List<Atom> atoms = template
       .map<Atom>((AtomDescription description) =>
-          description.create(AtomsDisposition.of(context)))
+          description.create(atomsDisposition))
       .toList();
   Atom _lookupAtom(String identifier, {Atom? ignore}) {
     final List<Atom> matches = atoms
@@ -330,21 +330,17 @@ Atom createFromTemplate(BuildContext context, List<AtomDescription> template) {
   for (final Atom atom in atoms) {
     atom.resolveIdentifiers(_lookupAtom);
   }
-  AtomsDisposition.of(context).addAll(atoms);
+  atomsDisposition.addAll(atoms);
   return atoms.first;
 }
-
-class Blueprint extends StatelessWidget {
-  const Blueprint({
+typedef Blueprint = ({String header, Widget icon, List<AtomDescription> atoms});
+class BlueprintWidget extends StatelessWidget {
+  const BlueprintWidget({
     Key? key,
-    required this.header,
-    required this.icon,
-    required this.atoms,
+    required this.blueprint,
   }) : super(key: key);
 
-  final String header;
-  final Widget icon;
-  final List<AtomDescription> atoms;
+  final Blueprint blueprint;
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +356,7 @@ class Blueprint extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () {
-            final Atom atom = createFromTemplate(context, atoms);
+            final Atom atom = createFromTemplate(AtomsDisposition.of(context), blueprint.atoms);
             EditorDisposition.of(context).current = atom;
           },
           child: GridTile(
@@ -377,7 +373,7 @@ class Blueprint extends StatelessWidget {
               ),
               child: GridTileBar(
                 title: Text(
-                  header,
+                  blueprint.header,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).primaryTextTheme.titleLarge,
                 ),
@@ -386,7 +382,7 @@ class Blueprint extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12.0, 48.0, 12.0, 12.0),
               child: FittedBox(
-                child: icon,
+                child: blueprint.icon,
               ),
             ),
           ),
