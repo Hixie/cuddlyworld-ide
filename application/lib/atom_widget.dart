@@ -92,6 +92,30 @@ class _AtomWidgetState extends State<AtomWidget>
 
   @override
   Widget build(BuildContext context) {
+    bool atomlessLandmark = false;
+    bool directionlessLandmark = false;
+    bool duplicateLandmark = false;
+    final Set<String> directions = <String>{};
+    for (final Landmark landmark
+        in (widget.atom?['landmark'] as LandmarksPropertyValue?)?.value ??
+            <Landmark>[]) {
+      if (landmark.direction == '' || landmark.direction == null) {
+        directionlessLandmark = true;
+        if (landmark.atom == null) {
+          atomlessLandmark = true;
+        }
+        continue;
+      }
+      if (landmark.atom == null) {
+        atomlessLandmark = true;
+        continue;
+      }
+      if (directions.contains(landmark.direction)) {
+        duplicateLandmark = true;
+        continue;
+      }
+      directions.add(landmark.direction!);
+    }
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
       color: widget.color ??
@@ -124,6 +148,32 @@ class _AtomWidgetState extends State<AtomWidget>
                     Padding(
                       padding: const EdgeInsets.only(right: 8.0),
                       child: widget.icon,
+                    ),
+                  if (atomlessLandmark)
+                    const Tooltip(
+                      message: 'This atom has a landmark with no atom.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
+                    ),
+                  if (directionlessLandmark)
+                    const Tooltip(
+                      message:
+                          'This atom has a landmark with no direction.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
+                    ),
+                  if (duplicateLandmark)
+                    const Tooltip(
+                      message:
+                          'This atom has multiple landmarks with the same direction.',
+                      child: Padding(
+                        padding: EdgeInsets.only(right: 8.0),
+                        child: Icon(Icons.warning),
+                      ),
                     ),
                   widget.label ??
                       AnimatedBuilder(
