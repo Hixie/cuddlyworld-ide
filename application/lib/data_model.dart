@@ -356,20 +356,6 @@ class LandmarksPropertyValue extends PropertyValue {
   }
 
   @override
-  void registerChildren(Atom parent) {
-    for (final Landmark landmark in value.where(Landmark.hasChild)) {
-      landmark.atom!.registerFriend(parent);
-    }
-  }
-
-  @override
-  void unregisterChildren(Atom parent) {
-    for (final Landmark landmark in value.where(Landmark.hasChild)) {
-      landmark.atom!.unregisterFriend(parent);
-    }
-  }
-
-  @override
   Iterable<Atom> get children sync* {
     yield* value
         .where(Landmark.hasChild)
@@ -662,9 +648,6 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   Atom? get parent => _parent;
   Atom? _parent;
 
-  Set<Atom> get friends => _friends.keys.toSet();
-  final Map<Atom, int> _friends = <Atom, int>{};
-
   Iterable<Atom> get children =>
       _properties.values.expand<Atom>((PropertyValue value) => value.children);
 
@@ -688,26 +671,6 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
       _parent = null;
       notifyListeners();
     }
-  }
-
-  void registerFriend(Atom friend) {
-    if (_friends.containsKey(friend)) {
-      _friends[friend] = _friends[friend]! + 1;
-    } else {
-      _friends[friend] = 1;
-    }
-    notifyListeners();
-  }
-
-  void unregisterFriend(Atom friend) {
-    assert(_friends.containsKey(friend));
-    if (_friends[friend]! > 1) {
-      _friends[friend] = _friends[friend]! - 1;
-    } else {
-      assert(_friends[friend] == 1);
-      _friends.remove(friend);
-    }
-    notifyListeners();
   }
 
   bool canAddToTree(Atom candidateChild) {
