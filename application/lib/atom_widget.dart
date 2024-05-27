@@ -112,7 +112,8 @@ class _AtomWidgetState extends State<AtomWidget>
       shape: _chip
           ? const StadiumBorder()
           : const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10))),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: widget.onTap,
