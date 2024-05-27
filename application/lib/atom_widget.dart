@@ -99,6 +99,12 @@ class _AtomWidgetState extends State<AtomWidget>
   bool duplicateLandmark = false;
 
   @override
+  void didUpdateWidget(covariant AtomWidget oldWidget) {
+    assert(oldWidget.inCatalog == widget.inCatalog); 
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
@@ -109,11 +115,7 @@ class _AtomWidgetState extends State<AtomWidget>
                   ? Colors.purple
                   : Colors.yellow
               : null),
-      shape: _chip
-          ? const StadiumBorder()
-          : const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
+      shape: const StadiumBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: widget.onTap,
