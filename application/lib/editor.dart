@@ -350,84 +350,87 @@ class _EditorState extends State<Editor> {
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
         return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: max(constraints.maxWidth, 1048),
-            ),
-            child: SingleChildScrollView(
-              child: ListBody(
-                children: <Widget>[
-                  if (parent != null)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          editor.current = parent;
-                        },
-                        icon: const Icon(Icons.arrow_upward),
-                        label: makeTextForIdentifier(
-                            context, parent.identifier!, parent.className),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: constraints.maxWidth,
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicWidth(
+                child: ListBody(
+                  children: <Widget>[
+                    if (parent != null)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            editor.current = parent;
+                          },
+                          icon: const Icon(Icons.arrow_upward),
+                          label: makeTextForIdentifier(
+                              context, parent.identifier!, parent.className),
+                        ),
+                      ),
+                    StringField(
+                      label: 'Identifier',
+                      value: widget.atom.identifier!.name,
+                      suffix: '_${widget.atom.identifier!.disambiguator}',
+                      filter: '[0-9A-Za-z_]+',
+                      onChanged: (String value) {
+                        widget.atom.identifier = RootDisposition.of(context)
+                            .getNewIdentifier(name: value, ignore: widget.atom);
+                      },
+                    ),
+                    ClassesField(
+                      label: 'Class',
+                      rootClass: widget.atom.rootClass,
+                      value: widget.atom.className,
+                      game: widget.game,
+                      onChanged: (String value) {
+                        widget.atom.className = value;
+                      },
+                    ),
+                    for (final String property in _properties.keys)
+                      _addField(property, _properties[property]!),
+                    Padding(
+                      padding: const EdgeInsets.all(48.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              if (editor.cartHolds(widget.atom)) {
+                                editor.removeFromCart(widget.atom);
+                              }
+                              editor.current = null;
+                              AtomsDisposition.of(context).remove(widget.atom);
+                            },
+                            icon: const Icon(Icons.delete),
+                            label: const Text('Delete'),
+                          ),
+                          const SizedBox(width: 24.0),
+                          if (editor.cartHolds(widget.atom))
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                editor.removeFromCart(widget.atom);
+                              },
+                              icon: const Icon(Icons.shopping_cart),
+                              label: const Text('Remove from cart'),
+                            )
+                          else
+                            OutlinedButton.icon(
+                              onPressed: () {
+                                editor.addToCart(widget.atom);
+                              },
+                              icon: const Icon(Icons.shopping_cart_outlined),
+                              label: const Text('Add to cart'),
+                            ),
+                        ],
                       ),
                     ),
-                  StringField(
-                    label: 'Identifier',
-                    value: widget.atom.identifier!.name,
-                    suffix: '_${widget.atom.identifier!.disambiguator}',
-                    filter: '[0-9A-Za-z_]+',
-                    onChanged: (String value) {
-                      widget.atom.identifier = RootDisposition.of(context)
-                          .getNewIdentifier(name: value, ignore: widget.atom);
-                    },
-                  ),
-                  ClassesField(
-                    label: 'Class',
-                    rootClass: widget.atom.rootClass,
-                    value: widget.atom.className,
-                    game: widget.game,
-                    onChanged: (String value) {
-                      widget.atom.className = value;
-                    },
-                  ),
-                  for (final String property in _properties.keys)
-                    _addField(property, _properties[property]!),
-                  Padding(
-                    padding: const EdgeInsets.all(48.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        OutlinedButton.icon(
-                          onPressed: () {
-                            if (editor.cartHolds(widget.atom)) {
-                              editor.removeFromCart(widget.atom);
-                            }
-                            editor.current = null;
-                            AtomsDisposition.of(context).remove(widget.atom);
-                          },
-                          icon: const Icon(Icons.delete),
-                          label: const Text('Delete'),
-                        ),
-                        const SizedBox(width: 24.0),
-                        if (editor.cartHolds(widget.atom))
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              editor.removeFromCart(widget.atom);
-                            },
-                            icon: const Icon(Icons.shopping_cart),
-                            label: const Text('Remove from cart'),
-                          )
-                        else
-                          OutlinedButton.icon(
-                            onPressed: () {
-                              editor.addToCart(widget.atom);
-                            },
-                            icon: const Icon(Icons.shopping_cart_outlined),
-                            label: const Text('Add to cart'),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
