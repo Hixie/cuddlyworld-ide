@@ -59,9 +59,8 @@ abstract class PropertyValue {
         assert(() {
           for (final Object? child in object['children'] as List<Object?>) {
             child as Map<String, Object?>;
-            assert(child['direction'] is String);
-            assert(!child.containsKey('identifier') ||
-                child['identifier'] is String);
+            assert(child['direction'] is String?);
+            assert(child['identifier'] is String?);
             assert(child['options'] is List<Object?>);
             assert(!(child['options'] as List<Object?>)
                 .any((Object? value) => value is! String));

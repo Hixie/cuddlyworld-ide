@@ -53,8 +53,9 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
         padding: const EdgeInsets.only(top: 36.0),
         child: FocusTraversalGroup(
           child: ListView(
-            children:
-                _atoms.map<Widget>((Atom e) => DraggableText(atom: e)).toList(),
+            children: _atoms
+                .map<Widget>((Atom e) => CatalogAtomWidget(atom: e))
+                .toList(),
           ),
         ),
       ),
@@ -69,16 +70,16 @@ class _CatalogState extends State<Catalog> with SingleTickerProviderStateMixin {
   }
 }
 
-class DraggableText extends StatefulWidget {
-  const DraggableText({required this.atom, super.key});
+class CatalogAtomWidget extends StatefulWidget {
+  const CatalogAtomWidget({required this.atom, super.key});
 
   final Atom atom;
 
   @override
-  _DraggableTextState createState() => _DraggableTextState();
+  _CatalogAtomWidgetState createState() => _CatalogAtomWidgetState();
 }
 
-class _DraggableTextState extends State<DraggableText> {
+class _CatalogAtomWidgetState extends State<CatalogAtomWidget> {
   Timer? _timer;
 
   void _trigger() {
@@ -118,28 +119,17 @@ class _DraggableTextState extends State<DraggableText> {
             ),
           ),
         ),
-        child: Padding(
-          padding: EdgeInsets.only(top: widget.atom.parent != null ? 0.0 : 8.0),
-          child: TextButton(
-            style: widget.atom == editor.current
-                ? ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all<Color>(
-                        editor.parent.darkMode ? Colors.purple : Colors.yellow))
-                : null,
-            onPressed: () {
-              setState(() {
-                EditorDisposition.of(context).current = widget.atom;
-              });
-            },
-            child: Row(
-              children: <Widget>[
-                Icon(editor.cartHolds(widget.atom) ? Icons.shopping_cart : null,
-                    size: 16.0),
-                SizedBox(width: 16.0 * widget.atom.depth + 12.0),
-                makeTextForIdentifier(
-                    context, widget.atom.identifier!, widget.atom.className),
-              ],
-            ),
+        child: AtomWidget(
+          atom: widget.atom,
+          onTap: () {
+            setState(() {
+              EditorDisposition.of(context).current = widget.atom;
+            });
+          },
+          inCatalog: true,
+          icon: Icon(
+            editor.cartHolds(widget.atom) ? Icons.shopping_cart : null,
+            size: 16.0,
           ),
         ),
       ),
