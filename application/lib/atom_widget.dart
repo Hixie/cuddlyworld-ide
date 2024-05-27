@@ -44,6 +44,7 @@ class AtomWidget extends StatefulWidget {
     this.color,
     this.elevation = 3.0,
     this.startFromCatalog = false,
+    this.inCatalog = false,
     this.curve = Curves.easeInQuint,
     this.duration = const Duration(milliseconds: 200),
     this.onDelete,
@@ -57,6 +58,7 @@ class AtomWidget extends StatefulWidget {
   final Color? color;
   final double elevation;
   final bool startFromCatalog;
+  final bool inCatalog;
   final Curve curve;
   final Duration duration;
   final VoidCallback? onDelete;
@@ -69,7 +71,7 @@ class AtomWidget extends StatefulWidget {
 class _AtomWidgetState extends State<AtomWidget>
     with SingleTickerProviderStateMixin {
   Timer? _timer;
-  bool _chip = true;
+  late bool _chip = !widget.inCatalog;
 
   @override
   void initState() {
@@ -97,6 +99,12 @@ class _AtomWidgetState extends State<AtomWidget>
   bool duplicateLandmark = false;
 
   @override
+  void didUpdateWidget(covariant AtomWidget oldWidget) {
+    assert(oldWidget.inCatalog == widget.inCatalog); 
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Material(
       elevation: _chip ? widget.elevation : 0.0,
@@ -107,7 +115,7 @@ class _AtomWidgetState extends State<AtomWidget>
                   ? Colors.purple
                   : Colors.yellow
               : null),
-      shape: _chip ? const StadiumBorder() : const RoundedRectangleBorder(),
+      shape: const StadiumBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: widget.onTap,
@@ -131,11 +139,24 @@ class _AtomWidgetState extends State<AtomWidget>
                       padding: const EdgeInsets.only(right: 8.0),
                       child: widget.icon,
                     ),
+                  if (widget.inCatalog)
+                    SizedBox(width: 16.0 * widget.atom!.depth + 12.0),
+                  widget.label ??
+                      AnimatedBuilder(
+                        animation: widget.atom!,
+                        builder: (BuildContext context, Widget? child) {
+                          return makeTextForIdentifier(
+                            context,
+                            widget.atom!.identifier!,
+                            widget.inCatalog ? widget.atom!.className : '',
+                          );
+                        },
+                      ),
                   if (atomlessLandmark)
                     const Tooltip(
                       message: 'This atom has a landmark with no atom.',
                       child: Padding(
-                        padding: EdgeInsets.only(right: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Icon(Icons.warning),
                       ),
                     ),
@@ -143,7 +164,7 @@ class _AtomWidgetState extends State<AtomWidget>
                     const Tooltip(
                       message: 'This atom has a landmark with no direction.',
                       child: Padding(
-                        padding: EdgeInsets.only(right: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Icon(Icons.warning),
                       ),
                     ),
@@ -152,18 +173,10 @@ class _AtomWidgetState extends State<AtomWidget>
                       message:
                           'This atom has multiple navigatable landmarks with the same direction.',
                       child: Padding(
-                        padding: EdgeInsets.only(right: 8.0),
+                        padding: EdgeInsets.only(left: 8.0),
                         child: Icon(Icons.warning),
                       ),
                     ),
-                  widget.label ??
-                      AnimatedBuilder(
-                        animation: widget.atom!,
-                        builder: (BuildContext context, Widget? child) {
-                          return makeTextForIdentifier(
-                              context, widget.atom!.identifier!);
-                        },
-                      ),
                   if (widget.onDelete != null)
                     Padding(
                       padding: const EdgeInsets.only(left: 8.0),
@@ -190,20 +203,15 @@ class _AtomWidgetState extends State<AtomWidget>
     if ((widget.atom?['landmark'] as LandmarksPropertyValue?)?.value != null) {
       for (final Landmark landmark
           in (widget.atom!['landmark'] as LandmarksPropertyValue).value) {
-        if (landmark.direction == '' || landmark.direction == null) {
-          directionlessLandmark = true;
-          if (landmark.atom == null) {
-            atomlessLandmark = true;
-          }
-          continue;
-        }
         if (landmark.atom == null) {
           atomlessLandmark = true;
-          continue;
         }
         if (directions.contains(landmark.direction) &&
             landmark.options.contains('loPermissibleNavigationTarget')) {
           duplicateLandmark = true;
+        }
+        if (landmark.direction == '' || landmark.direction == null) {
+          directionlessLandmark = true;
           continue;
         }
         if (landmark.options.contains('loPermissibleNavigationTarget')) {
