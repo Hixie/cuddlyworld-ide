@@ -15,18 +15,22 @@ class SettingsTab extends StatefulWidget {
 class _SettingsTabState extends State<SettingsTab> {
   TextEditingController? _username;
   TextEditingController? _password;
+  TextEditingController? _server;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _username?.dispose();
     _password?.dispose();
+    _server?.dispose();
     _username =
         TextEditingController(text: ServerDisposition.of(context).username)
           ..addListener(_rebuild);
     _password =
         TextEditingController(text: ServerDisposition.of(context).password)
           ..addListener(_rebuild);
+    _server = TextEditingController(text: ServerDisposition.of(context).server)
+      ..addListener(_rebuild);
     _rebuild();
   }
 
@@ -43,7 +47,8 @@ class _SettingsTabState extends State<SettingsTab> {
 
   bool get _isNew {
     final ServerDisposition serverDisposition = ServerDisposition.of(context);
-    return serverDisposition.username != _username!.text ||
+    return serverDisposition.server != _server!.text ||
+        serverDisposition.username != _username!.text ||
         serverDisposition.password != _password!.text;
   }
 
@@ -66,6 +71,20 @@ class _SettingsTabState extends State<SettingsTab> {
             child: Text(
               'Server configuration',
               style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: kSettingsWidth),
+            child: TextField(
+              controller: _server,
+              decoration: const InputDecoration(
+                filled: true,
+                border: InputBorder.none,
+                labelText: 'Server',
+              ),
             ),
           ),
         ),
@@ -110,7 +129,7 @@ class _SettingsTabState extends State<SettingsTab> {
                 onPressed: _isNew
                     ? () async {
                         final String reply = await ServerDisposition.of(context)
-                            .setLoginData(_username!.text, _password!.text);
+                            .setLoginData(_server!.text, _username!.text, _password!.text);
                         if (!mounted) {
                           return;
                         }
