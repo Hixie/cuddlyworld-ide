@@ -159,9 +159,10 @@ class ServerDisposition extends ChildDisposition {
 
   Completer<String>? _loginDataCompleter;
 
-  Future<String> setLoginData(String username, String password) {
-    if (username == _username && password == _password)
+  Future<String> setLoginData(String server, String username, String password) {
+    if (server == _server && username == _username && password == _password)
       return Future<String>.value('');
+    _server = server;
     _username = username;
     _password = password;
     _loginDataCompleter = Completer<String>();
