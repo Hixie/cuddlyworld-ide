@@ -99,7 +99,7 @@ class CuddlyWorld extends ChangeNotifier {
         oldSocket = null;
       }
       Duration delay = const Duration(seconds: 2);
-      while (socket == null) {
+      while (socket == null && _live) {
         try {
           assert(_pendingResponses.isEmpty);
           _log('Connecting to $url...');
