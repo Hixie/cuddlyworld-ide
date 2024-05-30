@@ -673,7 +673,6 @@ class Atom extends ChangeNotifier implements Comparable<Atom> {
   }
 
   bool canAddToTree(Atom candidateChild) {
-    assert(candidateChild.parent != this);
     if (candidateChild.parent != null) {
       return false;
     }
