@@ -72,9 +72,31 @@ abstract class PropertyValue {
               .map<LandmarkPlaceholder>((Object? child) {
             final Map<String, Object?> map = child as Map<String, Object?>;
             return LandmarkPlaceholder(
-                map['direction'] as String?,
-                map['identifier'] as String?,
-                (map['options'] as List<Object?>).cast<String>().toSet());
+              map['direction'] as String?,
+              map['identifier'] as String?,
+              (map['options'] as List<Object?>).cast<String>().toSet(),
+            );
+          }).toList(),
+        );
+      }
+      if (object['type'] == 'ingredient*') {
+        assert(object['children'] is List<Object?>, 'not a list: $object');
+        assert(() {
+          for (final Object? child in object['children'] as List<Object?>) {
+            child as Map<String, Object?>;
+            assert(child['singular'] is String);
+            assert(child['plural'] is String);
+          }
+          return true;
+        }());
+        return IngredientsPropertyValue(
+          (object['children'] as List<Object?>)
+              .map<Ingredient>((Object? child) {
+            final Map<String, Object?> map = child as Map<String, Object?>;
+            return Ingredient(
+              map['singular'] as String,
+              map['plural'] as String,
+            );
           }).toList(),
         );
       }
@@ -94,7 +116,7 @@ abstract class PropertyValue {
 
   /// Notification that `lateAtom` is being deleted.
   ///
-  /// Return true if the property should now be removed entirely.
+  /// Return null if the property should now be removed entirely.
   PropertyValue? deletionNotification(Atom lateAtom) => this;
 }
 
@@ -327,7 +349,38 @@ class PositionedAtomPlaceholder {
   final String? identifier;
 
   PositionedAtom resolve(AtomLookupCallback lookupCallback) {
-    return PositionedAtom(position, identifier == null ? null : lookupCallback(identifier!));
+    return PositionedAtom(
+        position, identifier == null ? null : lookupCallback(identifier!));
+  }
+}
+
+class IngredientsPropertyValue extends PropertyValue {
+  const IngredientsPropertyValue(this.value);
+
+  final List<Ingredient> value;
+
+  @override
+  Object encode() => <String, Object>{
+        'type': 'ingredient*',
+        'children': value
+            .map<Map<String, Object?>>((Ingredient entry) => entry.encode())
+            .toList(),
+      };
+
+  @override
+  String encodeForServerConnect(String from) => '';
+
+  @override
+  String encodeForServerMake(String key, Set<Atom> serialized) {
+    return '$key: ${value
+        .map<String>(
+            (Ingredient ingredient) => ingredient.encodeForServerConnect())
+        .join(', ')};';
+  }
+
+  @override
+  PropertyValue deletionNotification(Atom lateAtom) {
+    return this;
   }
 }
 
@@ -432,6 +485,22 @@ class Landmark {
       return Landmark(direction, null, options);
     }
     return this;
+  }
+}
+
+class Ingredient {
+  Ingredient(this.singular, this.plural);
+
+  final String singular;
+  final String plural;
+
+  Map<String, Object?> encode() => <String, Object?>{
+        'singular': singular,
+        'plural': plural,
+      };
+
+  String encodeForServerConnect() {
+    return '"${escapeDoubleQuotes(singular)}"/"${escapeDoubleQuotes(plural)}"';
   }
 }
 
