@@ -313,6 +313,19 @@ class _EditorState extends State<Editor> {
             _updateProperty(property, LandmarksPropertyValue(value));
           },
         );
+      case 'ingredients':
+        return IngredientsField(
+          key: ValueKey<String>(property),
+          label: _prettyName(property, propertyType),
+          values: widget.atom
+                  .ensurePropertyIs<IngredientsPropertyValue>(property)
+                  ?.value ??
+              const <Ingredient>[],
+          parent: widget.atom,
+          onChanged: (List<Ingredient> value) {
+            _updateProperty(property, IngredientsPropertyValue(value));
+          },
+        );
       case 'string':
         return StringField(
           key: ValueKey<String>(property),
@@ -619,6 +632,59 @@ class _StringFieldState extends State<StringField> {
             onChanged: widget.onChanged,
           ),
         ));
+  }
+}
+
+class UnlabeledStringField extends StatefulWidget {
+  const UnlabeledStringField({
+    super.key,
+    required this.value,
+    this.onChanged,
+  });
+
+  final String value;
+  final ValueSetter<String>? onChanged;
+
+  @override
+  State<UnlabeledStringField> createState() => _UnlabeledStringFieldState();
+}
+
+class _UnlabeledStringFieldState extends State<UnlabeledStringField> {
+  late final TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(UnlabeledStringField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _controller.text) {
+      _controller.text = widget.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+            focusNode: _focusNode,
+            controller: _controller,
+            decoration: const InputDecoration(
+              filled: true,
+              border: InputBorder.none,
+            ),
+            onChanged: widget.onChanged,
+          );
   }
 }
 
@@ -1452,6 +1518,126 @@ class _LandmarksFieldState extends State<LandmarksField> {
       (String? direction, Atom? atom, Set<String> options) {
         final List<Landmark> newValues = widget.values.toList()
           ..add(Landmark(direction, atom, options));
+        widget.onChanged!(newValues);
+      },
+      null,
+    ));
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          SizedBox(
+            width: 200.0,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Text('${widget.label}:', textAlign: TextAlign.right),
+              ),
+            ),
+          ),
+          const SizedBox(
+            width: 8.0,
+          ),
+          Expanded(
+            child: ListBody(
+              children: rows,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class IngredientsField extends StatefulWidget {
+  const IngredientsField({
+    super.key,
+    required this.label,
+    required this.values,
+    required this.parent,
+    this.onChanged,
+  });
+
+  final String label;
+  final List<Ingredient> values;
+  final Atom parent;
+  final ValueSetter<List<Ingredient>>? onChanged;
+
+  @override
+  State<IngredientsField> createState() => _IngredientsFieldState();
+}
+
+class _IngredientsFieldState extends State<IngredientsField> {
+  Widget _row(
+      Ingredient ingredient,
+      void Function(String? singular, String? plural) onChanged,
+      VoidCallback? onDelete) {
+    final String singular = ingredient.singular;
+    final String plural = ingredient.plural;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: UnlabeledStringField(
+              value: singular,
+              onChanged: (String newSingular) {
+                onChanged(newSingular, null);
+              },
+            ),
+          ),
+          const SizedBox(
+            width: 8.0,
+          ),
+          const Text('/'),
+          const SizedBox(
+            width: 8.0,
+          ),
+          Expanded(
+            child: UnlabeledStringField(
+              value: plural,
+              onChanged: (String newPlural) {
+                onChanged(null, newPlural);
+              },
+            ),
+          ),
+          if (onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.cancel),
+              onPressed: onDelete,
+            ),
+        ],
+      ),
+    );
+  }
+
+  // TODO(treeplate): if both singular and plural are changed on the same frame, only one will actually be changed
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> rows = <Widget>[];
+    for (int index = 0; index < widget.values.length; index += 1) {
+      final Ingredient entry = widget.values[index];
+      rows.add(_row(
+        entry,
+        (String? singular, String? plural) {
+          final List<Ingredient> newValues = widget.values.toList();
+          newValues[index] = Ingredient(singular ?? entry.singular, plural ?? entry.plural);
+          widget.onChanged!(newValues);
+        },
+        () {
+          final List<Ingredient> newValues = widget.values.toList()
+            ..removeAt(index);
+          widget.onChanged!(newValues);
+        },
+      ));
+    }
+    rows.add(_row(
+      Ingredient('', ''),
+      (String? singular, String? plural) {
+        final List<Ingredient> newValues = widget.values.toList()
+          ..add(Ingredient(singular ?? '', plural ?? ''));
         widget.onChanged!(newValues);
       },
       null,
