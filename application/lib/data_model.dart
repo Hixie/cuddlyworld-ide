@@ -374,7 +374,7 @@ class IngredientsPropertyValue extends PropertyValue {
   String encodeForServerMake(String key, Set<Atom> serialized) {
     return '$key: ${value
         .map<String>(
-            (Ingredient ingredient) => ingredient.encodeForServerConnect())
+            (Ingredient ingredient) => ingredient.encodeForServerMake())
         .join(', ')};';
   }
 
@@ -499,7 +499,7 @@ class Ingredient {
         'plural': plural,
       };
 
-  String encodeForServerConnect() {
+  String encodeForServerMake() {
     return '"${escapeDoubleQuotes(singular)}"/"${escapeDoubleQuotes(plural)}"';
   }
 }

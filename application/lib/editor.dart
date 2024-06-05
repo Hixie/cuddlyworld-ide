@@ -1570,52 +1570,50 @@ class IngredientsField extends StatefulWidget {
 }
 
 class _IngredientsFieldState extends State<IngredientsField> {
-
   Widget _row(
       Ingredient ingredient,
-      void Function(String singular, String plural) onChanged,
+      void Function(String? singular, String? plural) onChanged,
       VoidCallback? onDelete) {
     final String singular = ingredient.singular;
     final String plural = ingredient.plural;
-    return ListBody(
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: UnlabeledStringField(
-                value: singular,
-                onChanged: (String newSingular) {
-                  onChanged(newSingular, plural);
-                },
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: UnlabeledStringField(
+              value: singular,
+              onChanged: (String newSingular) {
+                onChanged(newSingular, null);
+              },
             ),
-            const SizedBox(
-              width: 8.0,
+          ),
+          const SizedBox(
+            width: 8.0,
+          ),
+          const Text('/'),
+          const SizedBox(
+            width: 8.0,
+          ),
+          Expanded(
+            child: UnlabeledStringField(
+              value: plural,
+              onChanged: (String newPlural) {
+                onChanged(null, newPlural);
+              },
             ),
-            const Text('/'),
-            const SizedBox(
-              width: 8.0,
+          ),
+          if (onDelete != null)
+            IconButton(
+              icon: const Icon(Icons.cancel),
+              onPressed: onDelete,
             ),
-            Expanded(
-              child: UnlabeledStringField(
-                value: plural,
-                onChanged: (String newPlural) {
-                  onChanged(singular, newPlural);
-                },
-              ),
-            ),
-            if (onDelete != null)
-              IconButton(
-                icon: const Icon(Icons.cancel),
-                onPressed: onDelete,
-              ),
-          ],
-        ),
-        const SizedBox(height: 24.0),
-      ],
+        ],
+      ),
     );
   }
 
+  // TODO(treeplate): if both singular and plural are changed on the same frame, only one will actually be changed
   @override
   Widget build(BuildContext context) {
     final List<Widget> rows = <Widget>[];
@@ -1623,9 +1621,9 @@ class _IngredientsFieldState extends State<IngredientsField> {
       final Ingredient entry = widget.values[index];
       rows.add(_row(
         entry,
-        (String singular, String plural) {
+        (String? singular, String? plural) {
           final List<Ingredient> newValues = widget.values.toList();
-          newValues[index] = Ingredient(singular, plural);
+          newValues[index] = Ingredient(singular ?? entry.singular, plural ?? entry.plural);
           widget.onChanged!(newValues);
         },
         () {
@@ -1637,9 +1635,9 @@ class _IngredientsFieldState extends State<IngredientsField> {
     }
     rows.add(_row(
       Ingredient('', ''),
-      (String singular, String plural) {
+      (String? singular, String? plural) {
         final List<Ingredient> newValues = widget.values.toList()
-          ..add(Ingredient(singular, plural));
+          ..add(Ingredient(singular ?? '', plural ?? ''));
         widget.onChanged!(newValues);
       },
       null,
