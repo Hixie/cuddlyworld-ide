@@ -373,7 +373,7 @@ class BlueprintWidget extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: <Color>[
                     color,
-                    color.withOpacity(0.25),
+                    color.withAlpha(64),
                   ],
                 ),
               ),
